@@ -1,0 +1,7 @@
+*.o
+res/assets/*.h
+res/assets/**/*.h
+minecraft.exe
+minecraft
+bin/
+.vscode/

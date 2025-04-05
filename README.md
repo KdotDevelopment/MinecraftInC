@@ -29,5 +29,8 @@ LINE 14-15: ```WINDOWS_CFLAGS = -I./include -I./res -Wall -std=c11 -fms-extensio
 
 All you must do is add -DSURVIVAL_MODE to the C compiler flags. To get creative mode, you need to remove these flags.
 
+## Useful things to know for developers
+Inside the folder ./lib is every library that you need in order to statically build minecraft.exe. This folder shouldn't need to be touched at all. Also, when you run ```make assets``` it will convert any .png or .ogg file in the ./res/assets directory to .h files, which are then included within the source files. (This is why ./src/sound/sounds.c takes so long to build -- it must read all those sound files). The exe icon can also be changed easily if you replace the .ico file with anything (retaining the name) and running ```make icon```. This new icon will be linked with the exe next time it is built. Do note, however, that the new icon may not show up because Windows caches icons. Restarting or moving the file may help.
+
 ## Credits
 I handwrote all of the code, however I must give credit to johnpayne-dev since I used his code as a big reference in early development while working on creative mode. Also, it is worth mentioning this project is not affiliated whatsoever with Mojang Studios or Minecraft at all.

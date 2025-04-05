@@ -43,29 +43,29 @@ AABB_t block_flower_get_collision_aabb(block_t *block, int x, int y, int z) {
 
 void private_block_flower_render(block_t *block, float x, float y, float z) {
     int tex = block->get_texture_id(block, 15);
-	int u0 = (tex % 16) << 4;
-	int v0 = (tex / 16) << 4;
-	float u1 = u0 / 256.0;
-	float v1 = v0 / 256.0;
-	float u2 = (u0 + 15.99) / 256.0;
-	float v2 = (v0 + 15.99) / 256.0;
-	for (int i = 0; i < 2; i++) {
-		float s = tsin(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
-		float c = tcos(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
-		float x1 = x + 0.5 - s;
-		float y1 = y + 1.0;
-		float z1 = z + 0.5 - c;
-		s += x + 0.5;
-		c += z + 0.5;
-		tesselator_vertex_uv(x1, y1, z1, u2, v1);
-		tesselator_vertex_uv(s, y1, c, u1, v1);
-		tesselator_vertex_uv(s, y, c, u1, v2);
-		tesselator_vertex_uv(x1, y, z1, u2, v2);
-		tesselator_vertex_uv(s, y1, c, u2, v1);
-		tesselator_vertex_uv(x1, y1, z1, u1, v1);
-		tesselator_vertex_uv(x1, y, z1, u1, v2);
-		tesselator_vertex_uv(s, y, c, u2, v2);
-	}
+    int u0 = (tex % 16) << 4;
+    int v0 = (tex / 16) << 4;
+    float u1 = u0 / 256.0;
+    float v1 = v0 / 256.0;
+    float u2 = (u0 + 15.99) / 256.0;
+    float v2 = (v0 + 15.99) / 256.0;
+    for (int i = 0; i < 2; i++) {
+        float s = tsin(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
+        float c = tcos(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
+        float x1 = x + 0.5 - s;
+        float y1 = y + 1.0;
+        float z1 = z + 0.5 - c;
+        s += x + 0.5;
+        c += z + 0.5;
+        tesselator_vertex_uv(x1, y1, z1, u2, v1);
+        tesselator_vertex_uv(s, y1, c, u1, v1);
+        tesselator_vertex_uv(s, y, c, u1, v2);
+        tesselator_vertex_uv(x1, y, z1, u2, v2);
+        tesselator_vertex_uv(s, y1, c, u2, v1);
+        tesselator_vertex_uv(x1, y1, z1, u1, v1);
+        tesselator_vertex_uv(x1, y, z1, u1, v2);
+        tesselator_vertex_uv(s, y, c, u2, v2);
+    }
 }
 
 void block_flower_render_preview(block_t *block) {

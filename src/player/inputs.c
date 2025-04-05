@@ -9,10 +9,10 @@ inputs_t inputs_create(game_settings_t *settings) {
 
 void inputs_set_key_state(inputs_t *inputs, uint8_t key, uint8_t state) {
     if(key == inputs->settings->forward_key.key) inputs->key_states[0] = state;
-	if(key == inputs->settings->back_key.key) inputs->key_states[1] = state;
-	if(key == inputs->settings->left_key.key) inputs->key_states[2] = state;
-	if(key == inputs->settings->right_key.key) inputs->key_states[3] = state;
-	if(key == inputs->settings->jump_key.key) inputs->key_states[4] = state;
+    if(key == inputs->settings->back_key.key) inputs->key_states[1] = state;
+    if(key == inputs->settings->left_key.key) inputs->key_states[2] = state;
+    if(key == inputs->settings->right_key.key) inputs->key_states[3] = state;
+    if(key == inputs->settings->jump_key.key) inputs->key_states[4] = state;
 }
 
 void inputs_reset_keys(inputs_t *inputs) {

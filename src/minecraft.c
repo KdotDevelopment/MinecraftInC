@@ -51,8 +51,8 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     SDL_GetWindowSize(minecraft->window, &minecraft->width, &minecraft->height);
     SDL_GL_GetDrawableSize(minecraft->window, &minecraft->frame_width, &minecraft->frame_height);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     minecraft->context = SDL_GL_CreateContext(minecraft->window);
     if(!minecraft->context) {
         printf("Couldn't create window context: %s\n", SDL_GetError());
@@ -60,16 +60,16 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     }
 
     glEnable(GL_TEXTURE_2D);
-	glShadeModel(GL_SMOOTH);
-	glClearDepth(1.0);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0);
-	glCullFace(GL_BACK);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+    glShadeModel(GL_SMOOTH);
+    glClearDepth(1.0);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0);
+    glCullFace(GL_BACK);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
 
     sin_table_initialize();
     blocks_init();
@@ -134,7 +134,7 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
         return;
     }
     if(minecraft->current_screen != NULL) {
-        minecraft->current_screen->on_close((struct screen_s *)minecraft->current_screen);
+        //minecraft->current_screen->on_close((struct screen_s *)minecraft->current_screen);
     }
     if(screen == NULL && minecraft->player.health <= 0) {
         screen = malloc(sizeof(screen_t));
@@ -148,10 +148,11 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
             SDL_ShowCursor(1);
         }
         int w = minecraft->width * 240 / minecraft->height;
-		int h = minecraft->height * 240 / minecraft->height;
+        int h = minecraft->height * 240 / minecraft->height;
 
         screen_open(screen, minecraft, w, h);
     }else {
+        minecraft->current_screen = NULL;
         minecraft_grab_mouse(minecraft);
     }
 }
@@ -247,13 +248,13 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     }
 
     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
-	for(int i = 0; i < array_list_length(minecraft->textures.animations); i++) {
-		texture_animated_t *texture = minecraft->textures.animations[i];
-		texture->anaglyph = minecraft->settings.anaglyph;
-		texture->tick(texture);
-		memcpy(minecraft->textures.texture_buffer, texture->data, 1024);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, texture->texture_id % 16 << 4, texture->texture_id / 16 << 4, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, minecraft->textures.texture_buffer);
-	}
+    for(int i = 0; i < array_list_length(minecraft->textures.animations); i++) {
+        texture_animated_t *texture = minecraft->textures.animations[i];
+        texture->anaglyph = minecraft->settings.anaglyph;
+        texture->tick(texture);
+        memcpy(minecraft->textures.texture_buffer, texture->data, 1024);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, texture->texture_id % 16 << 4, texture->texture_id / 16 << 4, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, minecraft->textures.texture_buffer);
+    }
 
     if(minecraft->miss_time > 0) {
         minecraft->miss_time--;
@@ -389,23 +390,23 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     }
 
     if(minecraft->raining) {
-		level_t *level = &minecraft->level;
-		int vx = minecraft->player.mob.x;
-		int vy = minecraft->player.mob.y;
-		int vz = minecraft->player.mob.z;
-		for(int i = 0; i < 50; i++) {
-			int rx = vx + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
-			int rz = vz + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
-			int ry = level_get_highest_block(level, rx, rz);
-			if(ry <= vy + 4 && ry >= vy - 4) {
-				float xo = random_next_uniform(&renderer->random);
-				float zo = random_next_uniform(&renderer->random);
-				particle_t *particle = malloc(sizeof(particle_t));
-				*particle = particle_water_drop_create(level, rx + xo, ry + 0.1, rz + zo);
-				particles_spawn_particle(&minecraft->particles, particle);
-			}
-		}
-	}
+        level_t *level = &minecraft->level;
+        int vx = minecraft->player.mob.x;
+        int vy = minecraft->player.mob.y;
+        int vz = minecraft->player.mob.z;
+        for(int i = 0; i < 50; i++) {
+            int rx = vx + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
+            int rz = vz + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
+            int ry = level_get_highest_block(level, rx, rz);
+            if(ry <= vy + 4 && ry >= vy - 4) {
+                float xo = random_next_uniform(&renderer->random);
+                float zo = random_next_uniform(&renderer->random);
+                particle_t *particle = malloc(sizeof(particle_t));
+                *particle = particle_water_drop_create(level, rx + xo, ry + 0.1, rz + zo);
+                particles_spawn_particle(&minecraft->particles, particle);
+            }
+        }
+    }
 
     minecraft->level_renderer.ticks++;
     level_tick_entities(&minecraft->level);
@@ -493,21 +494,21 @@ void minecraft_run(minecraft_t *minecraft) {
             int y = 0;
             SDL_GetWindowPosition(minecraft->window, &x, &y);
             x += minecraft->width / 2;
-			y += minecraft->height / 2;
-			SDL_GetGlobalMouseState(&dx, &dy);
-			dx -= x;
-			dy = -(dy - y);
-			SDL_WarpMouseGlobal(x, y);
+            y += minecraft->height / 2;
+            SDL_GetGlobalMouseState(&dx, &dy);
+            dx -= x;
+            dy = -(dy - y);
+            SDL_WarpMouseGlobal(x, y);
 
             entity_turn(&minecraft->player.mob.entity, dy * (minecraft->settings.invert_mouse ? -1 : 1), dx);
         }
 
         int w = minecraft->width * 240 / minecraft->height;
-		int h = minecraft->height * 240 / minecraft->height;
-		int mx = 0, my = 0;
-		SDL_GetMouseState(&mx, &my);
-		mx = mx * w / minecraft->width;
-		my = my * h / minecraft->height - 1;
+        int h = minecraft->height * 240 / minecraft->height;
+        int mx = 0, my = 0;
+        SDL_GetMouseState(&mx, &my);
+        mx = mx * w / minecraft->width;
+        my = my * h / minecraft->height - 1;
 
         player_t *player = &minecraft->player;
         float rot_x = player->x_roto + (player->x_rot - player->x_roto) * delta;
@@ -532,15 +533,15 @@ void minecraft_run(minecraft_t *minecraft) {
         entity_t ***entities = entity_map_get_entities(&minecraft->level.entity_map, &player->entity, box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
         for(int i = 0; i < array_list_length(*entities); i++) {
             entity_t *entity = *(entity_t **)array_list_get(*entities, i);
-			if(entity->can_be_hit(entity)) {
+            if(entity->can_be_hit(entity)) {
                 float r = 0.1;
                 float dist;
                 hit_result_t pos = AABB_clip(AABB_grow(entity->bb, r, r, r), v, v2);
                 if(!pos.null) dist = (vec3_distance_to(v, pos.location));
                 if(!pos.null && (dist < a || a == 0.0)) {
-					renderer->entity = entity;
-					a = dist;
-				}
+                    renderer->entity = entity;
+                    a = dist;
+                }
             }
         }
 
@@ -565,8 +566,8 @@ void minecraft_run(minecraft_t *minecraft) {
             renderer->fog_g = ((level->fog_color >> 16) & 0xFF) / 255.0;
             renderer->fog_b = ((level->fog_color >> 8) & 0xFF) / 255.0;
             renderer->fog_r = (renderer->fog_r + (sky_r - renderer->fog_r) * a) * renderer->fog_color_multiplier;
-			renderer->fog_g = (renderer->fog_g + (sky_g - renderer->fog_g) * a) * renderer->fog_color_multiplier;
-			renderer->fog_b = (renderer->fog_b + (sky_b - renderer->fog_b) * a) * renderer->fog_color_multiplier;
+            renderer->fog_g = (renderer->fog_g + (sky_g - renderer->fog_g) * a) * renderer->fog_color_multiplier;
+            renderer->fog_b = (renderer->fog_b + (sky_b - renderer->fog_b) * a) * renderer->fog_color_multiplier;
             block_t *block = &block_list[level_get_block(level, player->x, player->y + 0.12, player->z)];
             if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) {
                 if(block->liquid_type == LIQUID_WATER) {
@@ -582,11 +583,11 @@ void minecraft_run(minecraft_t *minecraft) {
             }
             if(minecraft->settings.anaglyph) {
                 float ar = (renderer->fog_r * 30.0 + renderer->fog_g * 59.0 + renderer->fog_b * 11.0) / 100.0;
-				float ag = (renderer->fog_r * 30.0 + renderer->fog_g * 70.0) / 100.0;
-				float ab = (renderer->fog_r * 30.0 + renderer->fog_b * 70.0) / 100.0;
-				renderer->fog_r = ar;
-				renderer->fog_g = ag;
-				renderer->fog_b = ab;
+                float ag = (renderer->fog_r * 30.0 + renderer->fog_g * 70.0) / 100.0;
+                float ab = (renderer->fog_r * 30.0 + renderer->fog_b * 70.0) / 100.0;
+                renderer->fog_r = ar;
+                renderer->fog_g = ag;
+                renderer->fog_b = ab;
             }
             
             glClearColor(renderer->fog_r, renderer->fog_g, renderer->fog_b, 0.0);
@@ -705,11 +706,11 @@ void minecraft_run(minecraft_t *minecraft) {
             float cloud_b = ((level->cloud_color >> 8) & 0xFF) / 255.0;
             if(minecraft->settings.anaglyph) {
                 float ar = (cloud_r * 30.0 + cloud_g * 59.0 + cloud_b * 11.0) / 100.0;
-				float ag = (cloud_r * 30.0 + cloud_g * 70.0) / 100.0;
-				float ab = (cloud_r * 30.0 + cloud_b * 70.0) / 100.0;
-				cloud_r = ar;
-				cloud_g = ag;
-				cloud_b = ab;
+                float ag = (cloud_r * 30.0 + cloud_g * 70.0) / 100.0;
+                float ab = (cloud_r * 30.0 + cloud_b * 70.0) / 100.0;
+                cloud_r = ar;
+                cloud_g = ag;
+                cloud_b = ab;
             }
             
             float z = level->depth + 2.0;
@@ -719,13 +720,13 @@ void minecraft_run(minecraft_t *minecraft) {
             for(int x = -2048; x < (int)level->width + 2048; x += 512) {
                 for(int y = -2048; y < (int)level->height + 2048; y += 512) {
                     tesselator_vertex_uv(x, z, y + 512, (x + t) / 2048.0, (y + 512) / 2048.0);
-					tesselator_vertex_uv(x + 512, z, y + 512, (x + 512 + t) / 2048.0, (y + 512) / 2048.0);
-					tesselator_vertex_uv(x + 512, z, y, (x + 512 + t) / 2048.0, y / 2048.0);
-					tesselator_vertex_uv(x, z, y, (x + t) / 2048.0, y / 2048.0);
-					tesselator_vertex_uv(x, z, y, (x + t) / 2048.0, y / 2048.0);
-					tesselator_vertex_uv(x + 512, z, y, (x + 512 + t) / 2048.0, y / 2048.0);
-					tesselator_vertex_uv(x + 512, z, y + 512, (x + 512 + t) / 2048.0, (y + 512) / 2048.0);
-					tesselator_vertex_uv(x, z, y + 512, (x + t) / 2048.0, (y + 512) / 2048.0);
+                    tesselator_vertex_uv(x + 512, z, y + 512, (x + 512 + t) / 2048.0, (y + 512) / 2048.0);
+                    tesselator_vertex_uv(x + 512, z, y, (x + 512 + t) / 2048.0, y / 2048.0);
+                    tesselator_vertex_uv(x, z, y, (x + t) / 2048.0, y / 2048.0);
+                    tesselator_vertex_uv(x, z, y, (x + t) / 2048.0, y / 2048.0);
+                    tesselator_vertex_uv(x + 512, z, y, (x + 512 + t) / 2048.0, y / 2048.0);
+                    tesselator_vertex_uv(x + 512, z, y + 512, (x + 512 + t) / 2048.0, (y + 512) / 2048.0);
+                    tesselator_vertex_uv(x, z, y + 512, (x + t) / 2048.0, (y + 512) / 2048.0);
                 }
             }
             tesselator_end();
@@ -734,20 +735,20 @@ void minecraft_run(minecraft_t *minecraft) {
             tesselator_begin();
             if(minecraft->settings.anaglyph) {
                 float ar = (sky_r * 30.0 + sky_g * 59.0 + sky_b * 11.0) / 100.0;
-				float ag = (sky_r * 30.0 + sky_g * 70.0) / 100.0;
-				float ab = (sky_r * 30.0 + sky_b * 70.0) / 100.0;
-				sky_r = ar;
-				sky_g = ag;
-				sky_b = ab;
+                float ag = (sky_r * 30.0 + sky_g * 70.0) / 100.0;
+                float ab = (sky_r * 30.0 + sky_b * 70.0) / 100.0;
+                sky_r = ar;
+                sky_g = ag;
+                sky_b = ab;
             }
             tesselator_color(sky_r, sky_g, sky_b);
             z = level->depth + 10.0;
             for(int x = -2048; x < (int)level->width + 2048; x += 512) {
                 for(int y = -2048; y < (int)level->height + 2048; y += 512) {
                     tesselator_vertex(x, z, y);
-					tesselator_vertex(x + 512, z, y);
-					tesselator_vertex(x + 512, z, y + 512);
-					tesselator_vertex(x, z, y + 512);
+                    tesselator_vertex(x + 512, z, y);
+                    tesselator_vertex(x + 512, z, y + 512);
+                    tesselator_vertex(x, z, y + 512);
                 }
             }
             tesselator_end();
@@ -758,9 +759,9 @@ void minecraft_run(minecraft_t *minecraft) {
                 glDisable(GL_ALPHA_TEST);
                 hit_result_t pos = minecraft->hit_result;
                 glEnable(GL_BLEND);
-				glEnable(GL_ALPHA_TEST);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				glColor4f(1.0, 1.0, 1.0, (tsin(time_millis() / 100.0) * 0.2 + 0.4) * 0.5);
+                glEnable(GL_ALPHA_TEST);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                glColor4f(1.0, 1.0, 1.0, (tsin(time_millis() / 100.0) * 0.2 + 0.4) * 0.5);
                 if(lrenderer->destroy_progress > 0) {
                     glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
                     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
@@ -787,47 +788,47 @@ void minecraft_run(minecraft_t *minecraft) {
                     glDepthMask(1);
                     glPopMatrix();
                 }
-				glDisable(GL_BLEND);
-				glDisable(GL_ALPHA_TEST);
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				glColor4f(0.0, 0.0, 0.0, 0.4);
-				glLineWidth(2.0);
-				glDisable(GL_TEXTURE_2D);
-				glDepthMask(GL_FALSE);
+                glDisable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glColor4f(0.0, 0.0, 0.0, 0.4);
+                glLineWidth(2.0);
+                glDisable(GL_TEXTURE_2D);
+                glDepthMask(GL_FALSE);
                 uint8_t block_id = level_get_block(level, pos.x, pos.y, pos.z);
                 block_t *block = &block_list[block_id];
                 if(block_id != blocks.air.id) {
                     AABB_t bb = AABB_grow(block->get_selection_aabb(block, pos.x, pos.y, pos.z), 0.002, 0.002, 0.002);
                     glBegin(GL_LINE_STRIP);
-					glVertex3f(bb.x0, bb.y0, bb.z0);
-					glVertex3f(bb.x1, bb.y0, bb.z0);
-					glVertex3f(bb.x1, bb.y0, bb.z1);
-					glVertex3f(bb.x0, bb.y0, bb.z1);
-					glVertex3f(bb.x0, bb.y0, bb.z0);
-					glEnd();
-					glBegin(GL_LINE_STRIP);
-					glVertex3f(bb.x0, bb.y1, bb.z0);
-					glVertex3f(bb.x1, bb.y1, bb.z0);
-					glVertex3f(bb.x1, bb.y1, bb.z1);
-					glVertex3f(bb.x0, bb.y1, bb.z1);
-					glVertex3f(bb.x0, bb.y1, bb.z0);
-					glEnd();
-					glBegin(GL_LINES);
-					glVertex3f(bb.x0, bb.y0, bb.z0);
-					glVertex3f(bb.x0, bb.y1, bb.z0);
-					glVertex3f(bb.x1, bb.y0, bb.z0);
-					glVertex3f(bb.x1, bb.y1, bb.z0);
-					glVertex3f(bb.x1, bb.y0, bb.z1);
-					glVertex3f(bb.x1, bb.y1, bb.z1);
-					glVertex3f(bb.x0, bb.y0, bb.z1);
-					glVertex3f(bb.x0, bb.y1, bb.z1);
-					glEnd();
+                    glVertex3f(bb.x0, bb.y0, bb.z0);
+                    glVertex3f(bb.x1, bb.y0, bb.z0);
+                    glVertex3f(bb.x1, bb.y0, bb.z1);
+                    glVertex3f(bb.x0, bb.y0, bb.z1);
+                    glVertex3f(bb.x0, bb.y0, bb.z0);
+                    glEnd();
+                    glBegin(GL_LINE_STRIP);
+                    glVertex3f(bb.x0, bb.y1, bb.z0);
+                    glVertex3f(bb.x1, bb.y1, bb.z0);
+                    glVertex3f(bb.x1, bb.y1, bb.z1);
+                    glVertex3f(bb.x0, bb.y1, bb.z1);
+                    glVertex3f(bb.x0, bb.y1, bb.z0);
+                    glEnd();
+                    glBegin(GL_LINES);
+                    glVertex3f(bb.x0, bb.y0, bb.z0);
+                    glVertex3f(bb.x0, bb.y1, bb.z0);
+                    glVertex3f(bb.x1, bb.y0, bb.z0);
+                    glVertex3f(bb.x1, bb.y1, bb.z0);
+                    glVertex3f(bb.x1, bb.y0, bb.z1);
+                    glVertex3f(bb.x1, bb.y1, bb.z1);
+                    glVertex3f(bb.x0, bb.y0, bb.z1);
+                    glVertex3f(bb.x0, bb.y1, bb.z1);
+                    glEnd();
                 }
                 glDepthMask(GL_TRUE);
-				glEnable(GL_TEXTURE_2D);
-				glDisable(GL_BLEND);
-				glEnable(GL_ALPHA_TEST);
+                glEnable(GL_TEXTURE_2D);
+                glDisable(GL_BLEND);
+                glEnable(GL_ALPHA_TEST);
             }
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -875,18 +876,18 @@ void minecraft_run(minecraft_t *minecraft) {
                         if(y_max < y) y_max = y;
                         if(y_min != y_max) {
                             float tt = (((lrenderer->ticks + x * 3121 + z * 418711) % 32) + t) / 32.0;
-							float d = sqrtf((x + 0.5 - player->x) * (x + 0.5 - player->x) + (z + 0.5 - player->z) * (z + 0.5 - player->z)) / 5.0;
-							glColor4f(1.0, 1.0, 1.0, (1.0 - d * d) * 0.7);
-							tesselator_begin();
-							tesselator_vertex_uv(x, y_min, z, 0.0, y_min / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x + 1, y_min, z + 1, 2.0, y_min / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x + 1, y_max, z + 1, 2.0, y_max / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x, y_max, z, 0.0, y_max / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x, y_min, z + 1, 0.0, y_min / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x + 1, y_min, z, 2.0, y_min / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x + 1, y_max, z, 2.0, y_max / 4.0 + tt * 2.0);
-							tesselator_vertex_uv(x, y_max, z + 1, 0.0, y_max / 4.0 + tt * 2.0);
-							tesselator_end();
+                            float d = sqrtf((x + 0.5 - player->x) * (x + 0.5 - player->x) + (z + 0.5 - player->z) * (z + 0.5 - player->z)) / 5.0;
+                            glColor4f(1.0, 1.0, 1.0, (1.0 - d * d) * 0.7);
+                            tesselator_begin();
+                            tesselator_vertex_uv(x, y_min, z, 0.0, y_min / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x + 1, y_min, z + 1, 2.0, y_min / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x + 1, y_max, z + 1, 2.0, y_max / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x, y_max, z, 0.0, y_max / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x, y_min, z + 1, 0.0, y_min / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x + 1, y_min, z, 2.0, y_min / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x + 1, y_max, z, 2.0, y_max / 4.0 + tt * 2.0);
+                            tesselator_vertex_uv(x, y_max, z + 1, 0.0, y_max / 4.0 + tt * 2.0);
+                            tesselator_end();
                         }
                     }
                 }
@@ -919,8 +920,8 @@ void minecraft_run(minecraft_t *minecraft) {
             glEnable(GL_NORMALIZE);
             if(held.moving) {
                 float a = (held.offset + delta) / 7.0;
-				glRotatef(tsin(sqrt(a) * M_PI) * 80.0, 0.0, 1.0, 0.0);
-				glRotatef(-tsin(a * a * M_PI), 1.0, 0.0, 0.0);
+                glRotatef(tsin(sqrt(a) * M_PI) * 80.0, 0.0, 1.0, 0.0);
+                glRotatef(-tsin(a * a * M_PI), 1.0, 0.0, 0.0);
             }
             float brightness = level_get_brightness(level, player->x, player->y, player->z);
             glColor4f(brightness, brightness, brightness, 1);
@@ -977,7 +978,7 @@ int main(int argc, char *argv[]) {
 #ifdef _WIN32
 #include <windows.h>
     extern uint8_t SetProcessDPIAware(void); //gets rid of implicit warning
-	SetProcessDPIAware();
+    SetProcessDPIAware();
 #endif
     minecraft_t minecraft = { 0 };
     minecraft_create(&minecraft, 1920, 1080, 0);

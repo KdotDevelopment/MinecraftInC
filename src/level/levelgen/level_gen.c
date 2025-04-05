@@ -47,12 +47,12 @@ void level_gen_populate_ore(level_gen_t *level_gen, uint8_t ore_id, int a1, int 
                 for(int y = y1 - v2; y <= (int)(y1 + v2); y++) {
                     for(int z = z1 - v2; z <= (int)(z1 + v2); z++) {
                         float x2 = x - x1;
-						float y2 = y - y1;
-						float z2 = z - z1;
+                        float y2 = y - y1;
+                        float z2 = z - z1;
                         if (x2 * x2 + 2.0 * y2 * y2 + z2 * z2 < v2 * v2 && x >= 1 && y >= 1 && z >= 1 && x < w - 1 && y < h - 1 && z < d - 1) {
-							int c = (y * d + z) * w + x;
-							if (level_gen->blocks[c] == blocks.stone.id) level_gen->blocks[c] = ore_id;
-						}
+                            int c = (y * d + z) * w + x;
+                            if (level_gen->blocks[c] == blocks.stone.id) level_gen->blocks[c] = ore_id;
+                        }
                     }
                 }
             }
@@ -236,7 +236,7 @@ void level_gen_generate(level_gen_t *level_gen, int width, int depth, struct lev
             y1 += tsin(r1y);
             z1 += tcos(r1x) * tcos(r1y);
             r1x = (r1x + r1x * 0.2) * 0.9;
-			r1y = (r1y + r2y * 0.5) * 0.5;
+            r1y = (r1y + r2y * 0.5) * 0.5;
             r2y = r2y * 0.75 + random_next_uniform(&level_gen->random) - random_next_uniform(&level_gen->random);
             if(random_next_uniform(&level_gen->random) >= 0.25) {
                 float x2 = x1 + (random_next_uniform(&level_gen->random) * 4 - 2) * 0.2;
@@ -246,15 +246,15 @@ void level_gen_generate(level_gen_t *level_gen, int width, int depth, struct lev
                 v4 = 1.2 + (v4 * 3.5 + 1) * v2;
                 v4 *= tsin(j * M_PI / jj);
                 for(int x = x2 - v4; x <= (int)(x2 + v4); x++) {
-					for(int y = y2 - v4; y <= (int)(y2 + v4); y++) {
-						for(int z = z2 - v4; z <= (int)(z2 + v4); z++) {
+                    for(int y = y2 - v4; y <= (int)(y2 + v4); y++) {
+                        for(int z = z2 - v4; z <= (int)(z2 + v4); z++) {
                             float x3 = x - x2;
                             float y3 = y - y2;
                             float z3 = z - z2;
                             if (x3 * x3 + 2.0 * y3 * y3 + z3 * z3 < v4 * v4 && x >= 1 && y >= 1 && z >= 1 && x < w - 1 && y < h - 1 && z < d - 1) {
-								int c = (y * d + z) * w + x;
-								if (level_gen->blocks[c] == blocks.stone.id) { level_gen->blocks[c] = blocks.air.id; }
-							}
+                                int c = (y * d + z) * w + x;
+                                if (level_gen->blocks[c] == blocks.stone.id) { level_gen->blocks[c] = blocks.air.id; }
+                            }
                         }
                     }
                 }

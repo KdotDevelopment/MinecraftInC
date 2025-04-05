@@ -9,9 +9,9 @@ inventory_t inventory_create() {
     inventory.selected = 0;
 
     for(int i = 0; i < 9; i++) {
-		inventory.slots[i] = 0;
+        inventory.slots[i] = 0;
         inventory.counts[i] = 0;
-	}
+    }
 
     return inventory;
 }

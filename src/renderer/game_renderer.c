@@ -28,14 +28,14 @@ vec3_t renderer_get_player_vector(game_renderer_t *renderer, float delta) {
 void renderer_apply_bobbing(game_renderer_t *renderer, float delta) {
     entity_t* entity = &renderer->minecraft->player.mob.entity;
     player_t *player = &renderer->minecraft->player;
-	float walk = entity->walk_dist - entity->walk_disto;
-	walk = entity->walk_dist + walk * delta;
-	float bob = player->obob + (player->bob - player->obob) * delta;
-	float tilt = player->o_tilt + (player->tilt - player->o_tilt) * delta;
-	glTranslatef(tsin(walk * M_PI) * bob * 0.5, -fabs(tcos(walk * M_PI) * bob), 0.0);
-	glRotatef(tsin(walk * M_PI) * bob * 3.0, 0.0, 0.0, 1.0);
-	glRotatef(fabs(tcos(walk * M_PI + 0.2) * bob) * 5.0, 1.0, 0.0, 0.0);
-	glRotatef(tilt, 1.0, 0.0, 0.0);
+    float walk = entity->walk_dist - entity->walk_disto;
+    walk = entity->walk_dist + walk * delta;
+    float bob = player->obob + (player->bob - player->obob) * delta;
+    float tilt = player->o_tilt + (player->tilt - player->o_tilt) * delta;
+    glTranslatef(tsin(walk * M_PI) * bob * 0.5, -fabs(tcos(walk * M_PI) * bob), 0.0);
+    glRotatef(tsin(walk * M_PI) * bob * 3.0, 0.0, 0.0, 1.0);
+    glRotatef(fabs(tcos(walk * M_PI + 0.2) * bob) * 5.0, 1.0, 0.0, 0.0);
+    glRotatef(tilt, 1.0, 0.0, 0.0);
 }
 
 void renderer_set_lighting(game_renderer_t *game_renderer, uint8_t lighting) {
@@ -80,8 +80,8 @@ void renderer_setup_fog(game_renderer_t *game_renderer) {
             glFogf(GL_FOG_DENSITY, 0.1);
             vec3_t a = { 0.4, 0.4, 0.9 };
             if (game_renderer->minecraft->settings.anaglyph) {
-				a = (vec3_t){ (a.x * 30.0 + a.y * 59.0 + a.z * 11.0) / 100.0, (a.x * 30.0 + a.y * 70.0) / 100.0, (a.x * 30.0 + a.z * 70.0) / 100.0 };
-			}
+                a = (vec3_t){ (a.x * 30.0 + a.y * 59.0 + a.z * 11.0) / 100.0, (a.x * 30.0 + a.y * 70.0) / 100.0, (a.x * 30.0 + a.z * 70.0) / 100.0 };
+            }
             glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (float[]){ a.x, a.y, a.z, 1.0 });
         }
 

@@ -60,10 +60,10 @@ void gui_draw_string(font_t *font, char *string, int x, int y, uint32_t color) {
 
 void gui_blit(int x0, int y0, int width, int height, int u, int v, float blit_offset) {
     float s = 0.00390625 - 0.00000001;
-	tesselator_begin();
-	tesselator_vertex_uv(x0, y0 + v, blit_offset, width * s, (height + v) * s);
-	tesselator_vertex_uv(x0 + u, y0 + v, blit_offset, (width + u) * s, (height + v) * s);
-	tesselator_vertex_uv(x0 + u, y0, blit_offset, (width + u) * s, height * s);
-	tesselator_vertex_uv(x0, y0, blit_offset, width * s, height * s);
-	tesselator_end();
+    tesselator_begin();
+    tesselator_vertex_uv(x0, y0 + v, blit_offset, width * s, (height + v) * s);
+    tesselator_vertex_uv(x0 + u, y0 + v, blit_offset, (width + u) * s, (height + v) * s);
+    tesselator_vertex_uv(x0 + u, y0, blit_offset, (width + u) * s, height * s);
+    tesselator_vertex_uv(x0, y0, blit_offset, width * s, height * s);
+    tesselator_end();
 }

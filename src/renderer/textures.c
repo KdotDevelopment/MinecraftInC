@@ -60,16 +60,16 @@ int textures_load(textures_t *textures, const char *resource) {
     uint8_t *p = NULL;
 
     if(strcmp(resource, "clouds.png") == 0) { p = (uint8_t *)asset_clouds_rgba; width = asset_clouds_width; height = asset_clouds_height; }
-	if(strcmp(resource, "default.png") == 0) { p = (uint8_t *)asset_default_rgba; width = asset_default_width; height = asset_default_height; }
-	if(strcmp(resource, "dirt.png") == 0) { p = (uint8_t *)asset_dirt_rgba; width = asset_dirt_width; height = asset_dirt_height; }
-	if(strcmp(resource, "particles.png") == 0) { p = (uint8_t *)asset_particles_rgba; width = asset_particles_width; height = asset_particles_height; }
-	if(strcmp(resource, "rain.png") == 0) { p = (uint8_t *)asset_rain_rgba; width = asset_rain_width; height = asset_rain_height; }
-	if(strcmp(resource, "rock.png") == 0) { p = (uint8_t *)asset_rock_rgba; width = asset_rock_width; height = asset_rock_height; }
-	if(strcmp(resource, "terrain.png") == 0) { p = (uint8_t *)asset_terrain_rgba; width = asset_terrain_width; height = asset_terrain_height; }
+    if(strcmp(resource, "default.png") == 0) { p = (uint8_t *)asset_default_rgba; width = asset_default_width; height = asset_default_height; }
+    if(strcmp(resource, "dirt.png") == 0) { p = (uint8_t *)asset_dirt_rgba; width = asset_dirt_width; height = asset_dirt_height; }
+    if(strcmp(resource, "particles.png") == 0) { p = (uint8_t *)asset_particles_rgba; width = asset_particles_width; height = asset_particles_height; }
+    if(strcmp(resource, "rain.png") == 0) { p = (uint8_t *)asset_rain_rgba; width = asset_rain_width; height = asset_rain_height; }
+    if(strcmp(resource, "rock.png") == 0) { p = (uint8_t *)asset_rock_rgba; width = asset_rock_width; height = asset_rock_height; }
+    if(strcmp(resource, "terrain.png") == 0) { p = (uint8_t *)asset_terrain_rgba; width = asset_terrain_width; height = asset_terrain_height; }
     if(strcmp(resource, "char.png") == 0) { p = (uint8_t *)asset_char_rgba; width = asset_char_width; height = asset_char_height; }
-	if(strcmp(resource, "water.png") == 0) { p = (uint8_t *)asset_water_rgba; width = asset_water_width; height = asset_water_height; }
-	if(strcmp(resource, "gui/gui.png") == 0) { p = (uint8_t *)asset_gui_rgba; width = asset_gui_width; height = asset_gui_height; }
-	if(strcmp(resource, "gui/icons.png") == 0) { p = (uint8_t *)asset_icons_rgba; width = asset_icons_width; height = asset_icons_height; }
+    if(strcmp(resource, "water.png") == 0) { p = (uint8_t *)asset_water_rgba; width = asset_water_width; height = asset_water_height; }
+    if(strcmp(resource, "gui/gui.png") == 0) { p = (uint8_t *)asset_gui_rgba; width = asset_gui_width; height = asset_gui_height; }
+    if(strcmp(resource, "gui/icons.png") == 0) { p = (uint8_t *)asset_icons_rgba; width = asset_icons_width; height = asset_icons_height; }
     if(strcmp(resource, "mob/creeper.png") == 0) { p = (uint8_t *)asset_creeper_rgba; width = asset_creeper_width; height = asset_creeper_height; }
     if(strcmp(resource, "mob/pig.png") == 0) { p = (uint8_t *)asset_pig_rgba; width = asset_pig_width; height = asset_pig_height; }
     if(strcmp(resource, "mob/sheep_fur.png") == 0) { p = (uint8_t *)asset_sheep_fur_rgba; width = asset_sheep_fur_width; height = asset_sheep_fur_height; }
@@ -86,9 +86,9 @@ int textures_load(textures_t *textures, const char *resource) {
     uint8_t *pixels = malloc(width * height * sizeof(uint32_t)); //32 bit color
     if(textures->settings->anaglyph) {
         for (int i = 0; i < 4 * width * height; i += 4) {
-			uint8_t color[] = { (p[i + 0] * 30 + p[i + 1] * 59 + p[i + 2] * 11) / 100, (p[i + 0] * 30 + p[i + 1] * 70) / 100, (p[i + 0] * 30 + p[i + 2] * 70) / 100, p[i + 3] };
-			memcpy(pixels + i, color, sizeof(color));
-		}
+            uint8_t color[] = { (p[i + 0] * 30 + p[i + 1] * 59 + p[i + 2] * 11) / 100, (p[i + 0] * 30 + p[i + 1] * 70) / 100, (p[i + 0] * 30 + p[i + 2] * 70) / 100, p[i + 3] };
+            memcpy(pixels + i, color, sizeof(color));
+        }
     }else {
         memcpy(pixels, p, 4 * width * height);
     }
@@ -106,19 +106,19 @@ int textures_load(textures_t *textures, const char *resource) {
 }
 
 void textures_reload(textures_t *textures) {
-	for(int i = 0; i < array_list_length(textures->textures); i++) glDeleteTextures(1, &textures->textures[i]);
-	textures->textures = array_list_clear(textures->textures);
-	textures->texture_names = array_list_clear(textures->texture_names);
+    for(int i = 0; i < array_list_length(textures->textures); i++) glDeleteTextures(1, &textures->textures[i]);
+    textures->textures = array_list_clear(textures->textures);
+    textures->texture_names = array_list_clear(textures->texture_names);
 }
 
 void textures_register_animation(textures_t *textures, texture_animated_t *texture) {
-	textures->animations = array_list_push(textures->animations, &texture);
-	texture->tick(texture);
+    textures->animations = array_list_push(textures->animations, &texture);
+    texture->tick(texture);
 }
 
 void textures_destroy(textures_t *textures) {
-	array_list_free(textures->textures);
-	array_list_free(textures->texture_names);
-	array_list_free(textures->animations);
-	free(textures->texture_buffer);
+    array_list_free(textures->textures);
+    array_list_free(textures->texture_names);
+    array_list_free(textures->animations);
+    free(textures->texture_buffer);
 }

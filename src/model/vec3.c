@@ -38,18 +38,18 @@ float vec3_length(vec3_t a) {
 
 vec3_t vec3_clip_x(vec3_t a, vec3_t b, float lerp) {
     vec3_t d = vec3_subtract(b, a);
-	lerp = (lerp - a.x) / d.x;
-	return d.x * d.x < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
+    lerp = (lerp - a.x) / d.x;
+    return d.x * d.x < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
 }
 
 vec3_t vec3_clip_y(vec3_t a, vec3_t b, float lerp) {
     vec3_t d = vec3_subtract(b, a);
-	lerp = (lerp - a.y) / d.y;
-	return d.y * d.y < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
+    lerp = (lerp - a.y) / d.y;
+    return d.y * d.y < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
 }
 
 vec3_t vec3_clip_z(vec3_t a, vec3_t b, float lerp) {
     vec3_t d = vec3_subtract(b, a);
-	lerp = (lerp - a.z) / d.z;
-	return d.z * d.z < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
+    lerp = (lerp - a.z) / d.z;
+    return d.z * d.z < 1.0E-7 ? vec3_null : (lerp >= 0.0 && lerp <= 1.0 ? (vec3_t){ a.x + d.x * lerp, a.y + d.y * lerp, a.z + d.z * lerp } : vec3_null);
 }

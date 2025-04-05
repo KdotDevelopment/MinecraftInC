@@ -6,6 +6,7 @@ This is the first version I worked on, therefore it is hard to give an actual ch
  - Does not support file saving or loading
  - Does not support multiplayer
  - Small various things I am working on
+ - Known memory leak with GUI screens and mobs
 
 ## How to Build
 I only make this project on WSL, so it must be built on linux unless you rewrite the makefile for building on Windows. However, the primary binary that I create here is only for Windows, which by the way, is completely statically linked.

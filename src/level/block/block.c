@@ -58,17 +58,17 @@ void block_set_bounds(block_t *block, float x0, float y0, float z0, float x1, fl
 
 void block_render_full_brightness(block_t *block) {
     tesselator_color(0.5, 0.5, 0.5);
-	block->render_inside(block, -2, 0, 0, 0);
-	tesselator_color(1.0, 1.0, 1.0);
-	block->render_inside(block, -2, 0, 0, 1);
-	tesselator_color(0.8, 0.8, 0.8);
-	block->render_inside(block, -2, 0, 0, 2);
-	tesselator_color(0.8, 0.8, 0.8);
-	block->render_inside(block, -2, 0, 0, 3);
-	tesselator_color(0.6, 0.6, 0.6);
-	block->render_inside(block, -2, 0, 0, 4);
-	tesselator_color(0.6, 0.6, 0.6);
-	block->render_inside(block, -2, 0, 0, 5);
+    block->render_inside(block, -2, 0, 0, 0);
+    tesselator_color(1.0, 1.0, 1.0);
+    block->render_inside(block, -2, 0, 0, 1);
+    tesselator_color(0.8, 0.8, 0.8);
+    block->render_inside(block, -2, 0, 0, 2);
+    tesselator_color(0.8, 0.8, 0.8);
+    block->render_inside(block, -2, 0, 0, 3);
+    tesselator_color(0.6, 0.6, 0.6);
+    block->render_inside(block, -2, 0, 0, 4);
+    tesselator_color(0.6, 0.6, 0.6);
+    block->render_inside(block, -2, 0, 0, 5);
 }
 
 float block_get_brightness(block_t *block, struct level_s *level, int x, int y, int z) {
@@ -89,28 +89,28 @@ void block_render_inside(block_t *block, int x, int y, int z, int side) {
 
 void block_render_side_with_texture(block_t *block, int x, int y, int z, int side, int tex) {
     int u0 = (tex % 16) << 4;
-	int v0 = (tex / 16) << 4;
-	float u1 = u0 / 256.0;
-	float v1 = v0 / 256.0;
-	float u2 = (u0 + 15.99) / 256.0;
-	float v2 = (v0 + 15.99) / 256.0;
+    int v0 = (tex / 16) << 4;
+    float u1 = u0 / 256.0;
+    float v1 = v0 / 256.0;
+    float u2 = (u0 + 15.99) / 256.0;
+    float v2 = (v0 + 15.99) / 256.0;
 
     if(side >= 2 && tex < 240) {
         if(block->y0 >= 0 && block->y1 <= 1) {
             v1 = (v0 + block->y0 * 15.99) / 256.0;
-			v2 = (v0 + block->y1 * 15.99) / 256.0;
+            v2 = (v0 + block->y1 * 15.99) / 256.0;
         }else {
             v1 = v0 / 256.0;
-			v2 = (v0 + 15.99) / 256.0;
+            v2 = (v0 + 15.99) / 256.0;
         }
     }
 
     float x0 = x + block->x0;
-	float y0 = y + block->y0;
-	float z0 = z + block->z0;
-	float x1 = x + block->x1;
-	float y1 = y + block->y1;
-	float z1 = z + block->z1;
+    float y0 = y + block->y0;
+    float z0 = z + block->z0;
+    float x1 = x + block->x1;
+    float y1 = y + block->y1;
+    float z1 = z + block->z1;
 
     switch(side) {
         case 0:
@@ -217,28 +217,28 @@ void block_breaking(block_t *block, struct level_s *level, int x, int y, int z, 
 
 void block_destroy(block_t *block, struct level_s *level, int x, int y, int z, particles_t *particles) {
     for(int i = 0; i < 4; i++) {
-		for(int j = 0; j < 4; j++) {
-			for(int k = 0; k < 4; k++) {
-				float xd = x + (i + 0.5) / 4.0;
-				float yd = y + (j + 0.5) / 4.0;
-				float zd = z + (k + 0.5) / 4.0;
-				particle_t *particle = malloc(sizeof(particle_t));
-				*particle = particle_terrain_create(level, xd, yd, zd, xd - x - 0.5, yd - y - 0.5, zd - z - 0.5, block);
-				particles_spawn_particle(particles, particle);
-			}
-		}
-	}
+        for(int j = 0; j < 4; j++) {
+            for(int k = 0; k < 4; k++) {
+                float xd = x + (i + 0.5) / 4.0;
+                float yd = y + (j + 0.5) / 4.0;
+                float zd = z + (k + 0.5) / 4.0;
+                particle_t *particle = malloc(sizeof(particle_t));
+                *particle = particle_terrain_create(level, xd, yd, zd, xd - x - 0.5, yd - y - 0.5, zd - z - 0.5, block);
+                particles_spawn_particle(particles, particle);
+            }
+        }
+    }
 }
 
 void block_render_preview(block_t *block) {
     tesselator_begin();
     for(int i = 0; i < 6; i++) {
         if (i == 0) tesselator_normal(0.0, 1.0, 0.0);
-		if (i == 1) tesselator_normal(0.0, -1.0, 0.0);
-		if (i == 2) tesselator_normal(0.0, 0.0, 1.0);
-		if (i == 3) tesselator_normal(0.0, 0.0, -1.0);
-		if (i == 4) tesselator_normal(1.0, 0.0, 0.0);
-		if (i == 5) tesselator_normal(-1.0, 0.0, 0.0);
+        if (i == 1) tesselator_normal(0.0, -1.0, 0.0);
+        if (i == 2) tesselator_normal(0.0, 0.0, 1.0);
+        if (i == 3) tesselator_normal(0.0, 0.0, -1.0);
+        if (i == 4) tesselator_normal(1.0, 0.0, 0.0);
+        if (i == 5) tesselator_normal(-1.0, 0.0, 0.0);
         block->render_inside(block, 0, 0, 0, i);
     }
     tesselator_end();
@@ -246,13 +246,13 @@ void block_render_preview(block_t *block) {
 
 hit_result_t block_clip(block_t *block, int x, int y, int z, vec3_t v0, vec3_t v1) {
     hit_result_t pos = AABB_clip((AABB_t){ block->x0, block->y0, block->z0, block->x1, block->y1, block->z1 }, vec3_subtract(v0, (vec3_t){ x, y, z }), vec3_subtract(v1, (vec3_t){ x, y, z }));
-	if (!pos.null) {
-		pos.x = x;
-		pos.y = y;
-		pos.z = z;
-		pos.location = vec3_add(pos.location, (vec3_t){ x, y, z });
-	}
-	return pos;
+    if (!pos.null) {
+        pos.x = x;
+        pos.y = y;
+        pos.z = z;
+        pos.location = vec3_add(pos.location, (vec3_t){ x, y, z });
+    }
+    return pos;
 }
 
 uint8_t block_render(block_t *block, struct level_s *level, int x, int y, int z) {

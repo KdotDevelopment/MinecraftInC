@@ -35,7 +35,7 @@ void screen_block_select_render(struct screen_s *proto_screen, int mx, int my) {
     gui_fill_gradient(screen->width / 2 - 120, 30, screen->width / 2 + 120, 180, 0x05050090, 0x303060C0);
     if(block_i >= 0) {
         int x = screen->width / 2 + block_i % 9 * 24 + -108;
-		int y = screen->height / 2 + block_i / 9 * 24 + -60;
+        int y = screen->height / 2 + block_i / 9 * 24 + -60;
         gui_fill_gradient(x - 3, y - 8, x + 23, y + 18, 0xFFFFFF90, 0xFFFFFFC0);
     }
     gui_draw_centered_string(screen->font, "Select block", screen->width / 2, 40, 0xFFFFFFFF);
@@ -45,19 +45,19 @@ void screen_block_select_render(struct screen_s *proto_screen, int mx, int my) {
         block_t *block = &block_list[block_id];
         glPushMatrix();
         int x = screen->width / 2 + i % 9 * 24 + -108;
-		int y = screen->height / 2 + i / 9 * 24 + -60;
+        int y = screen->height / 2 + i / 9 * 24 + -60;
         glTranslatef(x, y, 0.0);
-		glScalef(10.0, 10.0, 10.0);
-		glTranslatef(1.0, 0.5, 8.0);
-		glRotatef(-30.0, 1.0, 0.0, 0.0);
-		glRotatef(45.0, 0.0, 1.0, 0.0);
-		if(block_i == i) glScalef(1.6, 1.6, 1.6);
-		glTranslatef(-1.5, 0.5, 0.5);
-		glScalef(-1.0, -1.0, -1.0);
-		tesselator_begin();
-		block->render_full_brightness(block);
-		tesselator_end();
-		glPopMatrix();
+        glScalef(10.0, 10.0, 10.0);
+        glTranslatef(1.0, 0.5, 8.0);
+        glRotatef(-30.0, 1.0, 0.0, 0.0);
+        glRotatef(45.0, 0.0, 1.0, 0.0);
+        if(block_i == i) glScalef(1.6, 1.6, 1.6);
+        glTranslatef(-1.5, 0.5, 0.5);
+        glScalef(-1.0, -1.0, -1.0);
+        tesselator_begin();
+        block->render_full_brightness(block);
+        tesselator_end();
+        glPopMatrix();
     }
 
     screen_render(proto_screen, mx, my);

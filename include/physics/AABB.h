@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 typedef struct {
-	float x0;
+    float x0;
     float y0;
     float z0;
-	float x1;
+    float x1;
     float y1;
     float z1;
     uint8_t null;

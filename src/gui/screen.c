@@ -99,7 +99,7 @@ void screen_mouse_event(screen_t *screen, SDL_Event event) {
     if(screen == NULL || screen->buttons == NULL) return;
     if(event.type == SDL_MOUSEBUTTONUP) {
         int x = event.button.x * screen->width / screen->minecraft->width;
-		int y = event.button.y * screen->height / screen->minecraft->height - 1;
+        int y = event.button.y * screen->height / screen->minecraft->height - 1;
         screen->on_mouse_clicked((struct screen_s *)screen, x, y, event.button.button);
     }
 }

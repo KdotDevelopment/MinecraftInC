@@ -34,7 +34,7 @@ void game_settings_create(game_settings_t *settings, struct minecraft_s *minecra
     settings->bindings = array_list_create(sizeof(key_binding_t *));
 
     key_binding_t *bindings[] = { &settings->forward_key, &settings->left_key, &settings->back_key, &settings->right_key, &settings->jump_key, &settings->build_key, &settings->chat_key, &settings->toggle_fog_key, &settings->save_location_key, &settings->load_location_key };
-	for (int i = 0; i < sizeof(bindings) / sizeof(bindings[0]); i++) {
+    for (int i = 0; i < sizeof(bindings) / sizeof(bindings[0]); i++) {
         settings->bindings = array_list_push(settings->bindings, &bindings[i]);
     }
 }
@@ -88,43 +88,43 @@ void game_settings_toggle_setting(game_settings_t *settings, int setting) {
 char *render_distances[] = { "FAR", "NORMAL", "SHORT", "TINY" };
 
 char *game_settings_get_setting(game_settings_t *settings, int setting) {
-	char *string;
-	switch(setting) {
-		case 0:
-			string = string_create("Music: ");
-			string_concat(&string, settings->music ? "ON" : "OFF");
-			break;
-		case 1:
-			string = string_create("Sound: ");
-			string_concat(&string, settings->sound ? "ON" : "OFF");
-			break;
-		case 2:
-			string = string_create("Invert mouse: ");
-			string_concat(&string, settings->invert_mouse ? "ON" : "OFF");
-			break;
-		case 3:
-			string = string_create("Show FPS: ");
-			string_concat(&string, settings->show_framerate ? "ON" : "OFF");
-			break;
-		case 4:
-			string = string_create("Render distance: ");
-			string_concat(&string, render_distances[settings->view_distance]);
-			break;
-		case 5:
-			string = string_create("View bobbing: ");
-			string_concat(&string, settings->show_bobbing ? "ON" : "OFF");
-			break;
-		case 6:
-			string = string_create("3d anaglyph: ");
-			string_concat(&string, settings->anaglyph ? "ON" : "OFF");
-			break;
-		case 7:
-			string = string_create("Limit framerate: ");
-			string_concat(&string, settings->limit_framerate ? "ON" : "OFF");
-			break;
-		default:
-			string = string_create("Error");
-			break;
-	}
-	return string;
+    char *string;
+    switch(setting) {
+        case 0:
+            string = string_create("Music: ");
+            string_concat(&string, settings->music ? "ON" : "OFF");
+            break;
+        case 1:
+            string = string_create("Sound: ");
+            string_concat(&string, settings->sound ? "ON" : "OFF");
+            break;
+        case 2:
+            string = string_create("Invert mouse: ");
+            string_concat(&string, settings->invert_mouse ? "ON" : "OFF");
+            break;
+        case 3:
+            string = string_create("Show FPS: ");
+            string_concat(&string, settings->show_framerate ? "ON" : "OFF");
+            break;
+        case 4:
+            string = string_create("Render distance: ");
+            string_concat(&string, render_distances[settings->view_distance]);
+            break;
+        case 5:
+            string = string_create("View bobbing: ");
+            string_concat(&string, settings->show_bobbing ? "ON" : "OFF");
+            break;
+        case 6:
+            string = string_create("3d anaglyph: ");
+            string_concat(&string, settings->anaglyph ? "ON" : "OFF");
+            break;
+        case 7:
+            string = string_create("Limit framerate: ");
+            string_concat(&string, settings->limit_framerate ? "ON" : "OFF");
+            break;
+        default:
+            string = string_create("Error");
+            break;
+    }
+    return string;
 }

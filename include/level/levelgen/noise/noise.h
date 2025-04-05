@@ -10,20 +10,20 @@
 #define NOISE_COMPOSITE 3
 
 typedef struct noise_s {
-	uint8_t noise_type;
-	union {
-		struct {
-			int hash[512];
-		} perlin;
-		struct {
-			int count;
-			struct noise_s *noises;
-		} octave;
-		struct {
-			struct noise_s *noise1;
-			struct noise_s *noise2;
-		} combined;
-	};
+    uint8_t noise_type;
+    union {
+        struct {
+            int hash[512];
+        } perlin;
+        struct {
+            int count;
+            struct noise_s *noises;
+        } octave;
+        struct {
+            struct noise_s *noise1;
+            struct noise_s *noise2;
+        } combined;
+    };
 } noise_t;
 
 noise_t noise_create();

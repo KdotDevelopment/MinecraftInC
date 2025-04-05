@@ -94,7 +94,7 @@ void level_calculate_light_depths(level_t *level, int x0, int y0, int x1, int y1
             level->light_depths[i + j * level->width] = k;
             if(depth != k) {
                 int min = depth < k ? depth : k;
-				int max = depth > k ? depth : k;
+                int max = depth > k ? depth : k;
                 if(level->renderer != NULL) level_renderer_queue_chunks((level_renderer_t *)level->renderer, i - 1, min - 1, j - 1, i + 1, max + 1, j + 1);
             }
         }
@@ -118,24 +118,24 @@ AABB_t *level_get_cubes(level_t *level, AABB_t box) {
     if(box.y0 < 0) y0--;
     if(box.z0 < 0) z0--;
     for(int i = x0; i < x1; i++) {
-		for(int j = y0; j < y1; j++) {
-			for(int k = z0; k < z1; k++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
                 AABB_t bb = { 0 };
                 if(i >= 0 && j >= 0 && k >= 0 && i < level->width && j < level->depth && k < level->height) {
-					block_t *block = &block_list[level_get_block(level, i, j, k)];
-					if (block->id != blocks.air.id) {
-						bb = block->get_collision_aabb(block, i, j, k);
-						if(!bb.null && AABB_intersects_inner(box, bb)) {
+                    block_t *block = &block_list[level_get_block(level, i, j, k)];
+                    if (block->id != blocks.air.id) {
+                        bb = block->get_collision_aabb(block, i, j, k);
+                        if(!bb.null && AABB_intersects_inner(box, bb)) {
                             list = array_list_push(list, &bb);
                         }
-					}
-				}else if(i < 0 || j < 0 || k < 0 || i >= level->width || k >= level->height) {
+                    }
+                }else if(i < 0 || j < 0 || k < 0 || i >= level->width || k >= level->height) {
                     block_t *block = &block_list[blocks.bedrock.id];
-					AABB_t bb = block->get_collision_aabb(block, i, j, k);
-					if(!bb.null && AABB_intersects_inner(box, bb)) {
+                    AABB_t bb = block->get_collision_aabb(block, i, j, k);
+                    if(!bb.null && AABB_intersects_inner(box, bb)) {
                         list = array_list_push(list, &bb);
                     }
-				}
+                }
             }
         }
     }
@@ -187,8 +187,8 @@ uint8_t level_set_block_no_neighbor_change(level_t *level, int x, int y, int z, 
 
 void level_update_block(level_t *level, int x, int y, int z, uint8_t block_id) {
     if (x < 0 || y < 0 || z < 0 || x >= level->width || y >= level->depth || z >= level->height) return;
-	block_t *block = &block_list[level->blocks[(y * level->height + z) * level->width + x]];
-	if (block->id != blocks.air.id) { 
+    block_t *block = &block_list[level->blocks[(y * level->height + z) * level->width + x]];
+    if (block->id != blocks.air.id) { 
         block->on_neighbor_changed(block, (struct level_s *)level, x, y, z, block_id);
     }
 }
@@ -204,10 +204,10 @@ void level_update_neighbors_at(level_t *level, int x, int y, int z, uint8_t bloc
 
 uint8_t level_set_block_no_update(level_t *level, int x, int y, int z, uint8_t block_id) {
     if (x < 0 || y < 0 || z < 0 || x >= level->width || y >= level->depth || z >= level->height) return 0;
-	int i = (y * level->height + z) * level->width + x;
-	if (block_id == level->blocks[i]) return 0;
-	level->blocks[i] = block_id;
-	return 1;
+    int i = (y * level->height + z) * level->width + x;
+    if (block_id == level->blocks[i]) return 0;
+    level->blocks[i] = block_id;
+    return 1;
 }
 
 uint8_t level_is_lit(level_t *level, int x, int y, int z) {
@@ -297,48 +297,48 @@ float level_get_water_level(level_t *level) {
 
 uint8_t level_contains_any_liquid(level_t *level, AABB_t box) {
     int x0 = box.x0, y0 = box.y0, z0 = box.z0;
-	int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
-	if(box.x0 < 0.0) x0--;
-	if(box.y0 < 0.0) y0--;
-	if(box.z0 < 0.0) z0--;
-	if(x0 < 0) x0 = 0;
-	if(y0 < 0) y0 = 0;
-	if(z0 < 0) z0 = 0;
-	if(x1 > level->width) x1 = level->width;
-	if(y1 > level->depth) y1 = level->depth;
-	if(z1 > level->height) z1 = level->height;
-	for(int i = x0; i < x1; i++) {
-		for(int j = y0; j < y1; j++) {
-			for(int k = z0; k < z1; k++) {
-				block_t *block = &block_list[level_get_block(level, i, j, k)];
-				if (block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) return 1;
-			}
-		}
-	}
-	return 0;
+    int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
+    if(box.x0 < 0.0) x0--;
+    if(box.y0 < 0.0) y0--;
+    if(box.z0 < 0.0) z0--;
+    if(x0 < 0) x0 = 0;
+    if(y0 < 0) y0 = 0;
+    if(z0 < 0) z0 = 0;
+    if(x1 > level->width) x1 = level->width;
+    if(y1 > level->depth) y1 = level->depth;
+    if(z1 > level->height) z1 = level->height;
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                block_t *block = &block_list[level_get_block(level, i, j, k)];
+                if (block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 uint8_t level_contains_liquid(level_t *level, AABB_t box, uint8_t liquid_type) {
     int x0 = box.x0, y0 = box.y0, z0 = box.z0;
-	int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
-	if(box.x0 < 0.0) x0--;
-	if(box.y0 < 0.0) y0--;
-	if(box.z0 < 0.0) z0--;
-	if(x0 < 0) x0 = 0;
-	if(y0 < 0) y0 = 0;
-	if(z0 < 0) z0 = 0;
-	if(x1 > level->width) x1 = level->width;
-	if(y1 > level->depth) y1 = level->depth;
-	if(z1 > level->height) z1 = level->height;
-	for(int i = x0; i < x1; i++) {
-		for(int j = y0; j < y1; j++) {
-			for(int k = z0; k < z1; k++) {
-				block_t *block = &block_list[level_get_block(level, i, j, k)];
-				if (block->id != blocks.air.id && block->liquid_type == liquid_type) return 1;
-			}
-		}
-	}
-	return 0;
+    int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
+    if(box.x0 < 0.0) x0--;
+    if(box.y0 < 0.0) y0--;
+    if(box.z0 < 0.0) z0--;
+    if(x0 < 0) x0 = 0;
+    if(y0 < 0) y0 = 0;
+    if(z0 < 0) z0 = 0;
+    if(x1 > level->width) x1 = level->width;
+    if(y1 > level->depth) y1 = level->depth;
+    if(z1 > level->height) z1 = level->height;
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                block_t *block = &block_list[level_get_block(level, i, j, k)];
+                if (block->id != blocks.air.id && block->liquid_type == liquid_type) return 1;
+            }
+        }
+    }
+    return 0;
 }
 
 void level_add_to_next_tick(level_t *level, int x, int y, int z, uint8_t block_id) {
@@ -355,14 +355,14 @@ uint8_t level_is_solid(level_t *level, float x, float y, float z) {
 
 uint8_t level_is_solid_search(level_t *level, float x, float y, float z, float radius) {
     if (level_is_solid(level, x - radius, y - radius, z - radius)) return 1;
-	if (level_is_solid(level, x + radius, y - radius, z - radius)) return 1;
-	if (level_is_solid(level, x - radius, y + radius, z - radius)) return 1;
-	if (level_is_solid(level, x + radius, y + radius, z - radius)) return 1;
-	if (level_is_solid(level, x - radius, y - radius, z + radius)) return 1;
-	if (level_is_solid(level, x + radius, y - radius, z + radius)) return 1;
-	if (level_is_solid(level, x - radius, y + radius, z + radius)) return 1;
-	if (level_is_solid(level, x + radius, y + radius, z + radius)) return 1;
-	return 0;
+    if (level_is_solid(level, x + radius, y - radius, z - radius)) return 1;
+    if (level_is_solid(level, x - radius, y + radius, z - radius)) return 1;
+    if (level_is_solid(level, x + radius, y + radius, z - radius)) return 1;
+    if (level_is_solid(level, x - radius, y - radius, z + radius)) return 1;
+    if (level_is_solid(level, x + radius, y - radius, z + radius)) return 1;
+    if (level_is_solid(level, x - radius, y + radius, z + radius)) return 1;
+    if (level_is_solid(level, x + radius, y + radius, z + radius)) return 1;
+    return 0;
 }
 
 int level_get_highest_block(level_t *level, int x, int z) {
@@ -389,68 +389,68 @@ uint8_t level_is_water(level_t *level, int x, int y, int z) {
 
 hit_result_t level_clip(level_t *level, vec3_t v0, vec3_t v1) {
     if(v0.x == NAN || v0.y == NAN || v0.z == NAN) return (hit_result_t){ .null = 1 };
-	if(v1.x == NAN || v1.y == NAN || v1.z == NAN) return (hit_result_t){ .null = 1 };
-	int i0x = v0.x, i0y = v0.y, i0z = v0.z;
-	int i1x = v1.x, i1y = v1.y, i1z = v1.z;
-	
-	int i = 20;
-	while(i-- >= 0) {
-		if(v0.x == NAN || v0.y == NAN || v0.z == NAN) return (hit_result_t){ .null = 1 };
-		if(i0x == i1x && i0y == i1y && i0z == i1z) return (hit_result_t){ .null = 1 };
-		vec3_t a = { 999.0, 999.0, 999.0 };
-		if(i1x > i0x) a.x = i0x + 1.0;
-		if(i1x < i0x) a.x = i0x;
-		if(i1y > i0y) a.y = i0y + 1.0;
-		if(i1y < i0y) a.y = i0y;
-		if(i1z > i0z) a.z = i0z + 1.0;
-		if(i1z < i0z) a.z = i0z;
-		vec3_t b = { 999.0, 999.0, 999.0 };
-		vec3_t d = vec3_subtract(v1, v0);
-		if(a.x != 999.0) b.x = (a.x - v0.x) / d.x;
-		if(a.y != 999.0) b.y = (a.y - v0.y) / d.y;
-		if(a.z != 999.0) b.z = (a.z - v0.z) / d.z;
-		int c;
-		if(b.x < b.y && b.x < b.z) {
-			c = i1x > i0x ? 4 : 5;
-			v0.x = a.x;
-			v0.y += d.y * b.x;
-			v0.z += d.z * b.x;
-		}else if(b.y < b.z) {
-			c = i1y > i0y ? 0 : 1;
-			v0.y = a.y;
-			v0.x += d.x * b.y;
-			v0.z += d.z * b.y;
-		}else {
-			c = i1z > i0z ? 2 : 3;
-			v0.z = a.z;
-			v0.x += d.x * b.z;
-			v0.y += d.y * b.z;
-		}
+    if(v1.x == NAN || v1.y == NAN || v1.z == NAN) return (hit_result_t){ .null = 1 };
+    int i0x = v0.x, i0y = v0.y, i0z = v0.z;
+    int i1x = v1.x, i1y = v1.y, i1z = v1.z;
+    
+    int i = 20;
+    while(i-- >= 0) {
+        if(v0.x == NAN || v0.y == NAN || v0.z == NAN) return (hit_result_t){ .null = 1 };
+        if(i0x == i1x && i0y == i1y && i0z == i1z) return (hit_result_t){ .null = 1 };
+        vec3_t a = { 999.0, 999.0, 999.0 };
+        if(i1x > i0x) a.x = i0x + 1.0;
+        if(i1x < i0x) a.x = i0x;
+        if(i1y > i0y) a.y = i0y + 1.0;
+        if(i1y < i0y) a.y = i0y;
+        if(i1z > i0z) a.z = i0z + 1.0;
+        if(i1z < i0z) a.z = i0z;
+        vec3_t b = { 999.0, 999.0, 999.0 };
+        vec3_t d = vec3_subtract(v1, v0);
+        if(a.x != 999.0) b.x = (a.x - v0.x) / d.x;
+        if(a.y != 999.0) b.y = (a.y - v0.y) / d.y;
+        if(a.z != 999.0) b.z = (a.z - v0.z) / d.z;
+        int c;
+        if(b.x < b.y && b.x < b.z) {
+            c = i1x > i0x ? 4 : 5;
+            v0.x = a.x;
+            v0.y += d.y * b.x;
+            v0.z += d.z * b.x;
+        }else if(b.y < b.z) {
+            c = i1y > i0y ? 0 : 1;
+            v0.y = a.y;
+            v0.x += d.x * b.y;
+            v0.z += d.z * b.y;
+        }else {
+            c = i1z > i0z ? 2 : 3;
+            v0.z = a.z;
+            v0.x += d.x * b.z;
+            v0.y += d.y * b.z;
+        }
         
-		vec3_t v00 = { (int)v0.x, (int)v0.y, (int)v0.z };
-		i0x = v00.x;
-		i0y = v00.y;
-		i0z = v00.z;
-		if(c == 5) {
+        vec3_t v00 = { (int)v0.x, (int)v0.y, (int)v0.z };
+        i0x = v00.x;
+        i0y = v00.y;
+        i0z = v00.z;
+        if(c == 5) {
             i0x--;
             v00.x++;
         }
-		if(c == 1) {
+        if(c == 1) {
             i0y--;
             v00.y++;
         }
-		if(c == 3) {
+        if(c == 3) {
             i0z--;
             v00.z++;
         }
-		uint8_t block_id = level_get_block(level, i0x, i0y, i0z);
-		block_t *block = &block_list[block_id];
-		if (block_id != blocks.air.id && block->liquid_type == LIQUID_NONE) {
-			hit_result_t pos = block_clip(block, i0x, i0y, i0z, v0, v1);
-			if (!pos.null) return pos;
-		}
-	}
-	return (hit_result_t){ .null = 1 };
+        uint8_t block_id = level_get_block(level, i0x, i0y, i0z);
+        block_t *block = &block_list[block_id];
+        if (block_id != blocks.air.id && block->liquid_type == LIQUID_NONE) {
+            hit_result_t pos = block_clip(block, i0x, i0y, i0z, v0, v1);
+            if (!pos.null) return pos;
+        }
+    }
+    return (hit_result_t){ .null = 1 };
 }
 
 void level_play_sound(level_t *level, char *sound, entity_t *entity, float volume, float pitch) {

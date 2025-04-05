@@ -3,9 +3,9 @@
 static float sin_table[0x10000];
 
 void sin_table_initialize() {
-	for (int i = 0; i < sizeof(sin_table) / sizeof(float); i++) {
-		sin_table[i] = sin(i * 2.0 * M_PI / (float)0xFFFF);
-	}
+    for (int i = 0; i < sizeof(sin_table) / sizeof(float); i++) {
+        sin_table[i] = sin(i * 2.0 * M_PI / (float)0xFFFF);
+    }
 }
 
 float tsin(float x) {

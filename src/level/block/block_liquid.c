@@ -92,28 +92,28 @@ float block_liquid_get_brightness(block_t *block, struct level_s *level, int x, 
 uint8_t block_liquid_can_render_side(block_t *block, struct level_s *level, int x, int y, int z, int side) {
     level_t *real_level = (level_t *)level;
     if(x >= 0 && y >= 0 && z >= 0 && x < (int)real_level->width && z < real_level->height) {
-		uint8_t tile = level_get_block(real_level, x, y, z);
-		if(tile != block->liquid_moving_id && tile != block->liquid_still_id) {
-			if(side == 1) {
-				uint8_t should_render = level_get_block(real_level, x, y, z) == 0;
-				should_render |= level_get_block(real_level, x - 1, y, z) == 0;
-				should_render |= level_get_block(real_level, x + 1, y, z) == 0;
-				should_render |= level_get_block(real_level, x, y, z - 1) == 0;
-				should_render |= level_get_block(real_level, x, y, z + 1) == 0;
-				should_render |= level_get_block(real_level, x - 1, y, z - 1) == 0;
-				should_render |= level_get_block(real_level, x + 1, y, z - 1) == 0;
-				should_render |= level_get_block(real_level, x - 1, y, z + 1) == 0;
-				should_render |= level_get_block(real_level, x + 1, y, z + 1) == 0;
-				return should_render;
-			} else {
-				return !level_is_solid_block(real_level, x, y, z);
-			}
-		} else {
-			return 0;
-		}
-	} else {
-		return 0;
-	}
+        uint8_t tile = level_get_block(real_level, x, y, z);
+        if(tile != block->liquid_moving_id && tile != block->liquid_still_id) {
+            if(side == 1) {
+                uint8_t should_render = level_get_block(real_level, x, y, z) == 0;
+                should_render |= level_get_block(real_level, x - 1, y, z) == 0;
+                should_render |= level_get_block(real_level, x + 1, y, z) == 0;
+                should_render |= level_get_block(real_level, x, y, z - 1) == 0;
+                should_render |= level_get_block(real_level, x, y, z + 1) == 0;
+                should_render |= level_get_block(real_level, x - 1, y, z - 1) == 0;
+                should_render |= level_get_block(real_level, x + 1, y, z - 1) == 0;
+                should_render |= level_get_block(real_level, x - 1, y, z + 1) == 0;
+                should_render |= level_get_block(real_level, x + 1, y, z + 1) == 0;
+                return should_render;
+            } else {
+                return !level_is_solid_block(real_level, x, y, z);
+            }
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
 }
 
 void block_liquid_render_inside(block_t *block, int x, int y, int z, int side) {

@@ -14,9 +14,9 @@ typedef struct texture_animated_s {
     uint8_t anaglyph;
 
     float red[256];
-	float green[256];
-	float blue[256];
-	float alpha[256];
+    float green[256];
+    float blue[256];
+    float alpha[256];
     int updates;
 
     void (*tick)(struct texture_animated_s *texture);

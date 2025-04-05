@@ -45,7 +45,7 @@ void screen_level_name_render(struct screen_s *proto_screen, int mouse_x, int mo
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 40, 0xFFFFFFFF);
     int x = screen->width / 2 - 100;
-	int y = screen->height / 2 - 10;
+    int y = screen->height / 2 - 10;
     gui_fill(x - 1, y - 1, x + 201, y + 21, 0xA0A0A0FF);
     gui_fill(x, y, x + 200, y + 20, 0x000000FF);
     char *string = string_create(screen->name);

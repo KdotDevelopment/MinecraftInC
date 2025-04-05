@@ -67,9 +67,9 @@ void particle_render(struct particle_s *particle, float delta, float x, float y,
     float brightness = entity_get_brightness(&particle->entity, delta);
     tesselator_color(brightness * particle->r, brightness * particle->g, brightness * particle->b);
     tesselator_vertex_uv(vx - x * s - var6 * s, vy - y * s, vz - z * s - var7 * s, u0, v1);
-	tesselator_vertex_uv(vx - x * s + var6 * s, vy + y * s, vz - z * s + var7 * s, u0, v0);
-	tesselator_vertex_uv(vx + x * s + var6 * s, vy + y * s, vz + z * s + var7 * s, u1, v0);
-	tesselator_vertex_uv(vx + x * s - var6 * s, vy - y * s, vz + z * s - var7 * s, u1, v1);
+    tesselator_vertex_uv(vx - x * s + var6 * s, vy + y * s, vz - z * s + var7 * s, u0, v0);
+    tesselator_vertex_uv(vx + x * s + var6 * s, vy + y * s, vz + z * s + var7 * s, u1, v0);
+    tesselator_vertex_uv(vx + x * s - var6 * s, vy - y * s, vz + z * s - var7 * s, u1, v1);
 }
 
 int particle_get_texture(struct particle_s *particle) {

@@ -64,7 +64,7 @@ void level_renderer_refresh(level_renderer_t *renderer) {
     int b = 2048 / a;
     tesselator_begin();
     for(int i = -a * b; i < (int)renderer->level->width + a * b; i += a) {
-		for(int j = -a * b; j < (int)renderer->level->height + a * b; j += a) {
+        for(int j = -a * b; j < (int)renderer->level->height + a * b; j += a) {
             float g = ground;
             if(i >= 0 && j >= 0 && i < (int)renderer->level->width && j < renderer->level->height) {
                 g = 0;
@@ -81,25 +81,25 @@ void level_renderer_refresh(level_renderer_t *renderer) {
     tesselator_begin();
     for(int i = 0; i < (int)renderer->level->width; i += a) {
         tesselator_vertex_uv(i, 0.0, 0.0, 0.0, 0.0);
-		tesselator_vertex_uv(i + a, 0.0, 0.0, a, 0.0);
-		tesselator_vertex_uv(i + a, ground, 0.0, a, ground);
-		tesselator_vertex_uv(i, ground, 0.0, 0.0, ground);
-		tesselator_vertex_uv(i, ground, renderer->level->height, 0.0, ground);
-		tesselator_vertex_uv(i + a, ground, renderer->level->height, a, ground);
-		tesselator_vertex_uv(i + a, 0.0, renderer->level->height, a, 0.0);
-		tesselator_vertex_uv(i, 0.0, renderer->level->height, 0.0, 0.0);
+        tesselator_vertex_uv(i + a, 0.0, 0.0, a, 0.0);
+        tesselator_vertex_uv(i + a, ground, 0.0, a, ground);
+        tesselator_vertex_uv(i, ground, 0.0, 0.0, ground);
+        tesselator_vertex_uv(i, ground, renderer->level->height, 0.0, ground);
+        tesselator_vertex_uv(i + a, ground, renderer->level->height, a, ground);
+        tesselator_vertex_uv(i + a, 0.0, renderer->level->height, a, 0.0);
+        tesselator_vertex_uv(i, 0.0, renderer->level->height, 0.0, 0.0);
     }
     glColor3f(0.6, 0.6, 0.6);
-	for(int i = 0; i < (int)renderer->level->height; i += a) {
-		tesselator_vertex_uv(0.0, ground, i, 0.0, 0.0);
-		tesselator_vertex_uv(0.0, ground, i + a, a, 0.0);
-		tesselator_vertex_uv(0.0, 0.0, i + a, a, ground);
-		tesselator_vertex_uv(0.0, 0.0, i, 0.0, ground);
-		tesselator_vertex_uv(renderer->level->width, 0.0, i, 0.0, ground);
-		tesselator_vertex_uv(renderer->level->width, 0.0, i + a, a, ground);
-		tesselator_vertex_uv(renderer->level->width, ground, i + a, a, 0.0);
-		tesselator_vertex_uv(renderer->level->width, ground, i, 0.0, 0.0);
-	}
+    for(int i = 0; i < (int)renderer->level->height; i += a) {
+        tesselator_vertex_uv(0.0, ground, i, 0.0, 0.0);
+        tesselator_vertex_uv(0.0, ground, i + a, a, 0.0);
+        tesselator_vertex_uv(0.0, 0.0, i + a, a, ground);
+        tesselator_vertex_uv(0.0, 0.0, i, 0.0, ground);
+        tesselator_vertex_uv(renderer->level->width, 0.0, i, 0.0, ground);
+        tesselator_vertex_uv(renderer->level->width, 0.0, i + a, a, ground);
+        tesselator_vertex_uv(renderer->level->width, ground, i + a, a, 0.0);
+        tesselator_vertex_uv(renderer->level->width, ground, i, 0.0, 0.0);
+    }
     tesselator_end();
     glEndList();
 
@@ -109,20 +109,20 @@ void level_renderer_refresh(level_renderer_t *renderer) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     tesselator_begin();
     for(int i = -a * b; i < (int)renderer->level->width + a * b; i += a) {
-		for(int j = -a * b; j < (int)renderer->level->height + a * b; j += a) {
-			float w = water - 0.1;
-			if(i < 0 || j < 0 || i >= (int)renderer->level->width || j >= (int)renderer->level->height) {
-				tesselator_vertex_uv(i, w, j + a, 0.0, a);
-				tesselator_vertex_uv(i + a, w, j + a, a, a);
-				tesselator_vertex_uv(i + a, w, j, a, 0.0);
-				tesselator_vertex_uv(i, w, j, 0.0, 0.0);
-				tesselator_vertex_uv(i, w, j, 0.0, 0.0);
-				tesselator_vertex_uv(i + a, w, j, a, 0.0);
-				tesselator_vertex_uv(i + a, w, j + a, a, a);
-				tesselator_vertex_uv(i, w, j + a, 0.0, a);
-			}
-		}
-	}
+        for(int j = -a * b; j < (int)renderer->level->height + a * b; j += a) {
+            float w = water - 0.1;
+            if(i < 0 || j < 0 || i >= (int)renderer->level->width || j >= (int)renderer->level->height) {
+                tesselator_vertex_uv(i, w, j + a, 0.0, a);
+                tesselator_vertex_uv(i + a, w, j + a, a, a);
+                tesselator_vertex_uv(i + a, w, j, a, 0.0);
+                tesselator_vertex_uv(i, w, j, 0.0, 0.0);
+                tesselator_vertex_uv(i, w, j, 0.0, 0.0);
+                tesselator_vertex_uv(i + a, w, j, a, 0.0);
+                tesselator_vertex_uv(i + a, w, j + a, a, a);
+                tesselator_vertex_uv(i, w, j + a, 0.0, a);
+            }
+        }
+    }
     tesselator_end();
     glDisable(GL_BLEND);
     glEndList();
@@ -153,20 +153,20 @@ int level_renderer_sort_chunks(level_renderer_t *renderer, player_t *player, int
 
 void level_renderer_queue_chunks(level_renderer_t *renderer, int x0, int y0, int z0, int x1, int y1, int z1) {
     x0 /= 16;
-	y0 /= 16;
-	z0 /= 16;
-	x1 /= 16;
-	y1 /= 16;
-	z1 /= 16;
-	x0 = x0 < 0 ? 0 : x0;
-	y0 = y0 < 0 ? 0 : y0;
-	z0 = z0 < 0 ? 0 : z0;
-	x1 = x1 > renderer->x_chunks - 1 ? renderer->x_chunks - 1 : x1;
-	y1 = y1 > renderer->y_chunks - 1 ? renderer->y_chunks - 1 : y1;
-	z1 = z1 > renderer->z_chunks - 1 ? renderer->z_chunks - 1 : z1;
+    y0 /= 16;
+    z0 /= 16;
+    x1 /= 16;
+    y1 /= 16;
+    z1 /= 16;
+    x0 = x0 < 0 ? 0 : x0;
+    y0 = y0 < 0 ? 0 : y0;
+    z0 = z0 < 0 ? 0 : z0;
+    x1 = x1 > renderer->x_chunks - 1 ? renderer->x_chunks - 1 : x1;
+    y1 = y1 > renderer->y_chunks - 1 ? renderer->y_chunks - 1 : y1;
+    z1 = z1 > renderer->z_chunks - 1 ? renderer->z_chunks - 1 : z1;
     for (int x = x0; x <= x1; x++) {
-		for (int y = y0; y <= y1; y++) {
-			for (int z = z0; z <= z1; z++) {
+        for (int y = y0; y <= y1; y++) {
+            for (int z = z0; z <= z1; z++) {
                 chunk_t *chunk = renderer->chunk_cache[(z * renderer->y_chunks + y) * renderer->x_chunks + x];
                 if(!chunk->loaded) {
                     chunk->loaded = 1;

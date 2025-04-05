@@ -22,5 +22,5 @@ vec3_t vec3_clip_x(vec3_t a, vec3_t b, float lerp);
 vec3_t vec3_clip_y(vec3_t a, vec3_t b, float lerp);
 vec3_t vec3_clip_z(vec3_t a, vec3_t b, float lerp);
 static inline uint8_t vec3_is_null(vec3_t v) {
-	return v.x == INFINITY && v.y == INFINITY && v.z == INFINITY;
+    return v.x == INFINITY && v.y == INFINITY && v.z == INFINITY;
 }

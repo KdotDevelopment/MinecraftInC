@@ -26,6 +26,7 @@ typedef struct block_s {
     float x0, y0, z0;
     float x1, y1, z1;
     float particle_gravity;
+    int item_count;
 
     uint8_t is_opaque;
     uint8_t is_solid;
@@ -79,3 +80,5 @@ void block_render_full_brightness(block_t *block);
 hit_result_t block_clip(block_t *block, int x, int y, int z, vec3_t v0, vec3_t v1);
 AABB_t block_get_selection_aabb(block_t *block, int x, int y, int z);
 AABB_t block_get_collision_aabb(block_t *block, int x, int y, int z);
+void block_spawn_items(block_t *block, struct level_s *level, int x, int y, int z);
+void block_spawn_items_chance(block_t *block, struct level_s *level, int x, int y, int z, float chance);

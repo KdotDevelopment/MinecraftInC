@@ -3,6 +3,8 @@
 #include <entity/ai/ai_basic.h>
 #include <level/level.h>
 
+#include <util/array_list.h>
+
 ai_t player_ai_create(struct player_s *player) {
     player_t *real_player = (player_t *)player;
     ai_t ai = ai_basic_create(real_player->level, &real_player->mob);
@@ -16,7 +18,7 @@ ai_t player_ai_create(struct player_s *player) {
 void player_ai_tick(struct ai_s *proto_ai) {
     ai_t *ai = (ai_t *)proto_ai;
     player_t *player = (player_t *)ai->player;
-    //inventory tick
+    inventory_tick(&player->inventory);
     inputs_update_movement(&player->inputs);
     ai_basic_tick(proto_ai);
 
@@ -34,6 +36,15 @@ void player_ai_tick(struct ai_s *proto_ai) {
     }
     player->bob += (bob - player->bob) * 0.4;
     player->tilt += (tilt - player->tilt) * 0.8;
+
+    AABB_t bb = AABB_grow(player->entity.bb, 1.0, 0.0, 1.0);
+    entity_t ***entities = entity_map_get_entities(&player->level->entity_map, &player->entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
+    if(player->health > 0 && entities != NULL) {
+        for(int i = 0; i < array_list_length(*entities); i++) {
+            entity_t *entity = *(entity_t **)array_list_get(*entities, i);
+            entity->player_touch(entity, &player->entity);
+        }
+    }
 }
 
 void player_ai_update(struct ai_s *proto_ai) {

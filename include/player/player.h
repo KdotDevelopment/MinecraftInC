@@ -6,7 +6,7 @@
 
 struct level_s;
 
-typedef struct {
+typedef struct player_s {
     union {
         mob_t;
         mob_t mob;

@@ -12,13 +12,13 @@ LINUX_LDFLAGS = $(LDFLAGS) -fsanitize=address
 
 # Windows-specific flags
 WINDOWS_CFLAGS = -I./include -I./res -Wall -std=c11 -fms-extensions -Dmain=main \
-	-isystem ./lib
+	-isystem ./lib -DSURVIVAL_MODE -g2 -gdwarf-2
 WINDOWS_LDFLAGS = \
     -L./lib \
     -static -static-libgcc -static-libstdc++ \
     -lmingw32 -lSDL2main -lSDL2 \
     -lopengl32 -lglew32 -lglu32 \
-    -mwindows -lOpenAL32 -lwinmm \
+	-lOpenAL32 -lwinmm \
     -lvorbisfile -lvorbis -logg \
     -lsetupapi -limm32 -loleaut32 -lversion -luuid \
     -lgdi32 -lcomdlg32 -luser32 -lole32 -ladvapi32 \

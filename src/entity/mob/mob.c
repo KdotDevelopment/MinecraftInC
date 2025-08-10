@@ -113,10 +113,10 @@ void mob_tick(entity_t *entity) {
     if(!(dist <= 0.05)) {
         toggle = 1;
         accumulator = dist * 3;
-        y_body_rot = atan2(z_diff, x_diff) * 180 / M_PI - 90;
+        y_body_rot = atan2(z_diff, x_diff) * 180.0 / M_PI - 90.0;
     }
 
-    if(mob->on_ground) {
+    if(!mob->on_ground) {
         toggle = 0;
     }
 
@@ -416,7 +416,7 @@ void mob_heal(struct entity_s *entity, int amount) {
 }
 
 void mob_render_model(mob_t *mob, float time, float r, float bob, float y_rot, float x_rot, float scale) {
-    mob->model->render(mob->model, time, r, bob, y_rot, x_rot, scale);
+    mob->model->render(mob->model, time, bob, r + mob->tick_count, y_rot, x_rot, scale);
 }
 
 uint8_t mob_can_be_hit(entity_t *entity) {

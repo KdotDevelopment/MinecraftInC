@@ -65,7 +65,7 @@ void inventory_replace_slot_with_block(inventory_t *inventory, block_t *block) {
 uint8_t inventory_add_item(inventory_t *inventory, int block_id) {
     int slot = get_slot(inventory, block_id);
     if(slot < 0) {
-        slot = get_slot(inventory, -1);
+        slot = get_slot(inventory, 0);
     }
 
     if(slot < 0) return 0;

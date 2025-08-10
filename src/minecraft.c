@@ -14,6 +14,8 @@
 #include <model/models.h>
 #include <player/gamemode/gamemode_creative.h>
 #include <player/gamemode/gamemode_survival.h>
+#include <entity/entity_item.h>
+#include <entity/entity_arrow.h>
 
 #include <util/time.h>
 #include <util/array_list.h>
@@ -74,6 +76,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     sin_table_initialize();
     blocks_init();
     session_data_initialize();
+    item_models_init();
     tesselator_create(&g_tesselator);
     minecraft->debug = string_create("");
     minecraft->sounds = sounds_create();
@@ -316,6 +319,12 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                     }
                     if(events[i].key.keysym.scancode == SDL_SCANCODE_F5) {
                         minecraft->raining = !minecraft->raining;
+                    }
+                    if(events[i].key.keysym.scancode == SDL_SCANCODE_TAB && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL && minecraft->player.arrows > 0) {
+                        entity_t *arrow = malloc(sizeof(entity_t));
+                        entity_arrow_create(arrow, &minecraft->level, &minecraft->player.mob.entity, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
+                        level_add_entity(&minecraft->level, arrow);
+                        minecraft->player.arrows--;
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.build_key.key) {
                         minecraft->gamemode.open_inventory((struct gamemode_s *)&minecraft->gamemode);

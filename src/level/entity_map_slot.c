@@ -45,6 +45,7 @@ void entity_map_slot_remove(entity_map_slot_t *slot, struct entity_s *entity) {
     if(slot->x < 0 || slot->y < 0 || slot->z < 0) return;
     entity_t **list = slot->map->entities[(slot->y * slot->map->depth + slot->z) * slot->map->width + slot->x];
     int index = array_list_index_of(list, &entity);
+    if(index == -1) return;
     list = array_list_remove(list, index);
     slot->map->entities[(slot->y * slot->map->depth + slot->z) * slot->map->width + slot->x] = list;
 }

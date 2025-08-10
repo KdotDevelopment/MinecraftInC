@@ -6,12 +6,14 @@
 #include <model/model.h>
 
 struct entity_map_s;
+struct player_s;
 
 typedef enum {
     ENTITY_ARROW,
     ENTITY_ITEM,
     ENTITY_PRIMED_TNT,
     ENTITY_ITEM_TAKE, //when a mob picks up an item this is the animation it makes
+    ENTITY_ITEM_TAKE_MOCK, //the hidden item entity inside of an item take animation
     ENTITY_MOB_PLAYER,
     ENTITY_MOB_CREEPER,
     ENTITY_MOB_HUMANOID,
@@ -55,13 +57,27 @@ typedef struct entity_s {
     int age;
     int tick_count; // = 0;
     entity_type_t type;
-    struct entity_s *owner; //arrow
-    int damage; //arrow
-    int arrow_type; //arrow
-    float gravity; //arrow
-    int time; //arrow
-    uint8_t has_hit; //arrow
+    int time;
+    struct entity_s *item;
+
+    union {
+        struct { // arrow
+            struct entity_s *owner;
+            int damage;
+            int arrow_type;
+            float gravity;
+            uint8_t has_hit;
+        };
+        struct { // take entity anim
+            float xorg;
+            float yorg;
+            float zorg; 
+            struct player_s *player;
+        };
+    };
+    
     model_t *model;
+    uint8_t block_id; //item
 
     void (*tick)(struct entity_s *entity);
     void (*render)(struct entity_s *entity, textures_t *textures, float delta);

@@ -28,8 +28,8 @@ void gamemode_survival_init_player(struct gamemode_s *gamemode, player_t *player
 }
 
 void gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
-    //int block_id = level_get_block(&gamemode->minecraft->level, x, y, z);
-    //block spawn drops
+    int block_id = level_get_block(&gamemode->minecraft->level, x, y, z);
+    block_spawn_items(&block_list[block_id], &gamemode->minecraft->level, x, y, z);
     gamemode_destroy_block(gamemode, x, y, z);
 }
 
@@ -40,7 +40,7 @@ uint8_t gamemode_survival_remove_item(struct gamemode_s *gamemode, int item) {
 void gamemode_survival_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     int block_id = level_get_block(&gamemode->minecraft->level, x, y, z);
     if(block_id != blocks.air.id && block_list[block_id].destroy_speed == 0) {
-        gamemode_destroy_block(gamemode, x, y, z);
+        gamemode->destroy_block(gamemode, x, y, z);
     }
 }
 
@@ -55,7 +55,7 @@ void gamemode_survival_continue_destroy_block(struct gamemode_s *gamemode, int x
             block_breaking(block, &gamemode->minecraft->level, x, y, z, face, &gamemode->minecraft->particles);
             gamemode->destroy_progress++;
             if(gamemode->destroy_progress == gamemode->destroy_progress_old + 1) {
-                gamemode_destroy_block(gamemode, x, y, z);
+                gamemode->destroy_block(gamemode, x, y, z);
                 gamemode->destroy_progress = 0;
                 gamemode->destroy_delay = 5;
             }

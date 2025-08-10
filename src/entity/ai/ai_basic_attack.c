@@ -56,7 +56,7 @@ void ai_basic_attack_update(struct ai_s *ai) {
             if(ai->attack_target != NULL) {
                 float dist = (x_diff * x_diff + y_diff * y_diff + z_diff * z_diff);
                 ai->mob->y_rot = (atan2f(z_diff, x_diff) * 180.0 / M_PI) - 90.0;
-                ai->mob->x_rot = -(atan2f(y_diff, dist) * 180.0 / M_PI);
+                ai->mob->x_rot = -(atan2f(y_diff, sqrtf(dist)) * 180.0 / M_PI);
                 if(sqrtf(dist) < 2.0 && ai->attack_delay == 0) {
                     ai_basic_attack_attack(ai);
                 }

@@ -45,6 +45,7 @@ void entity_map_moved(entity_map_t *map, entity_t *entity) {
     entity_map_slot_init(&map->temp_slot_2, entity->x, entity->y, entity->z);
     entity_map_slot_t *slot1 = &map->temp_slot_1;
     entity_map_slot_t *slot2 = &map->temp_slot_2;
+    if(entity->type == ENTITY_ITEM_TAKE) return;
     if(!entity_map_equals(slot1, slot2)) {
         entity_map_slot_remove(slot1, entity);
         entity_map_slot_add(slot2, entity);
@@ -192,8 +193,8 @@ void entity_map_render(entity_map_t *map, vec3_t vector, frustum_t *frustum, tex
 
                         for(int i = 0; i < array_list_length(list); i++) {
                             entity_t *entity = list[i];
-                            if(entity_should_render(entity, vector)) {
-                                if(should_render) {
+                            if(entity_should_render(entity, vector) || entity->type == ENTITY_ITEM_TAKE) {
+                                if(should_render && entity->type != ENTITY_ITEM_TAKE) {
                                     if(!frustum_contains_box(*frustum, entity->bb.x0, entity->bb.y0, entity->bb.z0, entity->bb.x1, entity->bb.y1, entity->bb.z1)) {
                                         continue;
                                     }

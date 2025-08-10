@@ -100,7 +100,7 @@ void cube_compile(cube_t *cube, float scale) {
         polygon_t p2 = p1;
 
         vec3_t n1 = vec3_normalize(vec3_subtract(p1.vertices[1].pos, p2.vertices[0].pos));
-        vec3_t n2 = vec3_normalize(vec3_subtract(p2.vertices[2].pos, p2.vertices[0].pos));
+        vec3_t n2 = vec3_normalize(vec3_subtract(p2.vertices[1].pos, p2.vertices[2].pos));
         vec3_t normal = vec3_normalize((vec3_t){n1.y * n2.z - n1.z * n2.y, n1.z * n2.x - n1.x * n2.z, n1.x * n2.y - n1.y * n2.x});
 
         glNormal3f(normal.x, normal.y, normal.z);

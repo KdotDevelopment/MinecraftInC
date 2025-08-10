@@ -7,9 +7,12 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void entity_create(entity_t *entity, struct level_s *level) {
     //entity_t entity = { 0 };
+    memset(entity, 0, sizeof(entity_t));
     entity->level = level;
     //set_pos
     entity->on_ground = 0;
@@ -32,6 +35,7 @@ void entity_create(entity_t *entity, struct level_s *level) {
     entity->push_through = 0.0F;
     entity->hovered = 0;
     entity->is_shootable = 0;
+    entity->item = NULL;
 
     entity->tick = entity_tick;
     entity->render = entity_render;
@@ -41,6 +45,7 @@ void entity_create(entity_t *entity, struct level_s *level) {
     entity->get_brightness = entity_get_brightness;
     entity->heal = entity_heal;
     entity->can_be_hit = entity_can_be_hit;
+    entity->player_touch = entity_player_touch;
 
     entity_set_pos(entity, 0, 0, 0);
 
@@ -63,7 +68,7 @@ void entity_reset_pos(entity_t *entity) {
     float y = level->spawn_y;
     float z = level->spawn_z + 0.5;
 
-    for(; z >  0; z++) {
+    for(; z > 0; z++) {
         entity_set_pos(entity, x, y, z);
         AABB_t *cubes = level_get_cubes((level_t *)entity->level, entity->bb);
         if(array_list_length(cubes) == 0) {

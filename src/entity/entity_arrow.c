@@ -1,4 +1,5 @@
 #include <entity/entity_arrow.h>
+#include <entity/entity_take_anim.h>
 #include <level/level.h>
 #include <renderer/tesselator.h>
 
@@ -15,6 +16,7 @@ void entity_arrow_create(entity_t *entity, struct level_s *level, entity_t *sour
     entity->bb_height = 0.5;
     entity->type = ENTITY_ARROW;
     entity->damage = 3;
+    entity->owner = source_entity;
     if(source_entity->type == ENTITY_MOB_PLAYER) {
         entity->damage = 7;
     }else {
@@ -30,16 +32,18 @@ void entity_arrow_create(entity_t *entity, struct level_s *level, entity_t *sour
     entity->gravity = 1.0 / zd;
     entity->xo -= c * 0.2;
     entity->zo += s * 0.2;
-    x -= s * 0.2;
-    z += c * 0.2;
-    entity->xd = c * xd * zd;
+    x -= c * 0.2;
+    z += s * 0.2;
+    entity->xd = s * xd * zd;
     entity->yd = yd * zd;
-    entity->zd = s * xd * zd;
+    entity->zd = c * xd * zd;
     entity_set_pos(entity, x, y, z);
 
     float magnitude = sqrtf(entity->xd * entity->xd + entity->zd * entity->zd);
     entity->y_rot = (float)(atan2(entity->xd, entity->zd) * 180.0 / M_PI);
     entity->x_rot = (float)(atan2(entity->yd, magnitude) * 180.0 / M_PI);
+    entity->y_roto = entity->y_rot;
+    entity->x_roto = entity->x_rot;
 
     entity->make_step_sound = 0;
 
@@ -57,7 +61,7 @@ void entity_arrow_tick(struct entity_s *entity) {
     entity->zo = entity->z;
     if(entity->has_hit) {
         entity->age++;
-        if(entity->arrow_type  == 0) {
+        if(entity->arrow_type == 0) {
             if(entity->age >= 300 && random_uniform() < 0.01) {
                 entity_remove(entity);
             }
@@ -78,9 +82,11 @@ void entity_arrow_tick(struct entity_s *entity) {
     
     for(int i = 0; i < magnitude; i++) {
         AABB_t bb = AABB_expand(entity->bb, nxd, nyd, nzd);
-        if(level_get_cubes((level_t *)entity->level, bb) > 0) {
+        AABB_t *cubes = level_get_cubes((level_t *)entity->level, bb);
+        if(array_list_length(cubes) > 0) {
             entity->has_hit = 1;
         }
+        array_list_free(cubes);
 
         entity_t ***entities = entity_map_get_entities(entity->entity_map, entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
 
@@ -99,7 +105,7 @@ void entity_arrow_tick(struct entity_s *entity) {
             entity->x += nxd;
             entity->y += nyd;
             entity->z += nzd;
-            entity_map_moved(entity->entity_map, entity);
+            //entity_map_moved(entity->entity_map, entity);
         }
     }
 
@@ -128,7 +134,7 @@ void entity_arrow_tick(struct entity_s *entity) {
 }
 
 void entity_arrow_render(struct entity_s *entity, textures_t *textures, float delta) {
-    glBindTexture(GL_TEXTURE_2D, textures_load(textures, "item/arrow.png"));
+    glBindTexture(GL_TEXTURE_2D, textures_load(textures, "item/arrows.png"));
     float brightness = level_get_brightness((level_t *)entity->level, entity->x, entity->y, entity->z);
     glPushMatrix();
     glColor4f(brightness, brightness, brightness, 1);
@@ -181,7 +187,14 @@ void entity_arrow_award_kill_score(struct entity_s *entity, struct entity_s *cau
 }
 
 void entity_arrow_player_touch(struct entity_s *entity, entity_t *player) {
-    //taking item animation
+    player_t *real_player = (player_t *)player;
+    if(entity->has_hit && entity->owner == player && real_player->arrows < 99) {
+        entity_t *anim = malloc(sizeof(entity_t));
+        entity_take_anim_create(anim, entity->level, entity, real_player);
+        level_add_entity(entity->level, anim);
+        entity_remove(entity);
+        real_player->arrows++;
+    }
 }
 
 entity_t *entity_arrow_get_owner(entity_t *entity) {

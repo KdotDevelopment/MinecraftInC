@@ -2,6 +2,7 @@
 #include <level/level.h>
 #include <renderer/tesselator.h>
 #include <particle/particle_terrain.h>
+#include <entity/entity_item.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,7 @@ block_t block_create(uint8_t id, int texture_id, block_sound_t sound, float part
     block.explodable = can_explode;
     block.particle_gravity = particle_gravity;
     block.destroy_speed = 20 * break_speed;
+    block.item_count = 1;
 
     block.is_opaque = texture_id == -1 ? 0 : 1;
     block.is_cube = texture_id == -1 ? 0 : 1;
@@ -295,4 +297,38 @@ uint8_t block_render(block_t *block, struct level_s *level, int x, int y, int z)
     }
 
     return rendered;
+}
+
+void block_spawn_items(block_t *block, level_t *level, int x, int y, int z) {
+    if(level->creative_mode) return;
+    int count = block->item_count;
+
+    for(int i = 0; i < count; i++) {
+        if(random_next_uniform(&level->random) <= 1.0) {
+            float z_diff = 0.7;
+            float x_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float y_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            z_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            entity_t *item = malloc(sizeof(entity_t));
+            entity_item_create(item, level, x + x_diff, y + y_diff, z + z_diff, block->id);
+            level_add_entity(level, item);
+        }
+    }
+}
+
+void block_spawn_items_chance(block_t *block, level_t *level, int x, int y, int z, float chance) {
+    if(level->creative_mode) return;
+    int count = block->item_count;
+
+    for(int i = 0; i < count; i++) {
+        if(random_next_uniform(&level->random) <= chance) {
+            float z_diff = 0.7;
+            float x_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float y_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            z_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            entity_t *item = malloc(sizeof(entity_t));
+            entity_item_create(item, level, x + x_diff, y + y_diff, z + z_diff, block->texture_id);
+            level_add_entity(level, item);
+        }
+    }
 }

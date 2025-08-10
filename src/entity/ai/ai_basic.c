@@ -88,7 +88,7 @@ void ai_basic_update(struct ai_s *ai) {
     }
 
     ai->mob->y_rot += ai->y_rota;
-    ai->mob->x_rot += ai->default_look_angle;
+    ai->mob->x_rot = ai->default_look_angle;
     if(ai->attack_target != NULL) {
         ai->za = ai->run_speed;
         ai->jumping = random_next_uniform(ai->random) < 0.04;

@@ -13,11 +13,29 @@ typedef struct texture_animated_s {
     int texture_id;
     uint8_t anaglyph;
 
-    float red[256];
-    float green[256];
-    float blue[256];
-    float alpha[256];
-    int updates;
+    union {
+        // Water/lava
+        struct {
+            float red[256];
+            float green[256];
+            float blue[256];
+            float alpha[256];
+
+            int updates;
+        };
+        // Gears
+        struct {
+            int gear_rotation;
+            int gear_color[1024];
+            int gear_middle_color[1024];
+            int gear_rotation_dir;
+        };
+        // Fire
+        struct {
+            float current_fire_frame[320];
+            float last_fire_frame[320];
+        };
+    };
 
     void (*tick)(struct texture_animated_s *texture);
 } texture_animated_t;

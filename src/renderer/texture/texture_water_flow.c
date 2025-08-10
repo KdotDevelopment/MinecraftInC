@@ -1,35 +1,35 @@
-#include <renderer/texture/texture_water.h>
+#include <renderer/texture/texture_water_flow.h>
 #include <level/block/blocks.h>
 
 #include <stdlib.h>
 
-texture_animated_t texture_water_create() {
-    texture_animated_t texture = texture_animated_create(blocks.water.texture_id);
-    texture.tick = texture_water_tick;
+texture_animated_t texture_water_flow_create() {
+    texture_animated_t texture = texture_animated_create(blocks.water.texture_id + 32);
+    texture.tick = texture_water_flow_tick;
 
     return texture;
 }
 
-void texture_water_tick(texture_animated_t *texture) {
+void texture_water_flow_tick(texture_animated_t *texture) {
     texture->updates++;
     
     for (int x = 0; x < 16; x++) {
         for (int y = 0; y < 16; y++) {
             float v = 0.0;
-            for (int i = x - 1; i <= x + 1; i++) {
-                int a = i & 15;
-                int b = y & 15;
+            for (int i = y - 2; i <= y; i++) {
+                int a = x & 15;
+                int b = i & 15;
                 v += texture->red[a + (b << 4)];
             }
-            texture->blue[x + (y << 4)] = v / 3.3 + texture->green[x + (y << 4)] * 0.8;
+            texture->blue[x + (y << 4)] = v / 3.2 + texture->green[x + (y << 4)] * 0.8;
         }
     }
     for (int x = 0; x < 16; x++) {
         for (int y = 0; y < 16; y++) {
             texture->green[x + (y << 4)] += texture->alpha[x + (y << 4)] * 0.05;
             if (texture->green[x + (y << 4)] < 0.0) texture->green[x + (y << 4)] = 0.0;
-            texture->alpha[x + (y << 4)] -= 0.1;
-            if (((float)rand() / RAND_MAX) < 0.05) texture->alpha[x + (y << 4)] = 0.5;
+            texture->alpha[x + (y << 4)] -= 0.3;
+            if (((float)rand() / RAND_MAX) < 0.2) texture->alpha[x + (y << 4)] = 0.5;
         }
     }
     

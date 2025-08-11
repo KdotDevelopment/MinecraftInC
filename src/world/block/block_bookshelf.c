@@ -1,6 +1,6 @@
-#include <level/block/block_bookshelf.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
+#include <world/block/block_bookshelf.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
 
 block_t block_bookshelf_create() {
     block_t block = block_create(BLOCK_BOOKSHELF, TEXTURE_BOOKSHELF, block_sounds.wood, 1, 1.5, 1);

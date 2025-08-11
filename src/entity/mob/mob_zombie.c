@@ -2,7 +2,7 @@
 #include <entity/mob/mob_humanoid.h>
 #include <entity/ai/ai_basic_attack.h>
 #include <model/model_zombie.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <minecraft.h>
 
 void mob_zombie_create(mob_t *mob, struct level_s *level, float x, float y, float z) {

@@ -1,6 +1,6 @@
 #include <player/gamemode/gamemode_survival.h>
-#include <level/block/blocks.h>
-#include <level/level.h>
+#include <world/block/blocks.h>
+#include <world/level.h>
 #include <minecraft.h>
 
 gamemode_t gamemode_survival_create(struct minecraft_s *minecraft) {

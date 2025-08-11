@@ -3,7 +3,7 @@
 #include <entity/ai/ai_skeleton.h>
 #include <model/model_creeper.h>
 #include <entity/entity.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <minecraft.h>
 
 void mob_creeper_create(mob_t *mob, struct level_s *level, float x, float y, float z) {

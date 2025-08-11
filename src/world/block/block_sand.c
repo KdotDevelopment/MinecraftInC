@@ -1,6 +1,6 @@
-#include <level/block/block_sand.h>
-#include <level/block/blocks.h>
-#include <level/level.h>
+#include <world/block/block_sand.h>
+#include <world/block/blocks.h>
+#include <world/level.h>
 
 block_t block_sand_create(uint8_t block_id, int texture_id) {
     block_t block = block_create(block_id, texture_id, block_sounds.gravel, 1, block_id == BLOCK_SAND ? 0.5 : 0.6, 1);

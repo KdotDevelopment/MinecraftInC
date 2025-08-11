@@ -1,6 +1,6 @@
 #include <renderer/chunk.h>
 #include <renderer/tesselator.h>
-#include <level/block/blocks.h>
+#include <world/block/blocks.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>

@@ -1,7 +1,7 @@
-#include <level/block/block_slab.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_slab.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_slab_create(uint8_t id, uint8_t double_slab) {
     block_t block = block_create(id, TEXTURE_SLAB, block_sounds.stone, 1, 2, 1);

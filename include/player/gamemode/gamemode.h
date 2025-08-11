@@ -1,8 +1,8 @@
 #pragma once
 
 #include <player/player.h>
-#include <level/level.h>
-#include <level/mob_spawner.h>
+#include <world/level.h>
+#include <world/mob_spawner.h>
 
 #include <stdint.h>
 

@@ -1,9 +1,9 @@
-#include <level/levelgen/level_gen.h>
-#include <level/block/blocks.h>
-#include <level/level.h>
-#include <level/levelgen/noise/noise.h>
-#include <level/levelgen/noise/noise_octave.h>
-#include <level/levelgen/noise/noise_composite.h>
+#include <world/levelgen/level_gen.h>
+#include <world/block/blocks.h>
+#include <world/level.h>
+#include <world/levelgen/noise/noise.h>
+#include <world/levelgen/noise/noise_octave.h>
+#include <world/levelgen/noise/noise_composite.h>
 
 #include <util/array_list.h>
 

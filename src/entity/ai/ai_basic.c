@@ -1,6 +1,6 @@
 #include <entity/ai/ai_basic.h>
 #include <entity/ai/ai.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <entity/mob/mob.h>
 
 #include <stdlib.h>

@@ -6,7 +6,7 @@
 #include <gui/screen_hud.h>
 #include <gui/screen.h>
 #include <gui/progress_bar.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <gui/font.h>
 #include <player/hit_result.h>
 #include <particle/particles.h>

@@ -1,7 +1,7 @@
 #include <entity/ai/ai_sheep.h>
 #include <entity/mob/mob.h>
-#include <level/block/blocks.h>
-#include <level/level.h>
+#include <world/block/blocks.h>
+#include <world/level.h>
 
 ai_t ai_sheep_create(struct mob_s *mob) {
     ai_t ai = ai_basic_create(mob->level, mob);

@@ -1,7 +1,7 @@
-#include <level/block/block_liquid.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_liquid.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_liquid_create(int block_type, int liquid_type) {
     block_t block = block_create(block_type, liquid_type == LIQUID_WATER ? TEXTURE_WATER : TEXTURE_LAVA, block_sounds.none, 1, 100, 1);

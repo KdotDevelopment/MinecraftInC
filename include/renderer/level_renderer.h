@@ -1,6 +1,6 @@
 #pragma once
 
-#include <level/level.h>
+#include <world/level.h>
 #include <renderer/textures.h>
 #include <renderer/chunk.h>
 #include <player/player.h>

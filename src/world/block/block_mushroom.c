@@ -1,8 +1,8 @@
-#include <level/block/block_mushroom.h>
-#include <level/block/block_flower.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_mushroom.h>
+#include <world/block/block_flower.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_mushroom_create(uint8_t id, int texture_id) {
     block_t block = block_flower_create(id, texture_id);

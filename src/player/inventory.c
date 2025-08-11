@@ -1,5 +1,5 @@
 #include <player/inventory.h>
-#include <level/block/blocks.h>
+#include <world/block/blocks.h>
 #include <session_data.h>
 
 #include <stdlib.h>

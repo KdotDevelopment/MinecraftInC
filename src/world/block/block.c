@@ -1,5 +1,5 @@
-#include <level/block/block.h>
-#include <level/level.h>
+#include <world/block/block.h>
+#include <world/level.h>
 #include <renderer/tesselator.h>
 #include <particle/particle_terrain.h>
 #include <entity/entity_item.h>

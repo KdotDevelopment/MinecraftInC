@@ -1,6 +1,6 @@
-#include <level/block/block_metal.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
+#include <world/block/block_metal.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
 
 block_t block_metal_create(uint8_t id, int texture_id) {
     block_t block = block_create(id, texture_id, block_sounds.metal, 1, id == BLOCK_GOLD ? 3 : 5, 1);

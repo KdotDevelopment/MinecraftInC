@@ -1,8 +1,8 @@
-#include <level/block/block_sapling.h>
-#include <level/block/block_flower.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_sapling.h>
+#include <world/block/block_flower.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_sapling_create() {
     block_t block = block_flower_create(BLOCK_SAPLING, TEXTURE_SAPLING);

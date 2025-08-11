@@ -1,7 +1,7 @@
 #include <entity/mob/mob_sheep.h>
 #include <entity/mob/mob_quadruped.h>
 #include <entity/ai/ai_sheep.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <model/models.h>
 #include <renderer/level_renderer.h>
 #include <model/model_sheep.h>

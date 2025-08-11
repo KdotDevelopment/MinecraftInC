@@ -1,9 +1,9 @@
 #include <entity/entity.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <physics/AABB.h>
 #include <util/array_list.h>
-#include <level/block/block.h>
-#include <level/block/blocks.h>
+#include <world/block/block.h>
+#include <world/block/blocks.h>
 
 #include <math.h>
 #include <stdio.h>

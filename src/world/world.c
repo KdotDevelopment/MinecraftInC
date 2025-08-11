@@ -1,7 +1,7 @@
-#include <level/level.h>
+#include <world/level.h>
 #include <renderer/level_renderer.h>
-#include <level/block/block.h>
-#include <level/block/blocks.h>
+#include <world/block/block.h>
+#include <world/block/blocks.h>
 #include <sound/sounds.h>
 #include <minecraft.h>
 

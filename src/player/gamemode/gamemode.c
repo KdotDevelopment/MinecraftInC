@@ -1,5 +1,5 @@
 #include <player/gamemode/gamemode.h>
-#include <level/block/blocks.h>
+#include <world/block/blocks.h>
 #include <minecraft.h>
 
 gamemode_t gamemode_create(struct minecraft_s *minecraft) {

@@ -1,6 +1,6 @@
-#include <level/levelgen/noise/noise_octave.h>
-#include <level/levelgen/noise/noise_perlin.h>
-#include <level/levelgen/noise/noise.h>
+#include <world/levelgen/noise/noise_octave.h>
+#include <world/levelgen/noise/noise_perlin.h>
+#include <world/levelgen/noise/noise.h>
 #include <stdlib.h>
 
 noise_t noise_octave_create(random_t *random, int octave_count) {

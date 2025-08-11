@@ -2,7 +2,7 @@
 #include <entity/mob/mob_quadruped.h>
 #include <entity/ai/ai_basic_jump_attack.h>
 #include <model/model_spider.h>
-#include <level/level.h>
+#include <world/level.h>
 #include <minecraft.h>
 
 void mob_spider_create(mob_t *mob, struct level_s *level, float x, float y, float z) {

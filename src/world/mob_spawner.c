@@ -1,6 +1,6 @@
-#include <level/mob_spawner.h>
-#include <level/level.h>
-#include <level/block/blocks.h>
+#include <world/mob_spawner.h>
+#include <world/level.h>
+#include <world/block/blocks.h>
 #include <entity/mob/mob_creeper.h>
 #include <entity/mob/mob_pig.h>
 #include <entity/mob/mob_skeleton.h>

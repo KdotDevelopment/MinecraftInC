@@ -1,7 +1,7 @@
-#include <level/block/block_flower.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_flower.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 #include <renderer/tesselator.h>
 
 #include <math.h>

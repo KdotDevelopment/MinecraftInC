@@ -1,8 +1,8 @@
 #include <entity/entity_item.h>
 #include <entity/entity_take_anim.h>
-#include <level/block/blocks.h>
+#include <world/block/blocks.h>
 #include <model/model_item.h>
-#include <level/level.h>
+#include <world/level.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>

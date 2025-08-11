@@ -1,20 +1,30 @@
-#include <level/block/blocks.h>
-#include <level/block/block.h>
-#include <level/block/block_grass.h>
-#include <level/block/block_sapling.h>
-#include <level/block/block_liquid.h>
-#include <level/block/block_still_liquid.h>
-#include <level/block/block_sand.h>
-#include <level/block/block_log.h>
-#include <level/block/block_leaves.h>
-#include <level/block/block_sponge.h>
-#include <level/block/block_glass.h>
-#include <level/block/block_flower.h>
-#include <level/block/block_mushroom.h>
-#include <level/block/block_metal.h>
-#include <level/block/block_slab.h>
-#include <level/block/block_tnt.h>
-#include <level/block/block_bookshelf.h>
+#include <world/block/blocks.h>
+
+#include <world/block/block.h>
+#include <world/block/block_bookshelf.h>
+#include <world/block/block_chest.h>
+#include <world/block/block_crops.h>
+#include <world/block/block_farmland.h>
+#include <world/block/block_fire.h>
+#include <world/block/block_flower.h>
+#include <world/block/block_furnace.h>
+#include <world/block/block_gears.h>
+#include <world/block/block_glass.h>
+#include <world/block/block_grass.h>
+#include <world/block/block_leaves.h>
+#include <world/block/block_liquid.h>
+#include <world/block/block_log.h>
+#include <world/block/block_metal.h>
+#include <world/block/block_mushroom.h>
+#include <world/block/block_ore.h>
+#include <world/block/block_sand.h>
+#include <world/block/block_sapling.h>
+#include <world/block/block_slab.h>
+#include <world/block/block_sponge.h>
+#include <world/block/block_still_liquid.h>
+#include <world/block/block_tnt.h>
+#include <world/block/block_torch.h>
+#include <world/block/block_workbench.h>
 
 struct blocks_s blocks = { 0 };
 
@@ -24,7 +34,7 @@ void blocks_init() {
     blocks.grass = block_grass_create();
     blocks.dirt = block_create(BLOCK_DIRT, TEXTURE_DIRT, block_sounds.grass, 1, 0.5, 1);
     blocks.cobblestone = block_create(BLOCK_COBBLESTONE, TEXTURE_COBBLESTONE, block_sounds.stone, 1, 1.5, 0);
-    blocks.wood = block_create(BLOCK_WOOD, TEXTURE_WOOD, block_sounds.wood, 1, 1.5, 1);
+    blocks.wood = block_create(BLOCK_PLANKS, TEXTURE_WOOD, block_sounds.wood, 1, 1.5, 1);
     blocks.sapling = block_sapling_create();
     blocks.bedrock = block_create(BLOCK_BEDROCK, TEXTURE_BEDROCK, block_sounds.stone, 1, 999, 0);
     blocks.water = block_liquid_create(BLOCK_WATER, LIQUID_WATER);
@@ -69,4 +79,14 @@ void blocks_init() {
     blocks.bookshelf = block_bookshelf_create();
     blocks.mossy_cobblestone = block_create(BLOCK_MOSSY_COBBLESTONE, TEXTURE_MOSSY_COBBLESTONE, block_sounds.stone, 1, 1, 0);
     blocks.obsidian = block_create(BLOCK_OBSIDIAN, TEXTURE_OBSIDIAN, block_sounds.stone, 1, 10, 0);
+    blocks.torch = block_torch_create();
+    blocks.fire = block_fire_create();
+    blocks.chest = block_chest_create();
+    blocks.gears = block_gears_create();
+    blocks.diamond_ore = block_create(BLOCK_DIAMOND_ORE, TEXTURE_DIAMOND_ORE, block_sounds.stone, 1, 3, 0);
+    blocks.workbench = block_workbench_create();
+    blocks.crops = block_crops_create();
+    blocks.farmland = block_farmland_create();
+    blocks.furnace = block_furnace_create(0);
+    blocks.furnace_lit = block_furnace_create(1);
 }

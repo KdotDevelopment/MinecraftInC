@@ -1,7 +1,7 @@
-#include <level/block/block_leaves.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_leaves.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_leaves_create() {
     block_t block = block_create(BLOCK_LEAVES, TEXTURE_LEAVES, block_sounds.grass, 0.4, 0.2, 1);

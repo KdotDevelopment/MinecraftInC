@@ -2,8 +2,8 @@
 #include <entity/mob/mob.h>
 #include <particle/particles.h>
 #include <particle/particle_terrain.h>
-#include <level/level.h>
-#include <level/block/blocks.h>
+#include <world/level.h>
+#include <world/block/blocks.h>
 
 #include <stdlib.h>
 

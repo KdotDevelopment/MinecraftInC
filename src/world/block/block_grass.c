@@ -1,7 +1,7 @@
-#include <level/block/block_grass.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
-#include <level/level.h>
+#include <world/block/block_grass.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
+#include <world/level.h>
 
 block_t block_grass_create() {
     block_t block = block_create(BLOCK_GRASS, TEXTURE_GRASS, block_sounds.grass, 1, 0.6, 1);

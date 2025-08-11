@@ -5,8 +5,8 @@
 #include <renderer/frustum.h>
 #include <renderer/texture/texture_lava.h>
 #include <renderer/texture/texture_water.h>
-#include <level/block/blocks.h>
-#include <level/level.h>
+#include <world/block/blocks.h>
+#include <world/level.h>
 #include <gui/screen_pause.h>
 #include <gui/screen_block_select.h>
 #include <gui/screen_death.h>

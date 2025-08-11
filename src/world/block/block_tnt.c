@@ -1,6 +1,6 @@
-#include <level/block/block_tnt.h>
-#include <level/block/blocks.h>
-#include <level/block/block_sound.h>
+#include <world/block/block_tnt.h>
+#include <world/block/blocks.h>
+#include <world/block/block_sound.h>
 #include <particle/particles.h>
 
 block_t block_tnt_create() {

@@ -1,5 +1,5 @@
-#include <level/entity_map_slot.h>
-#include <level/entity_map.h>
+#include <world/entity_map_slot.h>
+#include <world/entity_map.h>
 
 #include <util/array_list.h>
 

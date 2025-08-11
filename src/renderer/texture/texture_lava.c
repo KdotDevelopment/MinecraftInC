@@ -1,5 +1,5 @@
 #include <renderer/texture/texture_lava.h>
-#include <level/block/blocks.h>
+#include <world/block/blocks.h>
 
 #include <stdlib.h>
 #include <math.h>

@@ -6,7 +6,7 @@
 #include <renderer/texture/texture_lava.h>
 #include <renderer/texture/texture_water.h>
 #include <world/block/blocks.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <gui/screen_pause.h>
 #include <gui/screen_block_select.h>
 #include <gui/screen_death.h>
@@ -105,19 +105,19 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
 
-    level_create(&minecraft->level, minecraft, &minecraft->progress_bar, 1);
-    minecraft->gamemode.init_level(&minecraft->gamemode, &minecraft->level);
-    player_create(&minecraft->player, (struct level_s *)&minecraft->level);
-    minecraft->level.player = &minecraft->player;
+    world_create(&minecraft->world, minecraft, &minecraft->progress_bar, 1);
+    minecraft->gamemode.init_world(&minecraft->gamemode, &minecraft->world);
+    player_create(&minecraft->player, (struct world_s *)&minecraft->world);
+    minecraft->world.player = &minecraft->player;
     minecraft->player.inputs = inputs_create(&minecraft->settings);
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
 
-    minecraft->level_renderer = level_renderer_create(minecraft, &minecraft->level, &minecraft->textures);
-    minecraft->level.renderer = (struct level_renderer_s *)&minecraft->level_renderer;
-    level_renderer_refresh((level_renderer_t *)&minecraft->level_renderer);
-    minecraft->particles = particles_create(&minecraft->level, &minecraft->textures);
-    minecraft->level.particles = &minecraft->particles;
+    minecraft->world_renderer = world_renderer_create(minecraft, &minecraft->world, &minecraft->textures);
+    minecraft->world.renderer = (struct world_renderer_s *)&minecraft->world_renderer;
+    world_renderer_refresh((world_renderer_t *)&minecraft->world_renderer);
+    minecraft->particles = particles_create(&minecraft->world, &minecraft->textures);
+    minecraft->world.particles = &minecraft->particles;
 
     minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, width, height);
     minecraft_grab_mouse(minecraft);
@@ -160,20 +160,20 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
     }
 }
 
-void minecraft_regenerate_level(minecraft_t *minecraft, int size) {
-    level_regenerate(&minecraft->level, size);
-    minecraft->gamemode.init_level(&minecraft->gamemode, &minecraft->level);
-    player_create(&minecraft->player, (struct level_s *)&minecraft->level);
+void minecraft_regenerate_world(minecraft_t *minecraft, int size) {
+    world_regenerate(&minecraft->world, size);
+    minecraft->gamemode.init_world(&minecraft->gamemode, &minecraft->world);
+    player_create(&minecraft->player, (struct world_s *)&minecraft->world);
     entity_reset_pos(&minecraft->player.mob.entity);
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.inputs = inputs_create(&minecraft->settings);
-    level_renderer_destroy(&minecraft->level_renderer);
-    minecraft->level_renderer = level_renderer_create(minecraft, &minecraft->level, &minecraft->textures);
-    minecraft->level.renderer = (struct level_renderer_s *)&minecraft->level_renderer;
-    level_renderer_refresh((level_renderer_t *)&minecraft->level_renderer);
+    world_renderer_destroy(&minecraft->world_renderer);
+    minecraft->world_renderer = world_renderer_create(minecraft, &minecraft->world, &minecraft->textures);
+    minecraft->world.renderer = (struct world_renderer_s *)&minecraft->world_renderer;
+    world_renderer_refresh((world_renderer_t *)&minecraft->world_renderer);
     particles_destroy(&minecraft->particles);
-    minecraft->particles = particles_create(&minecraft->level, &minecraft->textures);
+    minecraft->particles = particles_create(&minecraft->world, &minecraft->textures);
 }
 
 void minecraft_pause(minecraft_t *minecraft) {
@@ -217,7 +217,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                     if(minecraft->hit_result.face == 4) vx--;
                     if(minecraft->hit_result.face == 5) vx++;
                 }
-                block_t *block = &block_list[level_get_block(&minecraft->level, vx, vy, vz)];
+                block_t *block = &block_list[world_get_block(&minecraft->world, vx, vy, vz)];
                 if(button == SDL_BUTTON_LEFT) {
                     if(block->id != blocks.bedrock.id) {
                         minecraft->gamemode.start_destroy_block(&minecraft->gamemode, vx, vy, vz);
@@ -227,15 +227,15 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                     int selected = inventory_get_selected(&minecraft->player.inventory);
                     if(selected <= 0) return;
     
-                    block_t *block = &block_list[level_get_block(&minecraft->level, vx, vy, vz)];
+                    block_t *block = &block_list[world_get_block(&minecraft->world, vx, vy, vz)];
                     block_t *selected_block = &block_list[selected];
                     AABB_t aabb = block_list[selected].id == blocks.air.id ? (AABB_t){ .null = 1 } : selected_block->get_collision_aabb(selected_block, vx, vy, vz);
                     if((block->id == blocks.air.id || block->id == blocks.water.id || block->id == blocks.still_water.id || block->id == blocks.lava.id || block->id == blocks.still_lava.id) && (aabb.null || !AABB_intersects(minecraft->player.mob.bb, aabb))) {
                         if(!minecraft->gamemode.remove_item(&minecraft->gamemode, selected)) {
                             return;
                         }
-                        level_set_block(&minecraft->level, vx, vy, vz, selected);
-                        selected_block->on_placed(selected_block, (struct level_s *)&minecraft->level, vx, vy, vz);
+                        world_set_block(&minecraft->world, vx, vy, vz, selected);
+                        selected_block->on_placed(selected_block, (struct world_s *)&minecraft->world, vx, vy, vz);
                         minecraft->renderer.held_block.position = 0;
                     }
                 }
@@ -285,7 +285,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         minecraft->last_click = minecraft->ticks;
                     }
                     if(events[i].button.button == SDL_BUTTON_MIDDLE && !minecraft->hit_result.null) {
-                        uint8_t block_id = level_get_block(&minecraft->level, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z);
+                        uint8_t block_id = world_get_block(&minecraft->world, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z);
                         if(block_id == blocks.grass.id) block_id = blocks.dirt.id;
                         if(block_id == blocks.double_slab.id) block_id = blocks.slab.id;
                         if(block_id == blocks.bedrock.id) block_id = blocks.stone.id;
@@ -313,7 +313,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                             entity_reset_pos(&minecraft->player.mob.entity);
                         }
                         if(events[i].key.keysym.scancode == minecraft->settings.save_location_key.key) {
-                            level_set_spawn_position(&minecraft->level, minecraft->player.mob.x, minecraft->player.mob.y, minecraft->player.mob.z, minecraft->player.mob.y_rot);
+                            world_set_spawn_position(&minecraft->world, minecraft->player.mob.x, minecraft->player.mob.y, minecraft->player.mob.z, minecraft->player.mob.y_rot);
                             entity_reset_pos(&minecraft->player.mob.entity);
                         }
                     }
@@ -322,8 +322,8 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                     }
                     if(events[i].key.keysym.scancode == SDL_SCANCODE_TAB && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL && minecraft->player.arrows > 0) {
                         entity_t *arrow = malloc(sizeof(entity_t));
-                        entity_arrow_create(arrow, &minecraft->level, &minecraft->player.mob.entity, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
-                        level_add_entity(&minecraft->level, arrow);
+                        entity_arrow_create(arrow, &minecraft->world, &minecraft->player.mob.entity, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
+                        world_add_entity(&minecraft->world, arrow);
                         minecraft->player.arrows--;
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.build_key.key) {
@@ -399,27 +399,27 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     }
 
     if(minecraft->raining) {
-        level_t *level = &minecraft->level;
+        world_t *world = &minecraft->world;
         int vx = minecraft->player.mob.x;
         int vy = minecraft->player.mob.y;
         int vz = minecraft->player.mob.z;
         for(int i = 0; i < 50; i++) {
             int rx = vx + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
             int rz = vz + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
-            int ry = level_get_highest_block(level, rx, rz);
+            int ry = world_get_highest_block(world, rx, rz);
             if(ry <= vy + 4 && ry >= vy - 4) {
                 float xo = random_next_uniform(&renderer->random);
                 float zo = random_next_uniform(&renderer->random);
                 particle_t *particle = malloc(sizeof(particle_t));
-                *particle = particle_water_drop_create(level, rx + xo, ry + 0.1, rz + zo);
+                *particle = particle_water_drop_create(world, rx + xo, ry + 0.1, rz + zo);
                 particles_spawn_particle(&minecraft->particles, particle);
             }
         }
     }
 
-    minecraft->level_renderer.ticks++;
-    level_tick_entities(&minecraft->level);
-    level_tick(&minecraft->level);
+    minecraft->world_renderer.ticks++;
+    world_tick_entities(&minecraft->world);
+    world_tick(&minecraft->world);
     particles_tick(&minecraft->particles);
 }
 
@@ -531,7 +531,7 @@ void minecraft_run(minecraft_t *minecraft) {
         float cc = c1 * c2;
         float reach = minecraft->gamemode.reach;
         vec3_t v2 = { v.x + sc * reach, v.y + s2 * reach, v.z + cc * reach };
-        minecraft->hit_result = level_clip(&minecraft->level, v, v2);
+        minecraft->hit_result = world_clip(&minecraft->world, v, v2);
         if(!minecraft->hit_result.null) {
             reach = sqrtf(vec3_distance_to_sqr(v, minecraft->hit_result.location));
         }
@@ -539,7 +539,7 @@ void minecraft_run(minecraft_t *minecraft) {
         a = 0.0;
 
         AABB_t box = AABB_expand(player->bb, sc * reach, s2 * reach, cc * reach);
-        entity_t ***entities = entity_map_get_entities(&minecraft->level.entity_map, &player->entity, box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
+        entity_t ***entities = entity_map_get_entities(&minecraft->world.entity_map, &player->entity, box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
         for(int i = 0; i < array_list_length(*entities); i++) {
             entity_t *entity = *(entity_t **)array_list_get(*entities, i);
             if(entity->can_be_hit(entity)) {
@@ -564,20 +564,20 @@ void minecraft_run(minecraft_t *minecraft) {
                 else glColorMask(1, 0, 0, 0);
             }
 
-            level_t *level = &minecraft->level;
+            world_t *world = &minecraft->world;
             glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
             float a = 1.0 / (4 - minecraft->settings.view_distance);
             a = 1.0 - powf(a, 0.25);
-            float sky_r = ((level->sky_color >> 24) & 0xFF) / 255.0;
-            float sky_g = ((level->sky_color >> 16) & 0xFF) / 255.0;
-            float sky_b = ((level->sky_color >> 8) & 0xFF) / 255.0;
-            renderer->fog_r = ((level->fog_color >> 24) & 0xFF) / 255.0;
-            renderer->fog_g = ((level->fog_color >> 16) & 0xFF) / 255.0;
-            renderer->fog_b = ((level->fog_color >> 8) & 0xFF) / 255.0;
+            float sky_r = ((world->sky_color >> 24) & 0xFF) / 255.0;
+            float sky_g = ((world->sky_color >> 16) & 0xFF) / 255.0;
+            float sky_b = ((world->sky_color >> 8) & 0xFF) / 255.0;
+            renderer->fog_r = ((world->fog_color >> 24) & 0xFF) / 255.0;
+            renderer->fog_g = ((world->fog_color >> 16) & 0xFF) / 255.0;
+            renderer->fog_b = ((world->fog_color >> 8) & 0xFF) / 255.0;
             renderer->fog_r = (renderer->fog_r + (sky_r - renderer->fog_r) * a) * renderer->fog_color_multiplier;
             renderer->fog_g = (renderer->fog_g + (sky_g - renderer->fog_g) * a) * renderer->fog_color_multiplier;
             renderer->fog_b = (renderer->fog_b + (sky_b - renderer->fog_b) * a) * renderer->fog_color_multiplier;
-            block_t *block = &block_list[level_get_block(level, player->x, player->y + 0.12, player->z)];
+            block_t *block = &block_list[world_get_block(world, player->x, player->y + 0.12, player->z)];
             if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) {
                 if(block->liquid_type == LIQUID_WATER) {
                     renderer->fog_r = 0.02;
@@ -625,7 +625,7 @@ void minecraft_run(minecraft_t *minecraft) {
             glTranslatef(-pos_x, -pos_y, -pos_z);
 
             frustum_t frustum = frustum_get();
-            level_renderer_t *lrenderer = &minecraft->level_renderer;
+            world_renderer_t *lrenderer = &minecraft->world_renderer;
             for(int j = 0; j < lrenderer->chunk_cache_count; j++) {
                 chunk_clip(lrenderer->chunk_cache[j], frustum);
             }
@@ -643,8 +643,8 @@ void minecraft_run(minecraft_t *minecraft) {
 
             renderer_setup_fog(renderer);
             glEnable(GL_FOG);
-            level_renderer_sort_chunks(lrenderer, player, 0);
-            if(level_is_solid_search(level, player->x, player->y, player->z, 0.1)) {
+            world_renderer_sort_chunks(lrenderer, player, 0);
+            if(world_is_solid_search(world, player->x, player->y, player->z, 0.1)) {
                 int px = player->x;
                 int py = player->y;
                 int pz = player->z;
@@ -654,7 +654,7 @@ void minecraft_run(minecraft_t *minecraft) {
                             int vx = x;
                             int vy = y;
                             int vz = z;
-                            uint8_t block_id = level_get_block(level, x, y, z);
+                            uint8_t block_id = world_get_block(world, x, y, z);
                             block_t *block = &block_list[block_id];
                             if(block_id != blocks.air.id && block->is_solid) {
                                 glColor4f(0.2, 0.2, 0.2, 1.0);
@@ -679,7 +679,7 @@ void minecraft_run(minecraft_t *minecraft) {
             }
 
             renderer_set_lighting(renderer, 1);
-            entity_map_render(&minecraft->level.entity_map, v, &frustum, &minecraft->textures, timer->delta);
+            entity_map_render(&minecraft->world.entity_map, v, &frustum, &minecraft->textures, timer->delta);
             particles_t *particles = &minecraft->particles;
             renderer_set_lighting(renderer, 0);
             renderer_setup_fog(renderer);
@@ -710,9 +710,9 @@ void minecraft_run(minecraft_t *minecraft) {
             renderer_setup_fog(renderer);
             glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "clouds.png"));
             glColor4f(1.0, 1.0, 1.0, 1.0);
-            float cloud_r = ((level->cloud_color >> 24) & 0xFF) / 255.0;
-            float cloud_g = ((level->cloud_color >> 16) & 0xFF) / 255.0;
-            float cloud_b = ((level->cloud_color >> 8) & 0xFF) / 255.0;
+            float cloud_r = ((world->cloud_color >> 24) & 0xFF) / 255.0;
+            float cloud_g = ((world->cloud_color >> 16) & 0xFF) / 255.0;
+            float cloud_b = ((world->cloud_color >> 8) & 0xFF) / 255.0;
             if(minecraft->settings.anaglyph) {
                 float ar = (cloud_r * 30.0 + cloud_g * 59.0 + cloud_b * 11.0) / 100.0;
                 float ag = (cloud_r * 30.0 + cloud_g * 70.0) / 100.0;
@@ -722,12 +722,12 @@ void minecraft_run(minecraft_t *minecraft) {
                 cloud_b = ab;
             }
             
-            float z = level->depth + 2.0;
+            float z = world->depth + 2.0;
             float t = 0.03 * (lrenderer->ticks + delta);
             tesselator_begin();
             tesselator_color(cloud_r, cloud_g, cloud_b);
-            for(int x = -2048; x < (int)level->width + 2048; x += 512) {
-                for(int y = -2048; y < (int)level->height + 2048; y += 512) {
+            for(int x = -2048; x < (int)world->width + 2048; x += 512) {
+                for(int y = -2048; y < (int)world->height + 2048; y += 512) {
                     tesselator_vertex_uv(x, z, y + 512, (x + t) / 2048.0, (y + 512) / 2048.0);
                     tesselator_vertex_uv(x + 512, z, y + 512, (x + 512 + t) / 2048.0, (y + 512) / 2048.0);
                     tesselator_vertex_uv(x + 512, z, y, (x + 512 + t) / 2048.0, y / 2048.0);
@@ -751,9 +751,9 @@ void minecraft_run(minecraft_t *minecraft) {
                 sky_b = ab;
             }
             tesselator_color(sky_r, sky_g, sky_b);
-            z = level->depth + 10.0;
-            for(int x = -2048; x < (int)level->width + 2048; x += 512) {
-                for(int y = -2048; y < (int)level->height + 2048; y += 512) {
+            z = world->depth + 10.0;
+            for(int x = -2048; x < (int)world->width + 2048; x += 512) {
+                for(int y = -2048; y < (int)world->height + 2048; y += 512) {
                     tesselator_vertex(x, z, y);
                     tesselator_vertex(x + 512, z, y);
                     tesselator_vertex(x + 512, z, y + 512);
@@ -776,7 +776,7 @@ void minecraft_run(minecraft_t *minecraft) {
                     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
                     glColor4f(1, 1, 1, 0.5);
                     glPushMatrix();
-                    uint8_t block_id = level_get_block(level, pos.x, pos.y, pos.z);
+                    uint8_t block_id = world_get_block(world, pos.x, pos.y, pos.z);
                     block_t *block = NULL;
                     if(block_id != blocks.air.id) {
                         block = &block_list[block_id];
@@ -805,7 +805,7 @@ void minecraft_run(minecraft_t *minecraft) {
                 glLineWidth(2.0);
                 glDisable(GL_TEXTURE_2D);
                 glDepthMask(GL_FALSE);
-                uint8_t block_id = level_get_block(level, pos.x, pos.y, pos.z);
+                uint8_t block_id = world_get_block(world, pos.x, pos.y, pos.z);
                 block_t *block = &block_list[block_id];
                 if(block_id != blocks.air.id) {
                     AABB_t bb = AABB_grow(block->get_selection_aabb(block, pos.x, pos.y, pos.z), 0.002, 0.002, 0.002);
@@ -849,7 +849,7 @@ void minecraft_run(minecraft_t *minecraft) {
             glDisable(GL_BLEND);
             glEnable(GL_BLEND);
             glColorMask(0, 0, 0, 0);
-            int count = level_renderer_sort_chunks(lrenderer, player, 1);
+            int count = world_renderer_sort_chunks(lrenderer, player, 1);
             glColorMask(1, 1, 1, 1);
             if(minecraft->settings.anaglyph) {
                 if(i == 0) glColorMask(0, 1, 1, 0);
@@ -878,7 +878,7 @@ void minecraft_run(minecraft_t *minecraft) {
                 glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "rain.png"));
                 for(int x = px - 5; x <= px + 5; x++) {
                     for(int z = pz - 5; z <= pz + 5; z++) {
-                        int y = level_get_highest_block(level, x, z);
+                        int y = world_get_highest_block(world, x, z);
                         int y_min = py - 5;
                         int y_max = py + 5;
                         if(y_min < y) y_min = y;
@@ -932,7 +932,7 @@ void minecraft_run(minecraft_t *minecraft) {
                 glRotatef(tsin(sqrt(a) * M_PI) * 80.0, 0.0, 1.0, 0.0);
                 glRotatef(-tsin(a * a * M_PI), 1.0, 0.0, 0.0);
             }
-            float brightness = level_get_brightness(level, player->x, player->y, player->z);
+            float brightness = world_get_brightness(world, player->x, player->y, player->z);
             glColor4f(brightness, brightness, brightness, 1);
             if(held.block != NULL && held.block->id != blocks.air.id) {
                 glScalef(0.4, 0.4, 0.4);
@@ -997,11 +997,11 @@ int main(int argc, char *argv[]) {
         screen_destroy((struct screen_s *)minecraft.current_screen);
         free(minecraft.current_screen);
     }
-    level_destroy(&minecraft.level);
+    world_destroy(&minecraft.world);
     free(minecraft.textures.animations[0]); //water animated texture
     free(minecraft.textures.animations[1]); //lava animated texture
     textures_destroy(&minecraft.textures);
-    level_renderer_destroy(&minecraft.level_renderer);
+    world_renderer_destroy(&minecraft.world_renderer);
     particles_destroy(&minecraft.particles);
     array_list_free(minecraft.settings.bindings);
     array_list_free(session_allowed_blocks);

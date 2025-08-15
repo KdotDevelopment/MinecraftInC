@@ -2,8 +2,8 @@
 #include <entity/ai/ai_basic.h>
 #include <entity/mob/mob.h>
 
-ai_t ai_skeleton_create(struct level_s *level, struct mob_s *mob) {
-    ai_t ai = ai_basic_attack_create(level, mob);
+ai_t ai_skeleton_create(struct world_s *world, struct mob_s *mob) {
+    ai_t ai = ai_basic_attack_create(world, mob);
     
     ai.tick = ai_skeleton_tick;
 

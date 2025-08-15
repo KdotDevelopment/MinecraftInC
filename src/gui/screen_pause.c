@@ -1,8 +1,8 @@
 #include <gui/screen_pause.h>
 #include <gui/screen_options.h>
-#include <gui/screen_generate_level.h>
-#include <gui/screen_save_level.h>
-#include <gui/screen_load_level.h>
+#include <gui/screen_generate_world.h>
+#include <gui/screen_save_world.h>
+#include <gui/screen_load_world.h>
 #include <minecraft.h>
 
 screen_t screen_pause_create() {
@@ -20,9 +20,9 @@ screen_t screen_pause_create() {
 void screen_pause_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
     button_t button_options = button_create(0, screen->width / 2 - 100, screen->height / 4, "Options...");
-    button_t button_generate = button_create(1, screen->width / 2 - 100, screen->height / 4 + 24, "Generate new level...");
-    button_t button_save = button_create(2, screen->width / 2 - 100, screen->height / 4 + 48, "Save level...");
-    button_t button_load = button_create(3, screen->width / 2 - 100, screen->height / 4 + 72, "Load level...");
+    button_t button_generate = button_create(1, screen->width / 2 - 100, screen->height / 4 + 24, "Generate new world...");
+    button_t button_save = button_create(2, screen->width / 2 - 100, screen->height / 4 + 48, "Save world...");
+    button_t button_load = button_create(3, screen->width / 2 - 100, screen->height / 4 + 72, "Load world...");
     button_t button_quit = button_create(4, screen->width / 2 - 100, screen->height / 4 + 120, "Back to game");
 
     button_save.active = 0;
@@ -44,19 +44,19 @@ void screen_pause_on_button_clicked(struct screen_s *proto_screen, button_t *but
         minecraft_set_current_screen(screen->minecraft, (screen_t *)options);
     }
     if(button->id == 1) {
-        screen_t *generate_level = malloc(sizeof(screen_t));
-        *generate_level = screen_generate_level_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)generate_level);
+        screen_t *generate_world = malloc(sizeof(screen_t));
+        *generate_world = screen_generate_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, (screen_t *)generate_world);
     }
     if(button->id == 2) {
-        screen_t *save_level = malloc(sizeof(screen_t));
-        *save_level = screen_save_level_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)save_level);
+        screen_t *save_world = malloc(sizeof(screen_t));
+        *save_world = screen_save_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, (screen_t *)save_world);
     }
     if(button->id == 3) {
-        screen_t *load_level = malloc(sizeof(screen_t));
-        *load_level = screen_load_level_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)load_level);
+        screen_t *load_world = malloc(sizeof(screen_t));
+        *load_world = screen_load_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, (screen_t *)load_world);
     }
     if(button->id == 4) {
         minecraft_grab_mouse(screen->minecraft);

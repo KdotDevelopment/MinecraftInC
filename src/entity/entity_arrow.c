@@ -1,6 +1,6 @@
 #include <entity/entity_arrow.h>
 #include <entity/entity_take_anim.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <renderer/tesselator.h>
 
 #include <util/sin_table.h>
@@ -10,8 +10,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-void entity_arrow_create(entity_t *entity, struct level_s *level, entity_t *source_entity, float x, float y, float z, float xd, float yd, float zd) {
-    entity_create(entity, level);
+void entity_arrow_create(entity_t *entity, struct world_s *world, entity_t *source_entity, float x, float y, float z, float xd, float yd, float zd) {
+    entity_create(entity, world);
     entity->bb_width = 0.3;
     entity->bb_height = 0.5;
     entity->type = ENTITY_ARROW;
@@ -82,7 +82,7 @@ void entity_arrow_tick(struct entity_s *entity) {
     
     for(int i = 0; i < magnitude; i++) {
         AABB_t bb = AABB_expand(entity->bb, nxd, nyd, nzd);
-        AABB_t *cubes = level_get_cubes((level_t *)entity->level, bb);
+        AABB_t *cubes = world_get_cubes((world_t *)entity->world, bb);
         if(array_list_length(cubes) > 0) {
             entity->has_hit = 1;
         }
@@ -135,7 +135,7 @@ void entity_arrow_tick(struct entity_s *entity) {
 
 void entity_arrow_render(struct entity_s *entity, textures_t *textures, float delta) {
     glBindTexture(GL_TEXTURE_2D, textures_load(textures, "item/arrows.png"));
-    float brightness = level_get_brightness((level_t *)entity->level, entity->x, entity->y, entity->z);
+    float brightness = world_get_brightness((world_t *)entity->world, entity->x, entity->y, entity->z);
     glPushMatrix();
     glColor4f(brightness, brightness, brightness, 1);
     glTranslatef(entity->xo + (entity->x - entity->xo) * delta, 
@@ -190,8 +190,8 @@ void entity_arrow_player_touch(struct entity_s *entity, entity_t *player) {
     player_t *real_player = (player_t *)player;
     if(entity->has_hit && entity->owner == player && real_player->arrows < 99) {
         entity_t *anim = malloc(sizeof(entity_t));
-        entity_take_anim_create(anim, entity->level, entity, real_player);
-        level_add_entity(entity->level, anim);
+        entity_take_anim_create(anim, entity->world, entity, real_player);
+        world_add_entity(entity->world, anim);
         entity_remove(entity);
         real_player->arrows++;
     }

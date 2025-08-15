@@ -1,12 +1,12 @@
 #pragma once
 
 #include <renderer/game_renderer.h>
-#include <renderer/level_renderer.h>
+#include <renderer/world_renderer.h>
 #include <renderer/held_block.h>
 #include <gui/screen_hud.h>
 #include <gui/screen.h>
 #include <gui/progress_bar.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <gui/font.h>
 #include <player/hit_result.h>
 #include <particle/particles.h>
@@ -24,12 +24,12 @@
 
 typedef struct minecraft_s {
     game_renderer_t renderer;
-    level_t level;
+    world_t world;
     textures_t textures;
     player_t player;
     game_settings_t settings;
     font_t font;
-    level_renderer_t level_renderer;
+    world_renderer_t world_renderer;
     game_timer_t timer;
     hit_result_t hit_result;
     screen_t *current_screen;
@@ -57,4 +57,4 @@ typedef struct minecraft_s {
 
 void minecraft_grab_mouse(minecraft_t *minecraft);
 void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen);
-void minecraft_regenerate_level(minecraft_t *minecraft, int size);
+void minecraft_regenerate_world(minecraft_t *minecraft, int size);

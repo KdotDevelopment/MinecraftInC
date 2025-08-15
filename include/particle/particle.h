@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-struct level_s;
+struct world_s;
 
 enum {
     PARTICLE_NONE,
@@ -32,7 +32,7 @@ typedef struct particle_s {
     int (*get_texture)(struct particle_s *particle);
 } particle_t;
 
-particle_t particle_create(struct level_s *level, float x, float y, float z, float xd, float yd, float zd);
+particle_t particle_create(struct world_s *world, float x, float y, float z, float xd, float yd, float zd);
 void particle_tick(struct particle_s *particle);
 void particle_render(struct particle_s *particle, float delta, float x, float y, float z, float var6, float var7);
 int particle_get_texture(struct particle_s *particle);

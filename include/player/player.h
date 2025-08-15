@@ -4,7 +4,7 @@
 #include <player/inputs.h>
 #include <player/inventory.h>
 
-struct level_s;
+struct world_s;
 
 typedef struct player_s {
     union {
@@ -19,5 +19,5 @@ typedef struct player_s {
     int score;
 } player_t;
 
-void player_create(player_t *player, struct level_s *level);
+void player_create(player_t *player, struct world_s *world);
 void player_set_key(player_t *player, uint8_t key, uint8_t state);

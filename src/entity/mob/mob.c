@@ -1,5 +1,5 @@
 #include <entity/mob/mob.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <model/models.h>
 #include <model/model.h>
 #include <model/model_humanoid.h>
@@ -12,9 +12,9 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-void mob_create(mob_t *mob, struct level_s *level) {
+void mob_create(mob_t *mob, struct world_s *world) {
     //mob_t mob = { 0 };
-    entity_create(&mob->entity, level);
+    entity_create(&mob->entity, world);
 
     mob->invulnerable_duration = INVULNERABLE_DURATION;
     mob->y_body_rot = 0.0F;
@@ -40,7 +40,7 @@ void mob_create(mob_t *mob, struct level_s *level) {
     mob->time_offs = random_uniform() * M_PI * 12398.0;
     mob->rot = random_uniform() * M_PI * 2;
     mob->speed = 1;
-    mob->ai = ai_basic_create(level, mob);
+    mob->ai = ai_basic_create(world, mob);
     mob->foot_size = 0.5;
 
     mob->hurt = mob_hurt;
@@ -280,7 +280,7 @@ void mob_render(entity_t *entity, textures_t *textures, float delta) {
     }
 
     glScalef(-1, 1, 1);
-    //model_t *model = models_get(&mob->level->minecraft->models, mob->model_type);
+    //model_t *model = models_get(&mob->world->minecraft->models, mob->model_type);
     entity->model->attack_time = attack_time / 5;
     glBindTexture(GL_TEXTURE_2D, textures_load(textures, mob->texture_name));
     mob->render_model(mob, delta_anim_step, delta, delta_run, delta_y_rot, delta_x_rot, 0.0625);
@@ -306,8 +306,8 @@ void mob_render(entity_t *entity, textures_t *textures, float delta) {
 void mob_hurt(entity_t *entity, entity_t *entity_causer, int damage) {
     mob_t *mob = (mob_t *)entity;
     mob_t *causer = (mob_t *)entity_causer;
-    level_t *level = (level_t *)entity->level;
-    if(level->creative_mode) return;
+    world_t *world = (world_t *)entity->world;
+    if(world->creative_mode) return;
     if(mob->health <= 0) return;
     mob->ai.hurt(&mob->ai, entity_causer, damage);
     if(mob->invulnerable_time > mob->invulnerable_duration / 2) {
@@ -350,8 +350,8 @@ void mob_knockback(mob_t *mob, mob_t *causer, int damage, float x_diff, float z_
 }
 
 void mob_die(struct mob_s *mob, mob_t *causer) {
-    level_t *level = (level_t *)mob->level;
-    if(level->creative_mode) return;
+    world_t *world = (world_t *)mob->world;
+    if(world->creative_mode) return;
     if(mob->death_score > 0 && causer) {
         mob->award_kill_score(&mob->entity, (entity_t *)&causer, mob->death_score);
     }
@@ -361,9 +361,9 @@ void mob_die(struct mob_s *mob, mob_t *causer) {
 
 void mob_cause_fall_damage(entity_t *entity, float distance) {
     mob_t *mob = (mob_t *)entity;
-    level_t *level = (level_t *)entity->level;
+    world_t *world = (world_t *)entity->world;
     entity_cause_fall_damage(&mob->entity, distance);
-    if(level->creative_mode) return;
+    if(world->creative_mode) return;
     int damage = (int)ceil(distance - 3);
     if(damage > 0) {
         mob->hurt(&mob->entity, NULL, damage);

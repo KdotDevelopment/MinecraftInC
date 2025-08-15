@@ -21,12 +21,12 @@ enum {
     SCREEN_TYPE_CONTROLS,
     SCREEN_TYPE_DEATH,
     SCREEN_TYPE_ERROR,
-    SCREEN_TYPE_GENERATE_LEVEL,
-    SCREEN_TYPE_LEVEL_NAME,
-    SCREEN_TYPE_LOAD_LEVEL,
+    SCREEN_TYPE_GENERATE_world,
+    SCREEN_TYPE_world_NAME,
+    SCREEN_TYPE_LOAD_world,
     SCREEN_TYPE_OPTIONS,
     SCREEN_TYPE_PAUSE,
-    SCREEN_TYPE_SAVE_LEVEL,
+    SCREEN_TYPE_SAVE_world,
 };
 
 typedef struct screen_s {
@@ -42,8 +42,8 @@ typedef struct screen_s {
     game_settings_t *settings;
     char *title;
     char *text;
-    char *name; //level name screen, String
-    char *names[5]; //load level screen, String
+    char *name; //world name screen, String
+    char *names[5]; //load world screen, String
     struct screen_s *parent;
     int id;
     int counter;

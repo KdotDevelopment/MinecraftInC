@@ -1,5 +1,5 @@
 #include <entity/entity.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <physics/AABB.h>
 #include <util/array_list.h>
 #include <world/block/block.h>
@@ -10,10 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void entity_create(entity_t *entity, struct level_s *level) {
+void entity_create(entity_t *entity, struct world_s *world) {
     //entity_t entity = { 0 };
     memset(entity, 0, sizeof(entity_t));
-    entity->level = level;
+    entity->world = world;
     //set_pos
     entity->on_ground = 0;
     entity->horizontal_collision = 0;
@@ -62,15 +62,15 @@ void entity_set_pos(entity_t *entity, float x, float y, float z) {
 }
 
 void entity_reset_pos(entity_t *entity) {
-    if(!entity->level) return;
-    level_t *level = (level_t *)entity->level;
-    float x = level->spawn_x + 0.5;
-    float y = level->spawn_y;
-    float z = level->spawn_z + 0.5;
+    if(!entity->world) return;
+    world_t *world = (world_t *)entity->world;
+    float x = world->spawn_x + 0.5;
+    float y = world->spawn_y;
+    float z = world->spawn_z + 0.5;
 
     for(; z > 0; z++) {
         entity_set_pos(entity, x, y, z);
-        AABB_t *cubes = level_get_cubes((level_t *)entity->level, entity->bb);
+        AABB_t *cubes = world_get_cubes((world_t *)entity->world, entity->bb);
         if(array_list_length(cubes) == 0) {
             array_list_free(cubes);
             break;
@@ -79,7 +79,7 @@ void entity_reset_pos(entity_t *entity) {
     }
 
     entity->xd = entity->yd = entity->zd = 0;
-    entity->y_rot = level->spawn_rot;
+    entity->y_rot = world->spawn_rot;
     entity->x_rot = 0;
 }
 
@@ -122,7 +122,7 @@ void entity_tick(entity_t *entity) {
 }
 
 void entity_play_sound(entity_t *entity, char *sound, float volume, float pitch) {
-    level_play_sound((level_t *)entity->level, sound, entity, volume, pitch);
+    world_play_sound((world_t *)entity->world, sound, entity, volume, pitch);
 }
 
 void entity_move(entity_t *entity, float x, float y, float z) {
@@ -141,7 +141,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
     float oz = z;
 
     AABB_t oaabb = entity->bb;
-    AABB_t *cubes = level_get_cubes((level_t *)entity->level, AABB_expand(entity->bb, x, y, z));
+    AABB_t *cubes = world_get_cubes((world_t *)entity->world, AABB_expand(entity->bb, x, y, z));
 
     for(int i = 0; i < array_list_length(cubes); i++) {
         AABB_t aabb = { cubes[i].x0, cubes[i].y0, cubes[i].z0, cubes[i].x1, cubes[i].y1, cubes[i].z1 };
@@ -186,7 +186,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
         z = oz;
         AABB_t temp_bb = entity->bb;
         entity->bb = oaabb;
-        AABB_t *cubes = level_get_cubes((level_t *)entity->level, AABB_expand(entity->bb, x, y, z));
+        AABB_t *cubes = world_get_cubes((world_t *)entity->world, AABB_expand(entity->bb, x, y, z));
 
         for(int i = 0; i < array_list_length(cubes); i++) {
             AABB_t aabb = { cubes[i].x0, cubes[i].y0, cubes[i].z0, cubes[i].x1, cubes[i].y1, cubes[i].z1 };
@@ -251,7 +251,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
     entity->z = (entity->bb.z0 + entity->bb.z1) / 2.0;
     entity->walk_dist += sqrtf((entity->x - x1) * (entity->x - x1) + (entity->z - z1) * (entity->z - z1)) * 0.6;
     if(entity->make_step_sound) {
-        uint8_t block_id = level_get_block((level_t *)entity->level, entity->x, entity->y - entity->height_offset - 0.2, entity->z);
+        uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y - entity->height_offset - 0.2, entity->z);
         if(entity->walk_dist > entity->next_step && block_id > blocks.air.id) {
             entity->next_step++;
             block_sound_t sound = block_list[block_id].sound;
@@ -342,23 +342,23 @@ void entity_remove(entity_t *entity) {
 
 uint8_t entity_is_free(entity_t *entity, float x, float y, float z) {
     AABB_t bb = AABB_move(entity->bb, x, y, z);
-    AABB_t *cubes = level_get_cubes((level_t *)entity->level, bb);
-    uint8_t free = array_list_length(cubes) > 0 ? 0 : !level_contains_any_liquid((level_t *)entity->level, bb);
+    AABB_t *cubes = world_get_cubes((world_t *)entity->world, bb);
+    uint8_t free = array_list_length(cubes) > 0 ? 0 : !world_contains_any_liquid((world_t *)entity->world, bb);
     array_list_free(cubes);
     return free;
 }
 
 uint8_t entity_is_underwater(entity_t *entity) {
-    uint8_t block_id = level_get_block((level_t *)entity->level, entity->x, entity->y, entity->z);
+    uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y, entity->z);
     return block_id != 0 ? block_list[block_id].liquid_type == LIQUID_WATER : 0;
 }
 
 uint8_t entity_is_in_water(entity_t *entity) {
-    return level_contains_liquid((level_t *)entity->level, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_WATER);
+    return world_contains_liquid((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_WATER);
 }
 
 uint8_t entity_is_in_lava(entity_t *entity) {
-    return level_contains_liquid((level_t *)entity->level, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_LAVA);
+    return world_contains_liquid((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_LAVA);
 }
 
 uint8_t entity_on_ground(entity_t *entity) {
@@ -366,7 +366,7 @@ uint8_t entity_on_ground(entity_t *entity) {
 }
 
 float entity_get_brightness(entity_t *entity, float tick) {
-    return level_get_brightness((level_t *)entity->level, entity->x, entity->y + entity->height_offset / 2.0 - 0.5, entity->z);
+    return world_get_brightness((world_t *)entity->world, entity->x, entity->y + entity->height_offset / 2.0 - 0.5, entity->z);
 }
 
 uint8_t entity_can_be_hit(entity_t *entity) {

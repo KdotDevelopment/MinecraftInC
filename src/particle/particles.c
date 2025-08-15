@@ -1,11 +1,11 @@
 #include <particle/particles.h>
-#include <world/level.h>
+#include <world/world.h>
 
 #include <util/array_list.h>
 
 #include <stdlib.h>
 
-particles_t particles_create(struct level_s *level, textures_t *textures) {
+particles_t particles_create(struct world_s *world, textures_t *textures) {
     particles_t particles = { 0 };
     for(int i = 0; i < 2; i++) {
         particles.particles[i] = array_list_create(sizeof(particle_t *));

@@ -1,17 +1,17 @@
 #include <entity/ai/ai_basic.h>
 #include <entity/ai/ai.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <entity/mob/mob.h>
 
 #include <stdlib.h>
 
-ai_t ai_basic_create(struct level_s *level, struct mob_s *mob) {
-    level_t *real_level = (level_t *)level;
+ai_t ai_basic_create(struct world_s *world, struct mob_s *mob) {
+    world_t *real_world = (world_t *)world;
     ai_t ai = ai_create();
     ai.run_speed = 0.7;
     ai.mob = mob;
-    ai.level = level;
-    ai.random = &real_level->random;
+    ai.world = world;
+    ai.random = &real_world->random;
     ai.tick = ai_basic_tick;
     ai.hurt = ai_basic_hurt;
     ai.update = ai_basic_update;
@@ -21,11 +21,11 @@ ai_t ai_basic_create(struct level_s *level, struct mob_s *mob) {
 }
 
 void ai_basic_tick(struct ai_s *ai) {
-    level_t *level = (level_t *)ai->level;
+    world_t *world = (world_t *)ai->world;
     mob_t *mob = (mob_t *)ai->mob;
     ai->no_action_time++;
     entity_t *entity;
-    if(ai->no_action_time > 600 && random_next_int_range(ai->random, 0, 800) == 0 && (entity = (entity_t *)&level->player->mob) != NULL) {
+    if(ai->no_action_time > 600 && random_next_int_range(ai->random, 0, 800) == 0 && (entity = (entity_t *)&world->player->mob) != NULL) {
         float x_diff = entity->x - mob->x;
         float y_diff = entity->y - mob->y;
         float z_diff = entity->z - mob->z;
@@ -67,7 +67,7 @@ void ai_basic_tick(struct ai_s *ai) {
     ai->y_rota *= 0.9;
     mob_travel(mob, ai->xa, ai->za);
     //entity grid, blockmap etc (collision detection)
-    //hint: blockmap is actually just entity_t **entities which is already in level
+    //hint: blockmap is actually just entity_t **entities which is already in world
 }
 
 void ai_basic_jump(ai_t *ai) {

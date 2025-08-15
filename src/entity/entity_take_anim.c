@@ -1,20 +1,20 @@
 #include <entity/entity_take_anim.h>
 
 #include <entity/entity_item.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <minecraft.h>
 #include <player/player.h>
 
 #include <stdlib.h>
 
-void entity_take_anim_create(entity_t *entity, struct level_s *level, entity_t *item, player_t *player) {
-    entity_create(entity, level);
+void entity_take_anim_create(entity_t *entity, struct world_s *world, entity_t *item, player_t *player) {
+    entity_create(entity, world);
     entity->bb_width = 1.0;
     entity->bb_height = 1.0;
     entity->type = ENTITY_ITEM_TAKE;
 
     entity->item = malloc(sizeof(entity_t));
-    //entity_create(item, level);
+    //entity_create(item, world);
     memset(entity->item, 0, sizeof(entity_t));
     entity->item->x = item->x;
     entity->item->y = item->y;
@@ -32,7 +32,7 @@ void entity_take_anim_create(entity_t *entity, struct level_s *level, entity_t *
     entity->item->block_id = item->block_id;
     entity->item->render = item->render;
     entity->item->type = ENTITY_ITEM_TAKE_MOCK;
-    entity->item->level = entity->level;
+    entity->item->world = entity->world;
     entity->item->render = item->render;
 
     entity->player = player;

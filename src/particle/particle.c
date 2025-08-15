@@ -4,9 +4,9 @@
 
 #include <util/random.h>
 
-particle_t particle_create(struct level_s *level, float x, float y, float z, float xd, float yd, float zd) {
+particle_t particle_create(struct world_s *world, float x, float y, float z, float xd, float yd, float zd) {
     particle_t particle = { 0 };
-    entity_create(&particle.entity, level);
+    entity_create(&particle.entity, world);
     particle.entity.bb_width = 0.2;
     particle.entity.bb_height = 0.2;
     entity_set_pos(&particle.entity, x, y, z);

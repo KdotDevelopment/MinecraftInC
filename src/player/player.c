@@ -1,6 +1,6 @@
 #include <player/player.h>
 #include <model/model.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <player/player_ai.h>
 #include <minecraft.h>
 
@@ -9,9 +9,9 @@
 #include <stdlib.h>
 
 // Extends mob/mob.h
-void player_create(player_t *player, struct level_s *level) {
-    level_t *real_level = (level_t *)level;
-    mob_create(&player->mob, level);
+void player_create(player_t *player, struct world_s *world) {
+    world_t *real_world = (world_t *)world;
+    mob_create(&player->mob, world);
 
     player->bob = 0;
     player->obob = 0;
@@ -30,13 +30,13 @@ void player_create(player_t *player, struct level_s *level) {
     player->ai = player_ai_create((struct player_s *)player);
     player->allowed_in_creative_mode = 1;
     player->arrows = 20;
-    player->model = models_get(&level->minecraft->models, player->model_type);
+    player->model = models_get(&world->minecraft->models, player->model_type);
 
     entity_reset_pos(&player->entity);
 
-    if(level) {
-        real_level->player = player;
-        level_add_entity(real_level, &player->entity);
+    if(world) {
+        real_world->player = player;
+        world_add_entity(real_world, &player->entity);
     }
 
     //return player;

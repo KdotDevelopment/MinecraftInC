@@ -1,9 +1,9 @@
 #include <particle/particle_terrain.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <renderer/tesselator.h>
 
-particle_t particle_terrain_create(struct level_s *level, float x, float y, float z, float xd, float yd, float zd, block_t *block) {
-    particle_t particle = particle_create(level, x, y, z, xd, yd, zd);
+particle_t particle_terrain_create(struct world_s *world, float x, float y, float z, float xd, float yd, float zd, block_t *block) {
+    particle_t particle = particle_create(world, x, y, z, xd, yd, zd);
     particle.type = PARTICLE_TERRAIN;
     particle.texture = block->texture_id;
     particle.gravity = block->particle_gravity;

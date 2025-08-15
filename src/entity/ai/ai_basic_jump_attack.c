@@ -1,11 +1,11 @@
 #include <entity/ai/ai_basic_jump_attack.h>
 #include <entity/mob/mob.h>
-#include <world/level.h>
+#include <world/world.h>
 
 #include <stddef.h>
 
-ai_t ai_basic_jump_attack_create(struct level_s *level, struct mob_s *mob) {
-    ai_t ai = ai_basic_attack_create(level, mob);
+ai_t ai_basic_jump_attack_create(struct world_s *world, struct mob_s *mob) {
+    ai_t ai = ai_basic_attack_create(world, mob);
     ai.jump = ai_basic_jump_attack_jump;
     ai.run_speed *= 0.8;
 

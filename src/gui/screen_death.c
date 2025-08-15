@@ -1,6 +1,6 @@
 #include <gui/screen_death.h>
-#include <gui/screen_generate_level.h>
-#include <gui/screen_load_level.h>
+#include <gui/screen_generate_world.h>
+#include <gui/screen_load_world.h>
 #include <minecraft.h>
 
 #include <SDL2/SDL.h>
@@ -20,8 +20,8 @@ screen_t screen_death_create() {
 
 void screen_death_on_open(struct screen_s *screen) {
     screen->buttons = array_list_clear(screen->buttons);
-    button_t button_respawn = button_create(0, screen->width / 2 - 100, screen->height / 4 + 72, "Generate new level...");
-    button_t button_load = button_create(1, screen->width / 2 - 100, screen->height / 4 + 96, "Load level...");
+    button_t button_respawn = button_create(0, screen->width / 2 - 100, screen->height / 4 + 72, "Generate new world...");
+    button_t button_load = button_create(1, screen->width / 2 - 100, screen->height / 4 + 96, "Load world...");
     button_load.active = 0;
     screen->buttons = array_list_push(screen->buttons, &button_respawn);
     screen->buttons = array_list_push(screen->buttons, &button_load);
@@ -30,11 +30,11 @@ void screen_death_on_open(struct screen_s *screen) {
 void screen_death_on_button_clicked(struct screen_s *screen, button_t *button) {
     if(button->id == 0) {
         screen_t *gen_screen = malloc(sizeof(screen_t));
-        *gen_screen = screen_generate_level_create(screen);
+        *gen_screen = screen_generate_world_create(screen);
         minecraft_set_current_screen(screen->minecraft, gen_screen);
     }else if(button->id == 1) {
         screen_t *load_screen = malloc(sizeof(screen_t));
-        *load_screen = screen_load_level_create(screen);
+        *load_screen = screen_load_world_create(screen);
         minecraft_set_current_screen(screen->minecraft, load_screen);
     }
 }

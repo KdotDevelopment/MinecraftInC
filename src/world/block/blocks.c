@@ -1,5 +1,7 @@
 #include <world/block/blocks.h>
 
+#include <item/item.h>
+#include <item/item_block.h>
 #include <world/block/block.h>
 #include <world/block/block_bookshelf.h>
 #include <world/block/block_chest.h>
@@ -89,4 +91,9 @@ void blocks_init() {
     blocks.farmland = block_farmland_create();
     blocks.furnace = block_furnace_create(0);
     blocks.furnace_lit = block_furnace_create(1);
+
+    for(int i = 0; i < 256; i++) {
+        if(block_list[i].id == BLOCK_AIR) continue;
+        item_list[i] = item_block_create(i - 256);
+    }
 }

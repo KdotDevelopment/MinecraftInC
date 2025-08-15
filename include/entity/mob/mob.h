@@ -63,7 +63,7 @@ typedef struct mob_s {
     void (*ai_step)(struct mob_s *mob);
 } mob_t;
 
-void mob_create(mob_t *mob, struct level_s *level);
+void mob_create(mob_t *mob, struct world_s *world);
 void mob_tick(entity_t *entity);
 void mob_ai_step(struct mob_s *mob);
 void mob_render(entity_t *entity, textures_t *textures, float delta);

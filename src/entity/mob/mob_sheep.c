@@ -1,9 +1,9 @@
 #include <entity/mob/mob_sheep.h>
 #include <entity/mob/mob_quadruped.h>
 #include <entity/ai/ai_sheep.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <model/models.h>
-#include <renderer/level_renderer.h>
+#include <renderer/world_renderer.h>
 #include <model/model_sheep.h>
 #include <model/model_sheep_fur.h>
 #include <minecraft.h>
@@ -12,8 +12,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-void mob_sheep_create(mob_t *mob, struct level_s *level, float x, float y, float z) {
-    mob_quadruped_create(mob, level, x, y, z);
+void mob_sheep_create(mob_t *mob, struct world_s *world, float x, float y, float z) {
+    mob_quadruped_create(mob, world, x, y, z);
     mob->type = ENTITY_MOB_SHEEP;
     mob->model_type = MODEL_SHEEP;
     mob->height_offset = 1.72;
@@ -23,7 +23,7 @@ void mob_sheep_create(mob_t *mob, struct level_s *level, float x, float y, float
     mob->graze = 0.0F;
     mob->graze_o = 0.0F;
     mob->ai = ai_sheep_create(mob);
-    mob->model = models_get(&level->minecraft->models, mob->model_type);
+    mob->model = models_get(&world->minecraft->models, mob->model_type);
 
     entity_set_pos(&mob->entity, x, y, z);
 
@@ -38,7 +38,7 @@ void mob_sheep_die(mob_t *mob, mob_t *causer) {
         mob->award_kill_score(&mob->entity, &causer->entity, 10);
     }
 
-    int drop_count = random_next_uniform(&mob->level->random) + random_next_uniform(&mob->level->random) + 1;
+    int drop_count = random_next_uniform(&mob->world->random) + random_next_uniform(&mob->world->random) + 1;
 
     for(int i = 0; i < drop_count; i++) {
         //drop items brown mushroom
@@ -68,7 +68,7 @@ void mob_sheep_hurt(struct entity_s *mob, struct entity_s *causer, int damage) {
     mob_t *real_mob = (mob_t *)mob;
     if(causer != NULL && causer->type == ENTITY_MOB_PLAYER && real_mob->has_fur) {
         real_mob->has_fur = 0;
-        int drop_count = random_next_uniform(&mob->level->random) * 3.0 + 1.0;
+        int drop_count = random_next_uniform(&mob->world->random) * 3.0 + 1.0;
 
         for(int i = 0; i < drop_count; i++) {
             //drop items white wool
@@ -86,7 +86,7 @@ void mob_sheep_render_model(struct mob_s *mob, float time, float r, float bob, f
     model->head.z = model->head.z - (mob->graze_o + (mob->graze - mob->graze_o) * r);
     model_quadruped_render(mob->model, time, bob, r + mob->tick_count, y_rot, x_rot, scale);
     if(mob->has_fur) {
-        glBindTexture(GL_TEXTURE_2D, textures_load(mob->level->renderer->textures, "mob/sheep_fur.png"));
+        glBindTexture(GL_TEXTURE_2D, textures_load(mob->world->renderer->textures, "mob/sheep_fur.png"));
         glDisable(GL_CULL_FACE);
         model_t fur_model = model_sheep_fur_create();
         fur_model.head.y_rot = model->head.y_rot;

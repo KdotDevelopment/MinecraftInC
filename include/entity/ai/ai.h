@@ -4,7 +4,7 @@
 
 struct ai_s;
 struct player_s;
-struct level_s;
+struct world_s;
 
 typedef struct ai_s {
     //BASIC AI
@@ -13,7 +13,7 @@ typedef struct ai_s {
     float za;
     float y_rota;
     int default_look_angle;
-    struct level_s *level;
+    struct world_s *world;
     struct mob_s *mob;
     uint8_t jumping; // = 0
     int attack_delay; // = 0

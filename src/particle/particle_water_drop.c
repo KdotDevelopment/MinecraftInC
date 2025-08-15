@@ -1,10 +1,10 @@
 #include <particle/particle_water_drop.h>
-#include <world/level.h>
+#include <world/world.h>
 
 #include <util/random.h>
 
-particle_t particle_water_drop_create(struct level_s *level, float x, float y, float z) {
-    particle_t particle = particle_create(level, x, y, z, 0, 0, 0);
+particle_t particle_water_drop_create(struct world_s *world, float x, float y, float z) {
+    particle_t particle = particle_create(world, x, y, z, 0, 0, 0);
     particle.type = PARTICLE_WATER_DROP;
     particle.entity.xd *= 0.3;
     particle.entity.zd *= 0.3;

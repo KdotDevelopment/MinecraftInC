@@ -1,7 +1,7 @@
 #include <world/block/block_leaves.h>
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
-#include <world/level.h>
+#include <world/world.h>
 
 block_t block_leaves_create() {
     block_t block = block_create(BLOCK_LEAVES, TEXTURE_LEAVES, block_sounds.grass, 0.4, 0.2, 1);
@@ -15,7 +15,7 @@ block_t block_leaves_create() {
     return block;
 }
 
-uint8_t block_leaves_can_render_side(block_t *block, struct level_s *level, int x, int y, int z, int side) {
-    level_t *real_level = (level_t *)level;
-    return !level_is_solid_block(real_level, x, y, z);
+uint8_t block_leaves_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side) {
+    world_t *real_world = (world_t *)world;
+    return !world_is_solid_block(real_world, x, y, z);
 }

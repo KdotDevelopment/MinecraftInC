@@ -1,7 +1,7 @@
 #pragma once
 
 #include <player/player.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <world/mob_spawner.h>
 
 #include <stdint.h>
@@ -27,7 +27,7 @@ typedef struct gamemode_s {
     mob_spawner_t mob_spawner;
     uint8_t gamemode_type;
 
-    void (*init_level)(struct gamemode_s *gamemode, struct level_s *level);
+    void (*init_world)(struct gamemode_s *gamemode, struct world_s *world);
     void (*destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
     uint8_t (*remove_item)(struct gamemode_s *gamemode, int item);
     void (*start_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
@@ -38,12 +38,12 @@ typedef struct gamemode_s {
     void (*init_player)(struct gamemode_s *gamemode, player_t *player);
     void (*tick)(struct gamemode_s *gamemode);
     void (*open_inventory)(struct gamemode_s *gamemode);
-    void (*spawn_mobs)(struct gamemode_s *gamemode, level_t *level);
+    void (*spawn_mobs)(struct gamemode_s *gamemode, world_t *world);
     void (*adjust_player)(struct gamemode_s *gamemode, player_t *player);
 } gamemode_t;
 
 gamemode_t gamemode_create(struct minecraft_s *minecraft);
-void gamemode_init_level(struct gamemode_s *gamemode, struct level_s *level);
+void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world);
 void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item);
 void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
@@ -54,5 +54,5 @@ uint8_t gamemode_use_item(struct gamemode_s *gamemode, player_t *player, int ite
 void gamemode_init_player(struct gamemode_s *gamemode, player_t *player);
 void gamemode_tick(struct gamemode_s *gamemode);
 void gamemode_open_inventory(struct gamemode_s *gamemode);
-void gamemode_spawn_mobs(struct gamemode_s *gamemode, level_t *level);
+void gamemode_spawn_mobs(struct gamemode_s *gamemode, world_t *world);
 void gamemode_adjust_player(struct gamemode_s *gamemode, player_t *player);

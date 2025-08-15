@@ -1,5 +1,5 @@
 #include <world/block/block.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <renderer/tesselator.h>
 #include <particle/particle_terrain.h>
 #include <entity/entity_item.h>
@@ -73,12 +73,12 @@ void block_render_full_brightness(block_t *block) {
     block->render_inside(block, -2, 0, 0, 5);
 }
 
-float block_get_brightness(block_t *block, struct level_s *level, int x, int y, int z) {
-    return level_get_brightness((level_t *)level, x, y, z);
+float block_get_brightness(block_t *block, struct world_s *world, int x, int y, int z) {
+    return world_get_brightness((world_t *)world, x, y, z);
 }
 
-uint8_t block_can_render_side(block_t *block, struct level_s *level, int x, int y, int z, int side) {
-    return !level_is_solid_block((level_t *)level, x, y, z);
+uint8_t block_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side) {
+    return !world_is_solid_block((world_t *)world, x, y, z);
 }
 
 int block_get_texture_id(block_t *block, int face) {
@@ -166,27 +166,27 @@ AABB_t block_get_collision_aabb(block_t *block, int x, int y, int z) {
     return (AABB_t){ .x0 = x + block->x0, .y0 = y + block->y0, .z0 = z + block->z0, .x1 = x + block->x1, .y1 = y + block->y1, .z1 = z + block->z1 };
 }
 
-void block_update(block_t *block, struct level_s *level, int x, int y, int z, random_t *random) {
+void block_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
     return;
 }
 
-void block_on_neighbor_changed(block_t *block, struct level_s *level, int x, int y, int z, uint8_t block_id) {
+void block_on_neighbor_changed(block_t *block, struct world_s *world, int x, int y, int z, uint8_t block_id) {
     return;
 }
 
-void block_on_placed(block_t *block, struct level_s *level, int x, int y, int z) {
+void block_on_placed(block_t *block, struct world_s *world, int x, int y, int z) {
     return;
 }
 
-void block_on_added(block_t *block, struct level_s *level, int x, int y, int z) {
+void block_on_added(block_t *block, struct world_s *world, int x, int y, int z) {
     return;
 }
 
-void block_on_removed(block_t *block, struct level_s *level, int x, int y, int z) {
+void block_on_removed(block_t *block, struct world_s *world, int x, int y, int z) {
     return;
 }
 
-void block_breaking(block_t *block, struct level_s *level, int x, int y, int z, int face, particles_t *particles) {
+void block_breaking(block_t *block, struct world_s *world, int x, int y, int z, int face, particles_t *particles) {
     float a = 0.1;
     float xx = x + random_uniform() * (block->x1 - block->x0 - a * 2.0) + a + block->x0;
     float yy = y + random_uniform() * (block->y1 - block->y0 - a * 2.0) + a + block->y0;
@@ -211,13 +211,13 @@ void block_breaking(block_t *block, struct level_s *level, int x, int y, int z, 
     }
 
     particle_t *particle = malloc(sizeof(particle_t));
-    *particle = particle_terrain_create(level, xx, yy, zz, 0.0, 0.0, 0.0, block);
+    *particle = particle_terrain_create(world, xx, yy, zz, 0.0, 0.0, 0.0, block);
     particle_set_scale(particle, 0.6);
     particle_set_power(particle, 0.2);
     particles_spawn_particle(particles, particle);
 }
 
-void block_destroy(block_t *block, struct level_s *level, int x, int y, int z, particles_t *particles) {
+void block_destroy(block_t *block, struct world_s *world, int x, int y, int z, particles_t *particles) {
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
             for(int k = 0; k < 4; k++) {
@@ -225,7 +225,7 @@ void block_destroy(block_t *block, struct level_s *level, int x, int y, int z, p
                 float yd = y + (j + 0.5) / 4.0;
                 float zd = z + (k + 0.5) / 4.0;
                 particle_t *particle = malloc(sizeof(particle_t));
-                *particle = particle_terrain_create(level, xd, yd, zd, xd - x - 0.5, yd - y - 0.5, zd - z - 0.5, block);
+                *particle = particle_terrain_create(world, xd, yd, zd, xd - x - 0.5, yd - y - 0.5, zd - z - 0.5, block);
                 particles_spawn_particle(particles, particle);
             }
         }
@@ -257,40 +257,40 @@ hit_result_t block_clip(block_t *block, int x, int y, int z, vec3_t v0, vec3_t v
     return pos;
 }
 
-uint8_t block_render(block_t *block, struct level_s *level, int x, int y, int z) {
+uint8_t block_render(block_t *block, struct world_s *world, int x, int y, int z) {
     uint8_t rendered = 0;
-    if(block->can_render_side(block, level, x, y - 1, z, 0)) {
-        float brightness = block->get_brightness(block, level, x, y - 1, z);
+    if(block->can_render_side(block, world, x, y - 1, z, 0)) {
+        float brightness = block->get_brightness(block, world, x, y - 1, z);
         tesselator_color(0.5 * brightness, 0.5 * brightness, 0.5 * brightness);
         block->render_inside(block, x, y, z, 0);
         rendered = 1;
     }
-    if(block->can_render_side(block, level, x, y + 1, z, 1)) {
-        float brightness = block->get_brightness(block, level, x, y + 1, z);
+    if(block->can_render_side(block, world, x, y + 1, z, 1)) {
+        float brightness = block->get_brightness(block, world, x, y + 1, z);
         tesselator_color(brightness, brightness, brightness);
         block->render_inside(block, x, y, z, 1);
         rendered = 1;
     }
-    if(block->can_render_side(block, level, x, y, z - 1, 2)) {
-        float brightness = block->get_brightness(block, level, x, y, z - 1);
+    if(block->can_render_side(block, world, x, y, z - 1, 2)) {
+        float brightness = block->get_brightness(block, world, x, y, z - 1);
         tesselator_color(0.8 * brightness, 0.8 * brightness, 0.8 * brightness);
         block->render_inside(block, x, y, z, 2);
         rendered = 1;
     }
-    if(block->can_render_side(block, level, x, y, z + 1, 3)) {
-        float brightness = block->get_brightness(block, level, x, y, z + 1);
+    if(block->can_render_side(block, world, x, y, z + 1, 3)) {
+        float brightness = block->get_brightness(block, world, x, y, z + 1);
         tesselator_color(0.8 * brightness, 0.8 * brightness, 0.8 * brightness);
         block->render_inside(block, x, y, z, 3);
         rendered = 1;
     }
-    if(block->can_render_side(block, level, x - 1, y, z, 4)) {
-        float brightness = block->get_brightness(block, level, x - 1, y, z);
+    if(block->can_render_side(block, world, x - 1, y, z, 4)) {
+        float brightness = block->get_brightness(block, world, x - 1, y, z);
         tesselator_color(0.6 * brightness, 0.6 * brightness, 0.6 * brightness);
         block->render_inside(block, x, y, z, 4);
         rendered = 1;
     }
-    if(block->can_render_side(block, level, x + 1, y, z, 5)) {
-        float brightness = block->get_brightness(block, level, x + 1, y, z);
+    if(block->can_render_side(block, world, x + 1, y, z, 5)) {
+        float brightness = block->get_brightness(block, world, x + 1, y, z);
         tesselator_color(0.6 * brightness, 0.6 * brightness, 0.6 * brightness);
         block->render_inside(block, x, y, z, 5);
         rendered = 1;
@@ -299,36 +299,36 @@ uint8_t block_render(block_t *block, struct level_s *level, int x, int y, int z)
     return rendered;
 }
 
-void block_spawn_items(block_t *block, level_t *level, int x, int y, int z) {
-    if(level->creative_mode) return;
+void block_spawn_items(block_t *block, world_t *world, int x, int y, int z) {
+    if(world->creative_mode) return;
     int count = block->item_count;
 
     for(int i = 0; i < count; i++) {
-        if(random_next_uniform(&level->random) <= 1.0) {
+        if(random_next_uniform(&world->random) <= 1.0) {
             float z_diff = 0.7;
-            float x_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
-            float y_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
-            z_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float x_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float y_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
+            z_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
             entity_t *item = malloc(sizeof(entity_t));
-            entity_item_create(item, level, x + x_diff, y + y_diff, z + z_diff, block->id);
-            level_add_entity(level, item);
+            entity_item_create(item, world, x + x_diff, y + y_diff, z + z_diff, block->id);
+            world_add_entity(world, item);
         }
     }
 }
 
-void block_spawn_items_chance(block_t *block, level_t *level, int x, int y, int z, float chance) {
-    if(level->creative_mode) return;
+void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int z, float chance) {
+    if(world->creative_mode) return;
     int count = block->item_count;
 
     for(int i = 0; i < count; i++) {
-        if(random_next_uniform(&level->random) <= chance) {
+        if(random_next_uniform(&world->random) <= chance) {
             float z_diff = 0.7;
-            float x_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
-            float y_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
-            z_diff = random_next_uniform(&level->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float x_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
+            float y_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
+            z_diff = random_next_uniform(&world->random) * z_diff + (1.0 - z_diff) * 0.5;
             entity_t *item = malloc(sizeof(entity_t));
-            entity_item_create(item, level, x + x_diff, y + y_diff, z + z_diff, block->texture_id);
-            level_add_entity(level, item);
+            entity_item_create(item, world, x + x_diff, y + y_diff, z + z_diff, block->texture_id);
+            world_add_entity(world, item);
         }
     }
 }

@@ -1,4 +1,4 @@
-#include <world/levelgen/noise/noise_composite.h>
+#include <world/noise/noise_composite.h>
 
 noise_t noise_composite_create(noise_t *noise1, noise_t *noise2) {
     noise_t noise = noise_create();

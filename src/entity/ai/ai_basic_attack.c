@@ -1,11 +1,11 @@
 #include <entity/ai/ai_basic_attack.h>
 #include <entity/mob/mob.h>
-#include <world/level.h>
+#include <world/world.h>
 
 #include <stddef.h>
 
-ai_t ai_basic_attack_create(struct level_s *level, struct mob_s *mob) {
-    ai_t ai = ai_basic_create(level, mob);
+ai_t ai_basic_attack_create(struct world_s *world, struct mob_s *mob) {
+    ai_t ai = ai_basic_create(world, mob);
     ai.update = ai_basic_attack_update;
     ai.hurt = ai_basic_attack_hurt;
     ai.attack = ai_basic_attack_attack;
@@ -14,7 +14,7 @@ ai_t ai_basic_attack_create(struct level_s *level, struct mob_s *mob) {
 }
 
 uint8_t ai_basic_attack_attack(struct ai_s *ai) {
-    if(level_clip(ai->level, (vec3_t){ ai->mob->x, ai->mob->y, ai->mob->z }, (vec3_t){ ai->attack_target->x, ai->attack_target->y, ai->attack_target->z }).null == 0) {
+    if(world_clip(ai->world, (vec3_t){ ai->mob->x, ai->mob->y, ai->mob->z }, (vec3_t){ ai->attack_target->x, ai->attack_target->y, ai->attack_target->z }).null == 0) {
         return 0;
     }
     ai->mob->attack_time = 5;
@@ -28,7 +28,7 @@ uint8_t ai_basic_attack_attack(struct ai_s *ai) {
 void ai_basic_attack_update(struct ai_s *ai) {
     ai_basic_update(ai);
     if(ai->mob->health > 0) {
-        entity_t *entity = &ai->level->player->mob.entity;
+        entity_t *entity = &ai->world->player->mob.entity;
         float distance = 16.0;
         if(ai->attack_target != NULL && ai->attack_target->removed) {
             ai->attack_target = NULL;

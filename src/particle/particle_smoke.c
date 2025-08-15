@@ -1,8 +1,8 @@
 #include <particle/particle_smoke.h>
-#include <world/level.h>
+#include <world/world.h>
 
-particle_t particle_smoke_create(struct level_s *level, float x, float y, float z) {
-    particle_t particle = particle_create(level, x, y, z, 0, 0, 0);
+particle_t particle_smoke_create(struct world_s *world, float x, float y, float z) {
+    particle_t particle = particle_create(world, x, y, z, 0, 0, 0);
     particle.type = PARTICLE_SMOKE;
     particle.entity.xd *= 0.1;
     particle.entity.yd *= 0.1;

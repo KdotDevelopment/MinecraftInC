@@ -2,11 +2,11 @@
 #include <entity/mob/mob_quadruped.h>
 #include <entity/ai/ai_basic_jump_attack.h>
 #include <model/model_spider.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <minecraft.h>
 
-void mob_spider_create(mob_t *mob, struct level_s *level, float x, float y, float z) {
-    mob_quadruped_create(mob, level, x, y, z);
+void mob_spider_create(mob_t *mob, struct world_s *world, float x, float y, float z) {
+    mob_quadruped_create(mob, world, x, y, z);
     mob->type = ENTITY_MOB_SPIDER;
     mob->model_type = MODEL_SPIDER;
     mob->height_offset = 0.72;
@@ -16,6 +16,6 @@ void mob_spider_create(mob_t *mob, struct level_s *level, float x, float y, floa
     entity_set_pos(&mob->entity, x, y, z);
     mob->death_score = 105;
     mob->bob_strength = 0;
-    mob->ai = ai_basic_jump_attack_create(level, mob);
-    mob->model = models_get(&level->minecraft->models, mob->model_type);
+    mob->ai = ai_basic_jump_attack_create(world, mob);
+    mob->model = models_get(&world->minecraft->models, mob->model_type);
 }

@@ -2,7 +2,7 @@
 #include <entity/entity_take_anim.h>
 #include <world/block/blocks.h>
 #include <model/model_item.h>
-#include <world/level.h>
+#include <world/world.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -20,8 +20,8 @@ void item_models_init() {
     }
 }
 
-void entity_item_create(entity_t *entity, struct level_s *level, float x, float y, float z, int block_id) {
-    entity_create(entity, level);
+void entity_item_create(entity_t *entity, struct world_s *world, float x, float y, float z, int block_id) {
+    entity_create(entity, world);
     entity->bb_width = 0.25;
     entity->bb_height = 0.25;
     entity->height_offset = entity->bb_height / 2.0;
@@ -64,7 +64,7 @@ void entity_item_tick(struct entity_s *entity) {
 
 void entity_item_render(struct entity_s *entity, textures_t *textures, float delta) {
     glBindTexture(GL_TEXTURE_2D, textures_load(textures, "terrain.png"));
-    float brightness = level_get_brightness((level_t *)entity->level, entity->x, entity->y, entity->z);
+    float brightness = world_get_brightness((world_t *)entity->world, entity->x, entity->y, entity->z);
     float rot_delta = entity->y_rot + (entity->tick_count + delta) * 3.0;
     glPushMatrix();
     glColor4f(brightness, brightness, brightness, 1.0);
@@ -99,8 +99,8 @@ void entity_item_player_touch(entity_t *entity, entity_t *player) {
     player_t *real_player = (player_t *)player;
     if(inventory_add_item(&real_player->inventory, entity->block_id)) {
         entity_t *anim = malloc(sizeof(entity_t));
-        entity_take_anim_create(anim, entity->level, entity, real_player);
-        level_add_entity(entity->level, anim);
+        entity_take_anim_create(anim, entity->world, entity, real_player);
+        world_add_entity(entity->world, anim);
         entity_remove(entity);
     }
 }

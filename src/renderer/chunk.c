@@ -10,10 +10,10 @@
 
 int chunk_updates = 0;
 
-chunk_t chunk_create(level_t *level, int x, int y, int z, int chunk_size, int base_list_id) {
+chunk_t chunk_create(world_t *world, int x, int y, int z, int chunk_size, int base_list_id) {
     chunk_t chunk = { 0 };
     chunk.visible = 0;
-    chunk.level = level;
+    chunk.world = world;
     chunk.x = x;
     chunk.y = y;
     chunk.z = z;
@@ -47,11 +47,11 @@ void chunk_update(chunk_t *chunk) {
         for(int x = x0; x < x1; x++) {
             for(int y = y0; y < y1; y++) {
                 for(int z = z0; z < z1; z++) {
-                    uint8_t block_id = level_get_block(chunk->level, x, y, z);
+                    uint8_t block_id = world_get_block(chunk->world, x, y, z);
                     if(block_id != blocks.air.id) {
                         block_t *block = &block_list[block_id];
                         if(block->render_pass != i) b0 = 1;
-                        else b1 |= block->render(block, (struct level_s *)chunk->level, x, y, z);
+                        else b1 |= block->render(block, (struct world_s *)chunk->world, x, y, z);
                     }
                 }
             }
@@ -93,8 +93,8 @@ int chunk_list_comparator(const void *a, const void *b) {
     chunk_t *ca = *(chunk_t **)a;
     chunk_t *cb = *(chunk_t **)b;
 
-    float apx = ca->level->player->x, apy = ca->level->player->y, apz = ca->level->player->z;
-    float bpx = cb->level->player->x, bpy = cb->level->player->y, bpz = cb->level->player->z;
+    float apx = ca->world->player->x, apy = ca->world->player->y, apz = ca->world->player->z;
+    float bpx = cb->world->player->x, bpy = cb->world->player->y, bpz = cb->world->player->z;
     float distA = (ca->x - apx) * (ca->x - apx) + (ca->y - apy) * (ca->y - apy) + (ca->z - apz) * (ca->z - apz);
     float distB = (cb->x - bpx) * (cb->x - bpx) + (cb->y - bpy) * (cb->y - bpy) + (cb->z - bpz) * (cb->z - bpz);
     return distA == distB ? 0 : (distA > distB ? 1 : -1);
@@ -105,8 +105,8 @@ int chunk_visible_distance_comparator(const void *a, const void *b) {
     chunk_t *cb = *(chunk_t **)b;
     if (ca->visible || !cb->visible) {
         if (cb->visible) {
-            float apx = ca->level->player->x, apy = ca->level->player->y, apz = ca->level->player->z;
-            float bpx = cb->level->player->x, bpy = cb->level->player->y, bpz = cb->level->player->z;
+            float apx = ca->world->player->x, apy = ca->world->player->y, apz = ca->world->player->z;
+            float bpx = cb->world->player->x, bpy = cb->world->player->y, bpz = cb->world->player->z;
             float distA = (ca->x - apx) * (ca->x - apx) + (ca->y - apy) * (ca->y - apy) + (ca->z - apz) * (ca->z - apz);
             float distB = (cb->x - bpx) * (cb->x - bpx) + (cb->y - bpy) * (cb->y - bpy) + (cb->z - bpz) * (cb->z - bpz);
             return distA == distB ? 0 : (distA > distB ? 1 : -1);

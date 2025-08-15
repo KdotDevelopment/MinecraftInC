@@ -12,4 +12,4 @@ void gamemode_survival_stop_destroy_block(struct gamemode_s *gamemode);
 void gamemode_survival_render(struct gamemode_s *gamemode, float delta);
 uint8_t gamemode_survival_use_item(struct gamemode_s *gamemode, player_t *player, int item);
 void gamemode_survival_tick(struct gamemode_s *gamemode);
-void gamemode_survival_init_level(struct gamemode_s *gamemode, struct level_s *level);
+void gamemode_survival_init_world(struct gamemode_s *gamemode, struct world_s *world);

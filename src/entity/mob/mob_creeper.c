@@ -3,11 +3,11 @@
 #include <entity/ai/ai_skeleton.h>
 #include <model/model_creeper.h>
 #include <entity/entity.h>
-#include <world/level.h>
+#include <world/world.h>
 #include <minecraft.h>
 
-void mob_creeper_create(mob_t *mob, struct level_s *level, float x, float y, float z) {
-    mob_create(mob, level);
+void mob_creeper_create(mob_t *mob, struct world_s *world, float x, float y, float z) {
+    mob_create(mob, world);
     mob->type = ENTITY_MOB_CREEPER;
     mob->model_type = MODEL_CREEPER;
     mob->height_offset = 1.62;
@@ -15,7 +15,7 @@ void mob_creeper_create(mob_t *mob, struct level_s *level, float x, float y, flo
     mob->texture_name = "mob/creeper.png";
     mob->ai = ai_creeper_create(mob);
     mob->ai.default_look_angle = 45;
-    mob->model = models_get(&level->minecraft->models, mob->model_type);
+    mob->model = models_get(&world->minecraft->models, mob->model_type);
 
     entity_set_pos(&mob->entity, x, y, z);
 

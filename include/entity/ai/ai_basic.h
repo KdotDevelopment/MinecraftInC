@@ -2,7 +2,7 @@
 
 #include <entity/ai/ai.h>
 
-ai_t ai_basic_create(struct level_s *level, struct mob_s *mob);
+ai_t ai_basic_create(struct world_s *world, struct mob_s *mob);
 void ai_basic_tick(struct ai_s *ai);
 void ai_basic_jump(ai_t *ai);
 void ai_basic_update(struct ai_s *ai);

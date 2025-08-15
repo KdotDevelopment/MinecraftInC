@@ -1,7 +1,7 @@
 #include <world/block/block_slab.h>
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
-#include <world/level.h>
+#include <world/world.h>
 
 block_t block_slab_create(uint8_t id, uint8_t double_slab) {
     block_t block = block_create(id, TEXTURE_SLAB, block_sounds.stone, 1, 2, 1);
@@ -23,19 +23,19 @@ int block_slab_get_texture_id(block_t *block, int face) {
     return face <= 1 ? TEXTURE_DOUBLE_SLAB : TEXTURE_SLAB;
 }
 
-void block_slab_on_neighbor_changed(block_t *block, struct level_s *level, int x, int y, int z, uint8_t block_id) {
+void block_slab_on_neighbor_changed(block_t *block, struct world_s *world, int x, int y, int z, uint8_t block_id) {
 
 }
 
-void block_slab_on_added(block_t *block, struct level_s *level, int x, int y, int z) {
-    level_t *real_level = (level_t *)level;
-    if(level_get_block(real_level, x, y - 1, z) == blocks.slab.id) {
-        level_set_block(real_level, x, y, z, blocks.air.id);
-        level_set_block(real_level, x, y - 1, z, blocks.double_slab.id);
+void block_slab_on_added(block_t *block, struct world_s *world, int x, int y, int z) {
+    world_t *real_world = (world_t *)world;
+    if(world_get_block(real_world, x, y - 1, z) == blocks.slab.id) {
+        world_set_block(real_world, x, y, z, blocks.air.id);
+        world_set_block(real_world, x, y - 1, z, blocks.double_slab.id);
     }
 }
 
-uint8_t block_slab_can_render_side(block_t *block, struct level_s *level, int x, int y, int z, int side) {
-    level_t *real_level = (level_t *)level;
-    return side == 1 ? 1 : level_is_solid_block(real_level, x, y, z) ? 0 : (side == 0 ? 1 : level_get_block(real_level, x, y, z) != block->id);
+uint8_t block_slab_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side) {
+    world_t *real_world = (world_t *)world;
+    return side == 1 ? 1 : world_is_solid_block(real_world, x, y, z) ? 0 : (side == 0 ? 1 : world_get_block(real_world, x, y, z) != block->id);
 }

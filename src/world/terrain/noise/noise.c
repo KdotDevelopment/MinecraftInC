@@ -1,7 +1,7 @@
-#include <world/levelgen/noise/noise.h>
-#include <world/levelgen/noise/noise_composite.h>
-#include <world/levelgen/noise/noise_octave.h>
-#include <world/levelgen/noise/noise_perlin.h>
+#include <world/noise/noise.h>
+#include <world/noise/noise_composite.h>
+#include <world/noise/noise_octave.h>
+#include <world/noise/noise_perlin.h>
 
 noise_t noise_create() {
     noise_t noise;

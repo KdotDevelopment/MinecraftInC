@@ -1,4 +1,4 @@
-#include <world/levelgen/noise/noise.h>
+#include <world/noise/noise.h>
 
 #include <math.h>
 

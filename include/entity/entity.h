@@ -25,7 +25,7 @@ typedef enum {
 } entity_type_t;
 
 typedef struct entity_s {
-    struct level_s *level;
+    struct world_s *world;
     float xo, yo, zo;
     float x, y, z;
     float xd, yd, zd;
@@ -90,7 +90,7 @@ typedef struct entity_s {
     uint8_t (*can_be_hit)(struct entity_s *entity);
 } entity_t;
 
-void entity_create(entity_t *entity, struct level_s *level);
+void entity_create(entity_t *entity, struct world_s *world);
 void entity_set_pos(entity_t *entity, float x, float y, float z);
 void entity_reset_pos(entity_t *entity);
 void entity_turn(entity_t *entity, float y_rot, float x_rot);

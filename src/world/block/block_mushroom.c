@@ -2,7 +2,7 @@
 #include <world/block/block_flower.h>
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
-#include <world/level.h>
+#include <world/world.h>
 
 block_t block_mushroom_create(uint8_t id, int texture_id) {
     block_t block = block_flower_create(id, texture_id);
@@ -14,10 +14,10 @@ block_t block_mushroom_create(uint8_t id, int texture_id) {
     return block;
 }
 
-void block_mushroom_update(block_t *block, struct level_s *level, int x, int y, int z, random_t *random) {
-    level_t *real_level = (level_t *)level;
-    uint8_t block_id = level_get_block(real_level, x, y - 1, z);
-    if(level_is_lit(real_level, x, y, z) || (block_id != blocks.stone.id && block_id != blocks.gravel.id && block_id != blocks.cobblestone.id)) {
-        level_set_block(real_level, x, y, z, blocks.air.id);
+void block_mushroom_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
+    world_t *real_world = (world_t *)world;
+    uint8_t block_id = world_get_block(real_world, x, y - 1, z);
+    if(world_is_lit(real_world, x, y, z) || (block_id != blocks.stone.id && block_id != blocks.gravel.id && block_id != blocks.cobblestone.id)) {
+        world_set_block(real_world, x, y, z, blocks.air.id);
     }
 }

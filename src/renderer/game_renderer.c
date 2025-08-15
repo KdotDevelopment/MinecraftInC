@@ -67,12 +67,12 @@ void renderer_setup_gui_camera(game_renderer_t *game_renderer) {
 }
 
 void renderer_setup_fog(game_renderer_t *game_renderer) {
-    level_t *level = &game_renderer->minecraft->level;
+    world_t *world = &game_renderer->minecraft->world;
     player_t *player = &game_renderer->minecraft->player;
     glFogfv(GL_FOG_COLOR, (float []){ game_renderer->fog_r, game_renderer->fog_g, game_renderer->fog_b, 1.0 });
     glNormal3f(0.0, -1.0, 0.0);
     glColor4f(1.0, 1.0, 1.0, 1.0);
-    block_t *block = &block_list[level_get_block(level, player->x, player->y + 0.12, player->z)];
+    block_t *block = &block_list[world_get_block(world, player->x, player->y + 0.12, player->z)];
     if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) {
         uint8_t liquid = block->liquid_type;
         glFogi(GL_FOG_MODE, GL_EXP);

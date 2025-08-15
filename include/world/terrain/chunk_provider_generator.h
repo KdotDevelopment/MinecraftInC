@@ -4,7 +4,7 @@
 
 #include <util/random.h>
 
-struct level_s;
+struct world_s;
 
 typedef struct {
     int width;
@@ -13,9 +13,9 @@ typedef struct {
     random_t random;
     progress_bar_t *progress_bar;
     uint8_t *blocks;
-    int water_level;
+    int water_world;
     int *flood_data; // 1024 * 1024
-} level_gen_t;
+} world_gen_t;
 
-level_gen_t level_gen_create();
-void level_gen_generate(level_gen_t *level_gen, int width, int depth, struct level_s *proto_level);
+world_gen_t world_gen_create();
+void world_gen_generate(world_gen_t *world_gen, int width, int depth, struct world_s *proto_world);

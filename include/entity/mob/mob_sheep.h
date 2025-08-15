@@ -2,7 +2,7 @@
 
 #include <entity/mob/mob.h>
 
-void mob_sheep_create(mob_t *mob, struct level_s *level, float x, float y, float z);
+void mob_sheep_create(mob_t *mob, struct world_s *world, float x, float y, float z);
 void mob_sheep_die(mob_t *mob, mob_t *causer);
 void mob_sheep_ai_step(struct mob_s *mob);
 void mob_sheep_hurt(struct entity_s *mob, struct entity_s *causer, int damage);

@@ -25,20 +25,20 @@ gamemode_t gamemode_create(struct minecraft_s *minecraft) {
     return gamemode;
 }
 
-void gamemode_init_level(struct gamemode_s *gamemode, struct level_s *level) {
-    level->creative_mode = 0;
+void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world) {
+    world->creative_mode = 0;
 }
 
 void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
-    level_t *level = (level_t *)&gamemode->minecraft->level;
-    block_t *block = &block_list[level_get_block(level, x, y, z)];
+    world_t *world = (world_t *)&gamemode->minecraft->world;
+    block_t *block = &block_list[world_get_block(world, x, y, z)];
     if(block != NULL) {
         if(block->sound.type != BLOCK_SOUND_NONE) {
-            level_play_sound_at(level, block->sound.name, x, y, z, block->sound.volume, block->sound.pitch);
+            world_play_sound_at(world, block->sound.name, x, y, z, block->sound.volume, block->sound.pitch);
         }
-        block->destroy(block, level, x, y, z, &gamemode->minecraft->particles);
+        block->destroy(block, world, x, y, z, &gamemode->minecraft->particles);
     }
-    level_set_block(level, x, y, z, blocks.air.id);
+    world_set_block(world, x, y, z, blocks.air.id);
 }
 
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item) {
@@ -77,7 +77,7 @@ void gamemode_open_inventory(struct gamemode_s *gamemode) {
     return;
 }
 
-void gamemode_spawn_mobs(struct gamemode_s *gamemode, level_t *level) {
+void gamemode_spawn_mobs(struct gamemode_s *gamemode, world_t *world) {
     return;
 }
 

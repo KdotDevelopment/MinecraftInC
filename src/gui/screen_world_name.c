@@ -1,29 +1,29 @@
-#include <gui/screen_level_name.h>
+#include <gui/screen_world_name.h>
 #include <minecraft.h>
 
-screen_t screen_level_name_create(screen_t *parent, char *name, int id) {
+screen_t screen_world_name_create(screen_t *parent, char *name, int id) {
     screen_t screen = screen_create();
-    screen.type = SCREEN_TYPE_LEVEL_NAME;
+    screen.type = SCREEN_TYPE_world_NAME;
     screen.parent = (struct screen_s *)parent;
     screen.name = string_create(name);
     screen.id = id;
     screen.counter = 0;
     //screen.grabs_mouse = 1;
-    screen.title = "Enter level name:";
+    screen.title = "Enter world name:";
     if(strcmp(name, "---") == 0) string_set(&screen.name, "");
 
-    screen.on_open = screen_level_name_on_open;
-    screen.on_close = screen_level_name_on_close;
-    screen.tick = screen_level_name_tick;
-    screen.render = screen_level_name_render;
-    screen.on_key_pressed = screen_level_name_on_key_pressed;
-    screen.on_button_clicked = screen_level_name_on_button_clicked;
-    screen.destroy = screen_level_name_destroy;
+    screen.on_open = screen_world_name_on_open;
+    screen.on_close = screen_world_name_on_close;
+    screen.tick = screen_world_name_tick;
+    screen.render = screen_world_name_render;
+    screen.on_key_pressed = screen_world_name_on_key_pressed;
+    screen.on_button_clicked = screen_world_name_on_button_clicked;
+    screen.destroy = screen_world_name_destroy;
 
     return screen;
 }
 
-void screen_level_name_on_open(struct screen_s *proto_screen) {
+void screen_world_name_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
     button_t button_save = button_create(0, screen->width / 2 - 100, screen->height / 4 + 120, "Save");
     button_t button_cancel = button_create(1, screen->width / 2 - 100, screen->height / 4 + 144, "Cancel");
@@ -32,15 +32,15 @@ void screen_level_name_on_open(struct screen_s *proto_screen) {
     screen->buttons[0].active = string_length(screen->name) > 0;
 }
 
-void screen_level_name_on_close(struct screen_s *proto_screen) {
+void screen_world_name_on_close(struct screen_s *proto_screen) {
     return;
 }
 
-void screen_level_name_tick(struct screen_s *proto_screen) {
+void screen_world_name_tick(struct screen_s *proto_screen) {
     screen_tick(proto_screen);
 }
 
-void screen_level_name_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
+void screen_world_name_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
     screen_t *screen = (screen_t *)proto_screen;
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 40, 0xFFFFFFFF);
@@ -54,7 +54,7 @@ void screen_level_name_render(struct screen_s *proto_screen, int mouse_x, int mo
     string_free(string);
 }
 
-void screen_level_name_on_key_pressed(struct screen_s *proto_screen, char event_char, int event_key) {
+void screen_world_name_on_key_pressed(struct screen_s *proto_screen, char event_char, int event_key) {
     screen_t *screen = (screen_t *)proto_screen;
     if(event_key == SDL_SCANCODE_BACKSPACE && string_length(screen->name) > 0) {
         screen->name = string_sub(screen->name, 0, string_length(screen->name) - 2);
@@ -67,7 +67,7 @@ void screen_level_name_on_key_pressed(struct screen_s *proto_screen, char event_
     screen->buttons[0].active = string_length(screen->name) > 0;
 }
 
-void screen_level_name_on_button_clicked(struct screen_s *proto_screen, button_t *button) {
+void screen_world_name_on_button_clicked(struct screen_s *proto_screen, button_t *button) {
     if(!button->active) return;
     screen_t *screen = (screen_t *)proto_screen;
     if(button->id == 0 && string_length(screen->name) > 0) {
@@ -82,7 +82,7 @@ void screen_level_name_on_button_clicked(struct screen_s *proto_screen, button_t
     }
 }
 
-void screen_level_name_destroy(struct screen_s *proto_screen) {
+void screen_world_name_destroy(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
     string_free(screen->name);
 

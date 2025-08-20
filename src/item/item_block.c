@@ -8,6 +8,8 @@ item_t item_block_create(int16_t block_id) {
     item.block_id = block_id + 256;
 
     item.on_use = item_block_on_use;
+    
+    // item_list is done in blocks.c
 
     return item;
 }

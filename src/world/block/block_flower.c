@@ -2,12 +2,13 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 #include <renderer/tesselator.h>
 
 #include <math.h>
 
 block_t block_flower_create(uint8_t id, int texture_id) {
-    block_t block = block_create(id, texture_id, block_sounds.none, 1, 0, 1);
+    block_t block = block_create(id, texture_id, &block_sounds.none, 0, 0, &materials.plants);
     block.is_cube = 0;
     block.is_opaque = 0;
     block.is_solid = 0;
@@ -21,7 +22,6 @@ block_t block_flower_create(uint8_t id, int texture_id) {
     block.render_full_brightness = block_flower_render_full_brightness;
 
     float w = 0.2;
-
     block_set_bounds(&block, 0.5 - w, 0, 0.5 - w, 0.5 + w, 3.0 * w, 0.5 + w);
 
     block_list[block.id] = block;

@@ -4,6 +4,7 @@
 #include <util/random.h>
 #include <physics/AABB.h>
 #include <particle/particles.h>
+#include <world/material/material.h>
 
 #include <util/sin_table.h>
 
@@ -20,13 +21,14 @@ enum {
 typedef struct block_s {
     int texture_id;
     uint8_t id;
-    block_sound_t sound;
-    int destroy_speed;
-    uint8_t explodable;
+    block_sound_t *sound;
     float x0, y0, z0;
     float x1, y1, z1;
+    float resistance;
+    float hardness;
     float particle_gravity;
-    int item_count;
+    material_t *material;
+    uint8_t drop_id;
 
     uint8_t is_opaque;
     uint8_t is_solid;
@@ -55,11 +57,12 @@ typedef struct block_s {
     void (*render_full_brightness)(struct block_s *block);
     AABB_t (*get_selection_aabb)(struct block_s *block, int x, int y, int z);
     AABB_t (*get_collision_aabb)(struct block_s *block, int x, int y, int z);
+    uint8_t (*get_drop_count)(struct block_s *block, struct world_s *world);
 } block_t;
 
 extern block_t block_list[256];
 
-block_t block_create(uint8_t id, int texture_id, block_sound_t sound, float particle_gravity, float break_speed, uint8_t can_explode);
+block_t block_create(uint8_t id, int texture_id, block_sound_t *sound, float hardness, float resistance, material_t *material);
 void block_set_bounds(block_t *block, float x0, float y0, float z0, float x1, float y1, float z1);
 uint8_t block_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side);
 int block_get_texture_id(block_t *block, int face);
@@ -82,3 +85,4 @@ AABB_t block_get_selection_aabb(block_t *block, int x, int y, int z);
 AABB_t block_get_collision_aabb(block_t *block, int x, int y, int z);
 void block_spawn_items(block_t *block, struct world_s *world, int x, int y, int z);
 void block_spawn_items_chance(block_t *block, struct world_s *world, int x, int y, int z, float chance);
+uint8_t block_get_drop_count(block_t *block, struct world_s *world);

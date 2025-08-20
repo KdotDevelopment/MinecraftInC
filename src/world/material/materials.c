@@ -8,20 +8,20 @@
 struct materials_s materials = { 0 };
 
 void materials_init() {
-    materials.air = material_transparent_create();
-    materials.ground = material_create();
-    materials.wood = material_create();
-    materials.rock = material_create();
-    materials.metal = material_create();
-    materials.water = material_liquid_create();
-    materials.lava = material_liquid_create();
-    materials.leaves = material_create();
-    materials.plants = material_logic_create();
-    materials.sponge = material_create();
-    materials.wool = material_create();
-    materials.fire = material_transparent_create();
-    materials.sand = material_create();
-    materials.logic = material_logic_create();
-    materials.glass = material_create();
-    materials.tnt = material_create();
+    materials.air = material_transparent_create(0);
+    materials.ground = material_create(1);
+    materials.wood = material_create(2);
+    materials.rock = material_create(3);
+    materials.metal = material_create(4);
+    materials.water = material_liquid_create(5);
+    materials.lava = material_liquid_create(6);
+    materials.leaves = material_create(7);
+    materials.plants = material_logic_create(8);
+    materials.sponge = material_create(9);
+    materials.wool = material_create(10);
+    materials.fire = material_transparent_create(11);
+    materials.sand = material_create(12);
+    materials.logic = material_logic_create(13);
+    materials.glass = material_create(14);
+    materials.tnt = material_create(15);
 }

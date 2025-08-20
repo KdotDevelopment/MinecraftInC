@@ -2,9 +2,10 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
 block_t block_glass_create() {
-    block_t block = block_create(BLOCK_GLASS, TEXTURE_GLASS, block_sounds.metal, 1, 0.3, 1);
+    block_t block = block_create(BLOCK_GLASS, TEXTURE_GLASS, &block_sounds.metal, 0.3, 0, &materials.glass);
     block.can_render_side = block_glass_can_render_side;
     block.is_opaque = 0;
     block.is_solid = 0;

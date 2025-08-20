@@ -2,14 +2,16 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
 block_t block_grass_create() {
-    block_t block = block_create(BLOCK_GRASS, TEXTURE_GRASS, block_sounds.grass, 1, 0.6, 1);
+    block_t block = block_create(BLOCK_GRASS, TEXTURE_GRASS, &block_sounds.grass, 0.6, 0, &materials.ground);
     block.has_physics = 1;
     block.should_tick = 1;
 
     block.get_texture_id = block_grass_get_texture_id;
     block.update = block_grass_update;
+    block.drop_id = BLOCK_DIRT;
 
     block_list[block.id] = block;
 
@@ -27,9 +29,9 @@ void block_grass_update(block_t *block, struct world_s *world, int x, int y, int
             world_set_block(real_world, x, y, z, blocks.dirt.id);
         }else {
             for(int i = 0; i < 4; i++) {
-                int xx = x + random_next_int_range(random, 0, 2) - 1;
-                int yy = y + random_next_int_range(random, 0, 4) - 3;
-                int zz = z + random_next_int_range(random, 0, 2) - 1;
+                int xx = x + random_next_int_range(random, 0, 3) - 1;
+                int yy = y + random_next_int_range(random, 0, 5) - 3;
+                int zz = z + random_next_int_range(random, 0, 3) - 1;
                 if(world_get_block(real_world, xx, yy, zz) == blocks.dirt.id && world_is_lit(real_world, xx, yy, zz)) {
                     world_set_block(real_world, xx, yy, zz, blocks.grass.id);
                 }

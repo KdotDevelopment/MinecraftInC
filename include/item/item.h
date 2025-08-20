@@ -27,12 +27,15 @@ typedef struct item_s {
             uint8_t armor_piece;
             uint8_t damage_reduce;
         };
-        struct {
+        struct { // item_block AND item_seeds
             uint16_t block_id;
+        };
+        struct {
+            uint8_t heal_amount;
         };
     };
 
-    void (*on_use)(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
+    uint8_t (*on_use)(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
     item_stack_t (*on_right_click)(item_stack_t *item_stack, world_t *world, player_t *player);
 } item_t;
 

@@ -1,9 +1,10 @@
 #include <world/block/block_sand.h>
 #include <world/block/blocks.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
-block_t block_sand_create(uint8_t block_id, int texture_id) {
-    block_t block = block_create(block_id, texture_id, block_sounds.gravel, 1, block_id == BLOCK_SAND ? 0.5 : 0.6, 1);
+block_t block_sand_create(uint8_t block_id, int texture_id, float hardness, float resistance) {
+    block_t block = block_create(block_id, texture_id, &block_sounds.gravel, hardness, resistance, &materials.sand);
     block.on_neighbor_changed = block_sand_on_neighbor_placed;
     block.on_placed = block_sand_on_placed;
 

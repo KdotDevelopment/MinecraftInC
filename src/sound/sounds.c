@@ -2,9 +2,40 @@
 
 #include <sound/sounds.h>
 
-#include "assets/music/calm1.h"
-#include "assets/music/calm2.h"
-#include "assets/music/calm3.h"
+#include "assets/sound/fire/fire.h"
+#include "assets/sound/fire/ignite.h"
+
+#include "assets/sound/liquid/lava.h"
+#include "assets/sound/liquid/water.h"
+
+#include "assets/sound/mob/pig1.h"
+#include "assets/sound/mob/pig2.h"
+#include "assets/sound/mob/pig3.h"
+#include "assets/sound/mob/pigdeath.h"
+#include "assets/sound/mob/sheep1.h"
+#include "assets/sound/mob/sheep2.h"
+#include "assets/sound/mob/sheep3.h"
+
+#include "assets/sound/random/bow.h"
+#include "assets/sound/random/break.h"
+#include "assets/sound/random/click.h"
+#include "assets/sound/random/door_close.h"
+#include "assets/sound/random/door_open.h"
+#include "assets/sound/random/drr.h"
+#include "assets/sound/random/explode.h"
+#include "assets/sound/random/fizz.h"
+#include "assets/sound/random/fuse.h"
+#include "assets/sound/random/glass1.h"
+#include "assets/sound/random/glass2.h"
+#include "assets/sound/random/glass3.h"
+#include "assets/sound/random/hurt.h"
+#include "assets/sound/random/pop.h"
+#include "assets/sound/random/splash.h"
+
+#include "assets/sound/step/cloth1.h"
+#include "assets/sound/step/cloth2.h"
+#include "assets/sound/step/cloth3.h"
+#include "assets/sound/step/cloth4.h"
 #include "assets/sound/step/grass1.h"
 #include "assets/sound/step/grass2.h"
 #include "assets/sound/step/grass3.h"
@@ -13,6 +44,10 @@
 #include "assets/sound/step/gravel2.h"
 #include "assets/sound/step/gravel3.h"
 #include "assets/sound/step/gravel4.h"
+#include "assets/sound/step/sand1.h"
+#include "assets/sound/step/sand2.h"
+#include "assets/sound/step/sand3.h"
+#include "assets/sound/step/sand4.h"
 #include "assets/sound/step/stone1.h"
 #include "assets/sound/step/stone2.h"
 #include "assets/sound/step/stone3.h"
@@ -44,22 +79,38 @@ void sounds_init(sounds_t *sounds) {
 }
 
 void sounds_stop_all(sounds_t *sounds) {
-    for(int i = 0; i < 3; i++) {
-        sound_stop(&sounds->calm[i]);
-    }
     for(int i = 0; i < 4; i++) {
         sound_stop(&sounds->grass[i]);
         sound_stop(&sounds->gravel[i]);
         sound_stop(&sounds->stone[i]);
         sound_stop(&sounds->wood[i]);
     }
+    for(int i = 0; i < 3; i++) {
+        sound_stop(&sounds->sheep[i]);
+        sound_stop(&sounds->pig[i]);
+        sound_stop(&sounds->glass[i]);
+    }
+    sound_stop(&sounds->bow);
+    sound_stop(&sounds->destroy);
+    sound_stop(&sounds->click);
+    sound_stop(&sounds->door_open);
+    sound_stop(&sounds->door_close);
+    sound_stop(&sounds->drr);
+    sound_stop(&sounds->explode);
+    sound_stop(&sounds->fizz);
+    sound_stop(&sounds->fuse);
+    sound_stop(&sounds->hurt);
+    sound_stop(&sounds->pop);
+    sound_stop(&sounds->splash);
+    sound_stop(&sounds->pig_death);
+    sound_stop(&sounds->lava);
+    sound_stop(&sounds->water);
+    sound_stop(&sounds->fire);
+    sound_stop(&sounds->ignite);
 }
 
 void sounds_set_music_volume(sounds_t *sounds, float volume) {
-    for(int i = 0; i < 3; i++) {
-        alSourcef(sounds->calm[i].source, AL_GAIN, volume * 0.4);
-    }
-    sounds->music_volume = volume;
+    // Music disabled in this version
 }
 
 void sounds_set_sound_volume(sounds_t *sounds, float volume) {
@@ -69,6 +120,29 @@ void sounds_set_sound_volume(sounds_t *sounds, float volume) {
         alSourcef(sounds->stone[i].source, AL_GAIN, volume);
         alSourcef(sounds->wood[i].source, AL_GAIN, volume);
     }
+    for(int i = 0; i < 3; i++) {
+        alSourcef(sounds->sheep[i].source, AL_GAIN, volume);
+        alSourcef(sounds->pig[i].source, AL_GAIN, volume);
+        alSourcef(sounds->glass[i].source, AL_GAIN, volume);
+    }
+    alSourcef(sounds->bow.source, AL_GAIN, volume);
+    alSourcef(sounds->destroy.source, AL_GAIN, volume);
+    alSourcef(sounds->click.source, AL_GAIN, volume);
+    alSourcef(sounds->door_open.source, AL_GAIN, volume);
+    alSourcef(sounds->door_close.source, AL_GAIN, volume);
+    alSourcef(sounds->drr.source, AL_GAIN, volume);
+    alSourcef(sounds->explode.source, AL_GAIN, volume);
+    alSourcef(sounds->fizz.source, AL_GAIN, volume);
+    alSourcef(sounds->fuse.source, AL_GAIN, volume);
+    alSourcef(sounds->hurt.source, AL_GAIN, volume);
+    alSourcef(sounds->pop.source, AL_GAIN, volume);
+    alSourcef(sounds->splash.source, AL_GAIN, volume);
+    alSourcef(sounds->pig_death.source, AL_GAIN, volume);
+    alSourcef(sounds->lava.source, AL_GAIN, volume);
+    alSourcef(sounds->water.source, AL_GAIN, volume);
+    alSourcef(sounds->fire.source, AL_GAIN, volume);
+    alSourcef(sounds->ignite.source, AL_GAIN, volume);
+
     sounds->sound_volume = volume;
 }
 
@@ -78,9 +152,6 @@ sounds_t sounds_create() {
     sounds.random = random_create(time(NULL));
     sounds_init(&sounds);
 
-    sounds.calm[0] = sound_load(asset_calm1_ogg, sizeof(asset_calm1_ogg));
-    sounds.calm[1] = sound_load(asset_calm2_ogg, sizeof(asset_calm2_ogg));
-    sounds.calm[2] = sound_load(asset_calm3_ogg, sizeof(asset_calm3_ogg));
     sounds.grass[0] = sound_load(asset_grass1_ogg, sizeof(asset_grass1_ogg));
     sounds.grass[1] = sound_load(asset_grass2_ogg, sizeof(asset_grass2_ogg));
     sounds.grass[2] = sound_load(asset_grass3_ogg, sizeof(asset_grass3_ogg));
@@ -101,10 +172,6 @@ sounds_t sounds_create() {
     sounds.music_volume = 1.0f;
     sounds.sound_volume = 1.0f;
 
-    for (int i = 0; i < 3; i++) {
-        alSource3f(sounds.calm[i].source, AL_POSITION, 0, 0, 0);
-    }
-
     for (int i = 0; i < 4; i++) {
         alSource3f(sounds.grass[i].source, AL_POSITION, 0, 0, 0);
         alSource3f(sounds.gravel[i].source, AL_POSITION, 0, 0, 0);
@@ -116,38 +183,126 @@ sounds_t sounds_create() {
 }
 
 void sounds_play_music(sounds_t *sounds, char *music) {
-    if(strcmp(music, "Calm") == 0) {
-        sounds_stop_all(sounds);
-        sound_play(&sounds->calm[random_next_int_range(&sounds->random, 0, 2)], 0.2 * sounds->music_volume, 1.0f);
-    }
+
 }
 
-void sounds_play_sound(sounds_t *sounds, char *sound, float volume, float pitch) {
-    if(strcmp(sound, "Grass") == 0) {
-        sound_play(&sounds->grass[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-    }
-    if(strcmp(sound, "Gravel") == 0) {
-        sound_play(&sounds->gravel[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-    }
-    if(strcmp(sound, "Stone") == 0) {
-        sound_play(&sounds->stone[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-    }
-    if(strcmp(sound, "Wood") == 0) {
-        sound_play(&sounds->wood[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitch) {
+    switch(sound) {
+        case SOUND_FIRE_FIRE:
+            sound_play(&sounds->fire, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_FIRE_IGNITE:
+            sound_play(&sounds->ignite, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+
+        case SOUND_LIQUID_LAVA:
+            sound_play(&sounds->lava, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_LIQUID_WATER:
+            sound_play(&sounds->water, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+
+        case SOUND_MOB_PIG:
+            sound_play(&sounds->pig[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_MOB_PIG_DEATH:
+            sound_play(&sounds->pig_death, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_MOB_SHEEP:
+            sound_play(&sounds->sheep[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+
+        case SOUND_RANDOM_BOW:
+            sound_play(&sounds->bow, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_BREAK:
+            sound_play(&sounds->destroy, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_CLICK:
+            sound_play(&sounds->click, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_DOOR_OPEN:
+            sound_play(&sounds->door_open, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_DOOR_CLOSE:
+            sound_play(&sounds->door_close, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_DRR:
+            sound_play(&sounds->drr, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_EXPLODE:
+            sound_play(&sounds->explode, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_FIZZ:
+            sound_play(&sounds->fizz, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_FUSE:
+            sound_play(&sounds->fuse, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_GLASS:
+            sound_play(&sounds->glass[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_HURT:
+            sound_play(&sounds->hurt, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_POP:
+            sound_play(&sounds->pop, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_RANDOM_SPLASH:
+            sound_play(&sounds->splash, volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+
+        case SOUND_STEP_CLOTH:
+            sound_play(&sounds->wool[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_STEP_GRASS:
+            sound_play(&sounds->grass[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_STEP_GRAVEL:
+            sound_play(&sounds->gravel[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_STEP_SAND:
+            sound_play(&sounds->sand[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_STEP_STONE:
+            sound_play(&sounds->stone[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
+        case SOUND_STEP_WOOD:
+            sound_play(&sounds->wood[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
+            return;
     }
 }
 
 void sounds_destroy(sounds_t *sounds) {
-    for (int i = 0; i < 3; i++) {
-        sound_destroy(&sounds->calm[i]);
-    }
-
     for (int i = 0; i < 4; i++) {
         sound_destroy(&sounds->grass[i]);
         sound_destroy(&sounds->gravel[i]);
         sound_destroy(&sounds->stone[i]);
         sound_destroy(&sounds->wood[i]);
     }
+    for(int i = 0; i < 3; i++) {
+        sound_destroy(&sounds->sheep[i]);
+        sound_destroy(&sounds->pig[i]);
+        sound_destroy(&sounds->glass[i]);
+    }
+    sound_destroy(&sounds->bow);
+    sound_destroy(&sounds->destroy);
+    sound_destroy(&sounds->click);
+    sound_destroy(&sounds->door_open);
+    sound_destroy(&sounds->door_close);
+    sound_destroy(&sounds->drr);
+    sound_destroy(&sounds->explode);
+    sound_destroy(&sounds->fizz);
+    sound_destroy(&sounds->fuse);
+    sound_destroy(&sounds->hurt);
+    sound_destroy(&sounds->pop);
+    sound_destroy(&sounds->splash);
+    sound_destroy(&sounds->pig_death);
+    sound_destroy(&sounds->lava);
+    sound_destroy(&sounds->water);
+    sound_destroy(&sounds->fire);
+    sound_destroy(&sounds->ignite);
+
     alcMakeContextCurrent(NULL);
     alcDestroyContext(sounds->context);
     alcCloseDevice(sounds->device);

@@ -2,9 +2,10 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
 block_t block_leaves_create() {
-    block_t block = block_create(BLOCK_LEAVES, TEXTURE_LEAVES, block_sounds.grass, 0.4, 0.2, 1);
+    block_t block = block_create(BLOCK_LEAVES, TEXTURE_LEAVES, &block_sounds.grass, 0.2, 0, &materials.leaves);
     block.is_opaque = 0;
     block.is_solid = 0;
 

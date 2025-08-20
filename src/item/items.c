@@ -43,7 +43,7 @@ void items_init() {
     items.diamond_axe = item_axe_create(ITEM_DIAMOND_AXE, TEXTURE_ITEM_DIAMOND_AXE, TYPE_TOOL_DIAMOND);
     items.stick = item_create(ITEM_STICK, TEXTURE_ITEM_STICK);
     items.bowl = item_create(ITEM_BOWL, TEXTURE_ITEM_BOWL);
-    items.soup = item_food_create(ITEM_SOUP, TEXTURE_ITEM_SOUP, 10);
+    items.soup = item_soup_create(ITEM_SOUP, TEXTURE_ITEM_SOUP, 10);
     items.gold_sword = item_sword_create(ITEM_GOLD_SWORD, TEXTURE_ITEM_GOLD_SWORD, TYPE_TOOL_GOLD);
     items.gold_shovel = item_shovel_create(ITEM_GOLD_SHOVEL, TEXTURE_ITEM_GOLD_SHOVEL, TYPE_TOOL_GOLD);
     items.gold_pickaxe = item_pickaxe_create(ITEM_GOLD_PICKAXE, TEXTURE_ITEM_GOLD_PICKAXE, TYPE_TOOL_GOLD);

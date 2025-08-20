@@ -2,4 +2,4 @@
 
 #include <world/material/material.h>
 
-material_t material_transparent_create();
+material_t material_transparent_create(uint8_t id);

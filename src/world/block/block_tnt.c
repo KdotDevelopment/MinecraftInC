@@ -2,9 +2,10 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <particle/particles.h>
+#include <world/material/materials.h>
 
 block_t block_tnt_create() {
-    block_t block = block_create(BLOCK_TNT, TEXTURE_TNT, block_sounds.wool, 1, 0, 1);
+    block_t block = block_create(BLOCK_TNT, TEXTURE_TNT, &block_sounds.wool, 0, 0, &materials.tnt);
     block.get_texture_id = block_tnt_get_texture_id;
     block.destroy = block_tnt_destroy;
 

@@ -67,13 +67,22 @@ void tesselator_begin() {
     g_tesselator.no_color = 0;
 }
 
-void tesselator_color(float r, float g, float b) {
+void tesselator_color_float(float r, float g, float b, float a) {
+    tesselator_color((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255), (uint8_t)(a * 255));
+}
+
+void tesselator_color_opaque_int(uint32_t color) {
+    tesselator_color_opaque(((color >> 24) & 0xFF), ((color >> 16) & 0xFF), ((color >> 8) & 0xFF));
+}
+
+void tesselator_color_opaque(uint8_t r, uint8_t g, uint8_t b) {
+    tesselator_color(r, g, b, 255);
+}
+
+void tesselator_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     if(g_tesselator.no_color) return;
-    if(!g_tesselator.has_color) g_tesselator.len += 3;
     g_tesselator.has_color = 1;
-    g_tesselator.r = r;
-    g_tesselator.g = g;
-    g_tesselator.b = b;
+    g_tesselator.color = (a << 24) | (b << 16) | (g << 8) | r;
 }
 
 void tesselator_vertex_uv(float x, float y, float z, float u, float v) {
@@ -104,10 +113,6 @@ void tesselator_vertex(float x, float y, float z) {
         tesselator_end();
         g_tesselator.len = 3;
     }
-}
-
-void tesselator_color_int(uint32_t color) {
-    tesselator_color(((color >> 24) & 0xFF) / 255.0, ((color >> 16) & 0xFF) / 255.0, ((color >> 8) & 0xFF) / 255.0);
 }
 
 void tesselator_normal(float x, float y, float z) {

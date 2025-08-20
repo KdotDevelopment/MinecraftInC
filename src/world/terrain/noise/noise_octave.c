@@ -1,6 +1,6 @@
-#include <world/noise/noise_octave.h>
-#include <world/noise/noise_perlin.h>
-#include <world/noise/noise.h>
+#include <world/terrain/noise/noise_octave.h>
+#include <world/terrain/noise/noise_perlin.h>
+#include <world/terrain/noise/noise.h>
 #include <stdlib.h>
 
 noise_t noise_octave_create(random_t *random, int octave_count) {

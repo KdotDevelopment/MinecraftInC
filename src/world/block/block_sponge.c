@@ -2,9 +2,10 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
 block_t block_sponge_create() {
-    block_t block = block_create(BLOCK_SPONGE, TEXTURE_SPONGE, block_sounds.wool, 0.9, 0.6, 1);
+    block_t block = block_create(BLOCK_SPONGE, TEXTURE_SPONGE, &block_sounds.wool, 0.6, 0, &materials.sponge);
     block.on_added = block_sponge_on_added;
     block.on_removed = block_sponge_on_removed;
 

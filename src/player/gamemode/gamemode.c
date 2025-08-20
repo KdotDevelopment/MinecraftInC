@@ -33,8 +33,8 @@ void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     world_t *world = (world_t *)&gamemode->minecraft->world;
     block_t *block = &block_list[world_get_block(world, x, y, z)];
     if(block != NULL) {
-        if(block->sound.type != BLOCK_SOUND_NONE) {
-            world_play_sound_at(world, block->sound.name, x, y, z, block->sound.volume, block->sound.pitch);
+        if(block->sound->type != BLOCK_SOUND_NONE) {
+            world_play_sound_at(world, block->sound->base_type, x, y, z, block->sound->volume, block->sound->pitch);
         }
         block->destroy(block, world, x, y, z, &gamemode->minecraft->particles);
     }

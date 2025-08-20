@@ -2,9 +2,10 @@
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
+#include <world/material/materials.h>
 
-block_t block_slab_create(uint8_t id, uint8_t double_slab) {
-    block_t block = block_create(id, TEXTURE_SLAB, block_sounds.stone, 1, 2, 1);
+block_t block_slab_create(uint8_t id, uint8_t double_slab, float hardness, float persistence) {
+    block_t block = block_create(id, TEXTURE_SLAB, &block_sounds.stone, hardness, persistence, &materials.rock);
     block.is_solid = !!double_slab;
     block.is_cube = !!double_slab;
     if(!double_slab) block_set_bounds(&block, 0, 0, 0, 1, 0.5, 1);

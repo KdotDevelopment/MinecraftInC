@@ -1,7 +1,7 @@
-#include <world/noise/noise.h>
-#include <world/noise/noise_composite.h>
-#include <world/noise/noise_octave.h>
-#include <world/noise/noise_perlin.h>
+#include <world/terrain/noise/noise.h>
+#include <world/terrain/noise/noise_composite.h>
+#include <world/terrain/noise/noise_octave.h>
+#include <world/terrain/noise/noise_perlin.h>
 
 noise_t noise_create() {
     noise_t noise;

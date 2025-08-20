@@ -58,7 +58,6 @@ typedef struct entity_s {
     int tick_count; // = 0;
     entity_type_t type;
     int time;
-    struct entity_s *item;
 
     union {
         struct { // arrow
@@ -74,10 +73,14 @@ typedef struct entity_s {
             float zorg; 
             struct player_s *player;
         };
+        struct { // item
+            struct entity_s *item;
+            uint8_t block_id; //item
+            uint8_t delay_before_pickup;
+        };
     };
     
     model_t *model;
-    uint8_t block_id; //item
 
     void (*tick)(struct entity_s *entity);
     void (*render)(struct entity_s *entity, textures_t *textures, float delta);
@@ -96,6 +99,7 @@ void entity_reset_pos(entity_t *entity);
 void entity_turn(entity_t *entity, float y_rot, float x_rot);
 void entity_interpolate_turn(entity_t *entity, float y_rot, float x_rot);
 void entity_tick(entity_t *entity);
+void entity_play_sound(entity_t *entity, uint8_t sound, float volume, float pitch);
 void entity_move(entity_t *entity, float x, float y, float z);
 void entity_move_to(entity_t *entity, float x, float y, float z, float x_rot, float y_rot);
 void entity_move_relative(entity_t *entity, float x, float y, float z);

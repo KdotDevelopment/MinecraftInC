@@ -1,5 +1,7 @@
 #include <item/item_stack.h>
 
+#include <item/item.h>
+
 item_stack_t item_stack_create(uint8_t block_item_id, uint8_t stack_size, int16_t item_damage) {
     item_stack_t item_stack = { 0 };
 

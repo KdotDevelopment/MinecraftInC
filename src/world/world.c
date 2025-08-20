@@ -453,7 +453,7 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
     return (hit_result_t){ .null = 1 };
 }
 
-void world_play_sound(world_t *world, char *sound, entity_t *entity, float volume, float pitch) {
+void world_play_sound(world_t *world, uint8_t sound, entity_t *entity, float volume, float pitch) {
     world_renderer_t *renderer = (world_renderer_t *)world->renderer;
     game_settings_t *settings = renderer->textures->settings;
     if(!settings->sound) return;
@@ -462,7 +462,7 @@ void world_play_sound(world_t *world, char *sound, entity_t *entity, float volum
     }
 }
 
-void world_play_sound_at(world_t *world, char *sound, float x, float y, float z, float volume, float pitch) {
+void world_play_sound_at(world_t *world, uint8_t sound, float x, float y, float z, float volume, float pitch) {
     world_renderer_t *renderer = (world_renderer_t *)world->renderer;
     game_settings_t *settings = renderer->textures->settings;
     if(!settings->sound) return;

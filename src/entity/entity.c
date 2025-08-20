@@ -121,7 +121,7 @@ void entity_tick(entity_t *entity) {
     entity->y_roto = entity->y_rot;
 }
 
-void entity_play_sound(entity_t *entity, char *sound, float volume, float pitch) {
+void entity_play_sound(entity_t *entity, uint8_t sound, float volume, float pitch) {
     world_play_sound((world_t *)entity->world, sound, entity, volume, pitch);
 }
 
@@ -254,9 +254,9 @@ void entity_move(entity_t *entity, float x, float y, float z) {
         uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y - entity->height_offset - 0.2, entity->z);
         if(entity->walk_dist > entity->next_step && block_id > blocks.air.id) {
             entity->next_step++;
-            block_sound_t sound = block_list[block_id].sound;
-            if(sound.type != BLOCK_SOUND_NONE) {
-                entity_play_sound(entity, sound.name, sound.volume, sound.pitch);
+            block_sound_t *sound = block_list[block_id].sound;
+            if(sound->type != BLOCK_SOUND_NONE) {
+                entity_play_sound(entity, sound->type, sound->volume, sound->pitch);
             }
         }
     }

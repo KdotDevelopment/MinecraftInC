@@ -10,6 +10,7 @@ static uint8_t shovel_effective_blocks[] = { BLOCK_GRASS, BLOCK_DIRT, BLOCK_SAND
 
 item_t item_tool_create(uint8_t id, uint8_t texture_id, uint8_t tool_piece, uint8_t tool_type) {
     item_t item = item_create(id, texture_id);
+    
     item.tool_type = tool_type;
     item.tool_piece = tool_piece;
     item.proper_tool_efficiency = (tool_piece + 1) / 2;
@@ -18,6 +19,8 @@ item_t item_tool_create(uint8_t id, uint8_t texture_id, uint8_t tool_piece, uint
         item.durability <<= 1;
     }
     item.entity_damage = tool_piece + tool_type;
+
+    item_list[id + 256] = item;
 
     return item;
 }

@@ -1,4 +1,4 @@
-#include <world/noise/noise.h>
+#include <world/terrain/noise/noise.h>
 
 #include <math.h>
 

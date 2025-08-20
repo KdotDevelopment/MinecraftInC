@@ -1,9 +1,9 @@
 #include <world/terrain/chunk_provider_generator.h>
 #include <world/block/blocks.h>
 #include <world/world.h>
-#include <world/noise/noise.h>
-#include <world/noise/noise_octave.h>
-#include <world/noise/noise_composite.h>
+#include <world/terrain/noise/noise.h>
+#include <world/terrain/noise/noise_octave.h>
+#include <world/terrain/noise/noise_composite.h>
 
 #include <util/array_list.h>
 

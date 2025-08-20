@@ -9,15 +9,16 @@
 
 block_t block_list[256] = { 0 };
 
-block_t block_create(uint8_t id, int texture_id, block_sound_t sound, float particle_gravity, float break_speed, uint8_t can_explode) {
+block_t block_create(uint8_t id, int texture_id, block_sound_t *sound, float hardness, float resistance, material_t *material) {
     block_t block = { 0 };
     block.id = id;
     block.texture_id = texture_id;
     block.sound = sound;
-    block.explodable = can_explode;
-    block.particle_gravity = particle_gravity;
-    block.destroy_speed = 20 * break_speed;
-    block.item_count = 1;
+    block.hardness = hardness;
+    block.resistance = resistance;
+    block.particle_gravity = 1.0;
+    block.material = material;
+    block.drop_id = id;
 
     block.is_opaque = texture_id == -1 ? 0 : 1;
     block.is_cube = texture_id == -1 ? 0 : 1;
@@ -41,6 +42,7 @@ block_t block_create(uint8_t id, int texture_id, block_sound_t sound, float part
     block.render_full_brightness = block_render_full_brightness;
     block.get_selection_aabb = block_get_selection_aabb;
     block.get_collision_aabb = block_get_collision_aabb;
+    block.get_drop_count = block_get_drop_count;
 
     block_set_bounds(&block, 0, 0, 0, 1, 1, 1);
 
@@ -301,7 +303,7 @@ uint8_t block_render(block_t *block, struct world_s *world, int x, int y, int z)
 
 void block_spawn_items(block_t *block, world_t *world, int x, int y, int z) {
     if(world->creative_mode) return;
-    int count = block->item_count;
+    uint8_t count = block->get_drop_count(block, world);
 
     for(int i = 0; i < count; i++) {
         if(random_next_uniform(&world->random) <= 1.0) {
@@ -318,7 +320,7 @@ void block_spawn_items(block_t *block, world_t *world, int x, int y, int z) {
 
 void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int z, float chance) {
     if(world->creative_mode) return;
-    int count = block->item_count;
+    uint8_t count = block->get_drop_count(block, world);
 
     for(int i = 0; i < count; i++) {
         if(random_next_uniform(&world->random) <= chance) {
@@ -331,4 +333,8 @@ void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int 
             world_add_entity(world, item);
         }
     }
+}
+
+uint8_t block_get_drop_count(block_t *block, struct world_s *world) {
+    return 1;
 }

@@ -1,5 +1,5 @@
 #include <util/random.h>
-#include <util/sin_table.h>
+#include <util/math_helper.h>
 
 #include <math.h>
 #include <stdlib.h>

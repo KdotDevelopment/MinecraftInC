@@ -26,7 +26,7 @@ uint8_t item_block_on_use(item_stack_t *item_stack, world_t *world, int x, int y
 
     uint8_t block_id = world_get_block(world, x, y, z);
     block_t *block = &block_list[block_id];
-    AABB_t aabb = block->get_collision_aabb(&block, x, y, z);
+    AABB_t aabb = block->get_collision_aabb(block, x, y, z);
 
     if((block_id > 0 && block == NULL) || block_id == BLOCK_WATER || block_id == BLOCK_STILL_WATER || block_id == BLOCK_LAVA || block_id == BLOCK_STILL_LAVA || block_id == BLOCK_FIRE) {
         if(aabb.null /*|| world_check_aabb_clear(world, aabb) || block->can_place_at(block, world, x, y, z)*/ && world_set_block(world, x, y, z, item_stack->item_id)) {

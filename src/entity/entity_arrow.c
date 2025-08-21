@@ -3,7 +3,7 @@
 #include <world/world.h>
 #include <renderer/tesselator.h>
 
-#include <util/sin_table.h>
+#include <util/math_helper.h>
 #include <util/array_list.h>
 
 #include <SDL2/SDL.h>

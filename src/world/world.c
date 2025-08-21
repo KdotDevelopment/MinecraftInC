@@ -18,7 +18,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, progress_bar_t 
     world->random = random_create(time(NULL));
     world->minecraft = minecraft;
     world->sky_color = 0x99CCFFFF;
-    world->fog_color = 0xFFFFFFFF;
+    world->fog_color = 0xB0D0FFFF;
     world->cloud_color = 0xFFFFFFFF;
     world->unprocessed = 0;
     world->tick_count = 0;
@@ -26,7 +26,6 @@ void world_create(world_t *world, struct minecraft_s *minecraft, progress_bar_t 
     world->random = random_create(time(NULL));
     world->random_value = (int)random_next_int(&world->random);
     world->generator = world_gen_create();
-    world->entities = array_list_create(sizeof(entity_t *));
     world->progress_bar = progress_bar;
     int block_count = 128 << size;
     world_gen_generate(&world->generator, block_count, block_count, (struct world_s *)world);

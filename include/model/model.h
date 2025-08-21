@@ -2,7 +2,7 @@
 
 #include <model/cube.h>
 
-#include <util/sin_table.h>
+#include <util/math_helper.h>
 
 typedef enum {
     MODEL_CREEPER,

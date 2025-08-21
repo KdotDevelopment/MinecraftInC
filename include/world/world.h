@@ -10,36 +10,53 @@
 #include <world/entity_map.h>
 
 #include <stdint.h>
+#include <stdio.h>
 
 struct enitity_s;
 struct minecraft_s;
 
+enum {
+    LIGHT_TYPE_SKY = 15,
+    LIGHT_TYPE_BLOCK = 0
+};
+
+typedef struct chunk_metadata_s {
+    uint8_t light_type;
+    int x;
+    int y;
+    int z;
+    int max_x;
+    int max_y;
+    int max_z;
+} chunk_metadata_t;
+
 typedef struct world_s {
-    int width;
-    int height;
-    int depth;
-    uint8_t *blocks;
+    uint64_t *lighting_update_list; //chunk_metadata_t
+    uint64_t *loaded_entity_list; // entity_t *
+    uint64_t *unloaded_entity_list; // entity_t *
+    uint64_t *loaded_tile_entity_list; // tile_entity_t *
     int32_t spawn_x;
     int32_t spawn_y;
     int32_t spawn_z;
-    float spawn_rot;
+    int64_t world_time;
+    uint8_t difficulty_setting;
+    //pathfinder_t pathfinder;
     random_t random;
-    int random_value;
-    next_tick_data_t *tick_list; //arraylist
-    int32_t water_world;
     uint32_t sky_color;
     uint32_t fog_color;
     uint32_t cloud_color;
+    uint8_t skylight_subtracted; // time of day based?
+    uint8_t is_new_world;
+    int64_t random_seed;
+    FILE *save_file;
+    //chunk_provider_t chunk_provider
+    //nbt_tag_compound_t player_nbt;
+    int64_t size_on_disk;
+
     struct world_renderer_s *renderer;
-    world_gen_t generator;
-    entity_t **entities; //arraylist
+    world_gen_t generator; // <-- this becomes chunk_provider_t
     progress_bar_t *progress_bar;
     particles_t *particles;
-    entity_map_t entity_map;
-    int unprocessed;
-    int tick_count;
-    uint8_t creative_mode;
-    int *light_depths;
     player_t *player;
     struct minecraft_s *minecraft;
 } world_t;

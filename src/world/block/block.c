@@ -15,7 +15,7 @@ block_t block_create(uint8_t id, int texture_id, block_sound_t *sound, float har
     block.texture_id = texture_id;
     block.sound = sound;
     block.hardness = hardness;
-    block.resistance = resistance;
+    block.resistance = resistance ? (resistance * 3) : 5 * hardness;
     block.particle_gravity = 1.0;
     block.material = material;
     block.drop_id = id;

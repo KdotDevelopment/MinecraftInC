@@ -2,4 +2,4 @@
 
 #include <item/item.h>
 
-item_t item_pickaxe_create(uint8_t id, uint8_t texture_id, int pickaxe_type);
+item_t item_pickaxe_create(uint8_t id, uint8_t texture_id, uint8_t pickaxe_type);

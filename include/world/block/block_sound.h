@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef enum {
     BLOCK_SOUND_NONE,
     BLOCK_SOUND_GRASS,

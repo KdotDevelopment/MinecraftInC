@@ -6,7 +6,7 @@
 #include <particle/particles.h>
 #include <world/material/material.h>
 
-#include <util/sin_table.h>
+#include <util/math_helper.h>
 
 #include <stdint.h>
 
@@ -29,6 +29,8 @@ typedef struct block_s {
     float particle_gravity;
     material_t *material;
     uint8_t drop_id;
+    uint8_t light_opacity;
+    uint8_t light_value;
 
     uint8_t is_opaque;
     uint8_t is_solid;

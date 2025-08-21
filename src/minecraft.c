@@ -19,7 +19,7 @@
 
 #include <util/time.h>
 #include <util/array_list.h>
-#include <util/sin_table.h>
+#include <util/math_helper.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -73,7 +73,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     glLoadIdentity();
     glMatrixMode(GL_MODELVIEW);
 
-    sin_table_initialize();
+    math_helper_initialize();
     blocks_init();
     session_data_initialize();
     item_models_init();

@@ -2,6 +2,8 @@
 
 #include <nbt/nbt_base.h>
 
+void nbt_tag_compound_create(nbt_base_t *base);
+
 void nbt_tag_compound_set_tag(nbt_base_t *base, char *key, nbt_base_t *tag);
 void nbt_tag_compound_set_byte(nbt_base_t *base, char *key, int8_t value);
 void nbt_tag_compound_set_short(nbt_base_t *base, char *key, int16_t value);

@@ -6,9 +6,9 @@
 #define vec3_null (vec3_t){ INFINITY, INFINITY, INFINITY }
 
 typedef struct {
-    float x;
-    float y;
-    float z;
+    double x;
+    double y;
+    double z;
 } vec3_t;
 
 vec3_t vec3_vector_to(vec3_t a, vec3_t b);

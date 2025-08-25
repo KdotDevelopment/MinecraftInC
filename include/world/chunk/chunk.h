@@ -36,7 +36,7 @@ uint8_t chunk_get_block_id(chunk_t *chunk, int x, int y, int z);
 uint8_t chunk_set_block(chunk_t *chunk, int x, int y, int z, int block_id);
 uint8_t chunk_get_block_metadata(chunk_t *chunk, int x, int y, int z);
 void chunk_set_block_metadata(chunk_t *chunk, int x, int y, int z, int data);
-uint8_t chunk_get_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z);
+uint8_t chunk_get_saved_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z);
 void chunk_set_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z, uint8_t level);
 uint8_t chunk_get_block_light_value(chunk_t *chunk, int x, int y, int z, uint8_t time_factor);
 void chunk_add_entity(chunk_t *chunk, entity_t *entity);

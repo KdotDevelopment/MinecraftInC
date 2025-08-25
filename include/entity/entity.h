@@ -58,6 +58,8 @@ typedef struct entity_s {
     int tick_count; // = 0;
     entity_type_t type;
     int time;
+    uint8_t is_dead;
+    uint8_t prevents_spawning;
 
     union {
         struct { // arrow

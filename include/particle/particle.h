@@ -8,9 +8,14 @@ struct world_s;
 
 enum {
     PARTICLE_NONE,
+    PARTICLE_BUBBLE,
     PARTICLE_SMOKE,
+    PARTICLE_EXPLODE,
+    PARTICLE_FLAME,
+    PARTICLE_LAVA,
     PARTICLE_TERRAIN,
     PARTICLE_WATER_DROP,
+    PARTICLE_LARGE_SMOKE,
 };
 
 typedef struct particle_s {

@@ -66,7 +66,7 @@ frustum_t frustum_get() {
 }
 
 uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, float bx, float by, float bz) {
-    for (int i = 0; i < 6; i++) {
+    for(int i = 0; i < 6; i++) {
         uint8_t b = 1;
         b = b && frustum.planes[i][0] * ax + frustum.planes[i][1] * ay + frustum.planes[i][2] * az + frustum.planes[i][3] <= 0.0;
         b = b && frustum.planes[i][0] * bx + frustum.planes[i][1] * ay + frustum.planes[i][2] * az + frustum.planes[i][3] <= 0.0;
@@ -76,7 +76,7 @@ uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, fl
         b = b && frustum.planes[i][0] * bx + frustum.planes[i][1] * ay + frustum.planes[i][2] * bz + frustum.planes[i][3] <= 0.0;
         b = b && frustum.planes[i][0] * ax + frustum.planes[i][1] * by + frustum.planes[i][2] * bz + frustum.planes[i][3] <= 0.0;
         b = b && frustum.planes[i][0] * bx + frustum.planes[i][1] * by + frustum.planes[i][2] * bz + frustum.planes[i][3] <= 0.0;
-        if (b) { return 0; }
+        if(b) return 0;
     }
     return 1;
 }

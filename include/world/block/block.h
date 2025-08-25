@@ -31,6 +31,7 @@ typedef struct block_s {
     uint8_t drop_id;
     uint8_t light_opacity;
     uint8_t light_value;
+    uint8_t tick_rate;
 
     uint8_t is_opaque;
     uint8_t is_solid;
@@ -60,6 +61,7 @@ typedef struct block_s {
     AABB_t (*get_selection_aabb)(struct block_s *block, int x, int y, int z);
     AABB_t (*get_collision_aabb)(struct block_s *block, int x, int y, int z);
     uint8_t (*get_drop_count)(struct block_s *block, struct world_s *world);
+    void (*on_exploded)(struct block_s *block, int x, int y, int z);
 } block_t;
 
 extern block_t block_list[256];
@@ -88,3 +90,4 @@ AABB_t block_get_collision_aabb(block_t *block, int x, int y, int z);
 void block_spawn_items(block_t *block, struct world_s *world, int x, int y, int z);
 void block_spawn_items_chance(block_t *block, struct world_s *world, int x, int y, int z, float chance);
 uint8_t block_get_drop_count(block_t *block, struct world_s *world);
+void block_drop_with_chance(block_t *block, struct world_s *world, int x, int y, int z, uint8_t metadata, float chance);

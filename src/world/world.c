@@ -4,192 +4,219 @@
 #include <world/block/blocks.h>
 #include <sound/sounds.h>
 #include <minecraft.h>
+#include <world/chunk/chunk.h>
+#include <world/material/materials.h>
 
 #include <util/array_list.h>
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <time.h>
 
-void world_create(world_t *world, struct minecraft_s *minecraft, progress_bar_t *progress_bar, int size) {
-    //world_t world = { 0 };
+void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir, char *world_name, int64_t seed) {
+    memset(world, 0, sizeof(world_t));
     
-    world->random = random_create(time(NULL));
     world->minecraft = minecraft;
+    world->lighting_update_list = array_list_create(sizeof(uint64_t));
+    world->loaded_entity_list = array_list_create(sizeof(uint64_t));
+    world->next_tick_data_list = array_list_create(sizeof(uint64_t));
+    world->loaded_tile_entity_list = array_list_create(sizeof(uint64_t));
+    world->world_renderer_list = array_list_create(sizeof(uint64_t));
+    world->world_time = 0;
     world->sky_color = 0x99CCFFFF;
     world->fog_color = 0xB0D0FFFF;
     world->cloud_color = 0xFFFFFFFF;
-    world->unprocessed = 0;
-    world->tick_count = 0;
-    world->tick_list = array_list_create(sizeof(next_tick_data_t));
+    world->skylight_subtracted = 0;
     world->random = random_create(time(NULL));
-    world->random_value = (int)random_next_int(&world->random);
+    world->random_number = random_next_int(&world->random);
+    world->random_seed = 0;
+    world->size_on_disk = 0;
+    world->is_new_world = 1;
+
+    for(int i = 0; i < 16; i++) {
+        float value = 1.0 - (float)i / 15.0;
+        world->light_brightness_table[i] = (1.0 - value) / (value * 3.0 + 1.0) * 0.95 + 0.05;
+    }
+
+    // checks if file exists already
+    struct stat sb;
+    char folder[256];
+    snprintf(folder, sizeof(folder), "%s/saves/%s/level.dat", saves_dir, world_name);
+    if(stat(folder, &sb) == 0) {
+        world->is_new_world = 0;
+    }
+
+    if(!world->is_new_world) {
+        // TODO: actually grab nbt data from LoadingScreenRenderer
+        nbt_base_t nbt = { 0 };
+        nbt_tag_compound_create(&nbt);
+        nbt = nbt_tag_compound_get_compound_tag(&nbt, "Data");
+        world->random_seed = nbt_tag_compound_get_int(&nbt, "RandomSeed");
+        world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
+        world->spawn_y = nbt_tag_compound_get_int(&nbt, "SpawnY");
+        world->spawn_z = nbt_tag_compound_get_int(&nbt, "SpawnZ");
+        world->world_time = nbt_tag_compound_get_long(&nbt, "Time");
+        world->size_on_disk = nbt_tag_compound_get_long(&nbt, "SizeOnDisk");
+        world->player_nbt = nbt_tag_compound_get_compound_tag(&nbt, "Player");
+    }
+
+    if(world->random_seed == 0) {
+        world->random_seed = seed;
+        world->spawn_x = 0;
+        world->spawn_y = 64;
+        world->spawn_z = 0;
+    }
+
     world->generator = world_gen_create();
-    world->progress_bar = progress_bar;
-    int block_count = 128 << size;
-    world_gen_generate(&world->generator, block_count, block_count, (struct world_s *)world);
-
-    //return world;
+    
+    //world_gen_generate(&world->generator, block_count, block_count, (struct world_s *)world);
 }
 
-void world_regenerate(world_t *world, int size) {
-    world_destroy(world);
-    world_create(world, world->minecraft, world->progress_bar, size);
+nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name) {
+    char path[256];
+    snprintf(path, sizeof(path), "%s/saves/%s/level.dat", game_dir, world_name);
+    FILE *file = fopen(path, "rb");
+    if(!file) printf("Could not open save file %s.\n", path);
+    // TODO
+    fclose(file);
 }
 
-void world_set_data(world_t *world, int w, int d, int h, uint8_t *blocks) {
-    if(world->blocks) free(world->blocks);
-    world->blocks = NULL;
-    if(world->light_depths) free(world->light_depths);
-    world->light_depths = NULL;
-    world->width = w;
-    world->height = h;
-    world->depth = d;
-    entity_map_create(&world->entity_map, world->width, world->depth, world->height);
-    world->blocks = calloc(w * d * h, 1);
-    memcpy(world->blocks, blocks, w * d * h);
-    world->light_depths = calloc(w * h, sizeof(int));
-    for(int i = 0; i < w * h; i++) {
-        world->light_depths[i] = world->depth - 1;
+void world_spawn_player(world_t *world) {
+    
+}
+
+void world_save(world_t *world, uint8_t check_entities) {
+    char path[256];
+    snprintf(path, sizeof(path), "%s/level.dat", world->save_file);
+    FILE *file = fopen(path, "wb");
+    
+    nbt_base_t nbt = { 0 };
+    nbt_tag_compound_create(&nbt);
+    nbt_tag_compound_set_long(&nbt, "RandomSeed", world->random_seed);
+    nbt_tag_compound_set_int(&nbt, "SpawnX", world->spawn_x);
+    nbt_tag_compound_set_int(&nbt, "SpawnY", world->spawn_y);
+    nbt_tag_compound_set_int(&nbt, "SpawnZ", world->spawn_z);
+    nbt_tag_compound_set_long(&nbt, "Time", world->world_time);
+    nbt_tag_compound_set_long(&nbt, "SizeOnDisk", world->size_on_disk);
+    nbt_tag_compound_set_long(&nbt, "LastPlayed", time(NULL));
+    if(world->player != NULL) {
+        nbt_base_t player_nbt = { 0 };
+        nbt_tag_compound_create(&player_nbt);
+        // TODO: world->player->write_to_nbt(world->player, &player_nbt);
+        nbt_tag_compound_set_compound(&nbt, "Player", &player_nbt);
     }
-    world_calculate_light_depths(world, 0, 0, w, h);
-    for (int i = 0; i < array_list_length(world->tick_list); i++) {
-        next_tick_data_t *tick = &world->tick_list[i];
-        free(tick);
+
+    nbt_base_t base_nbt = { 0 };
+    nbt_tag_compound_create(&base_nbt);
+    nbt_tag_compound_set_tag(&base_nbt, "Data", &nbt);
+
+    // TODO: LoadingScreenRenderer write base_nbt
+    // TODO: chunk_provider_save_chunks(check_entities)
+
+    fclose(file);
+}
+
+uint8_t world_get_block(world_t *world, int x, int y, int z) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE 
+        || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 0;
     }
-    world->tick_list = array_list_clear(world->tick_list);
-    world_find_spawn(world);
+
+    // Lake of lava at bottom of world
+    if(y <= 0) return BLOCK_LAVA;
+
+    return chunk_get_block_id(world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH), 
+                              x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH);
 }
 
-void world_find_spawn(world_t *world) {
-    int i = 0;
-    int x;
-    int y;
-    int z;
-    do {
-        i++;
-        x = rand() % ((world->width / 2) - (world->width / 4)) + (world->width / 4);
-        z = rand() % ((world->height / 2) - (world->height / 4)) + (world->height / 4);
-        y = world_get_highest_block(world, x, z) + 1;
-        if(i == 10000) {
-            world->spawn_x = x;
-            world->spawn_y = -100;
-            world->spawn_z = z;
-            return;
-        }
-    }while(y <= world_get_water_world(world));
-    world->spawn_x = x;
-    world->spawn_y = y;
-    world->spawn_z = z;
+uint8_t world_block_exists(world_t *world, int x, int y, int z) {
+    return y >= 0 && y < CHUNK_SIZE_HEIGHT ? world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH) : 0;
 }
 
-void world_calculate_light_depths(world_t *world, int x0, int y0, int x1, int y1) {
-    for(int i = x0; i < x0 + x1; i++) {
-        for(int j = y0; j < y0 + y1; j++) {
-            int depth = world->light_depths[i + j * world->width];
-            int k = world->depth - 1;
-            while(!world_is_light_blocker(world, i, k, j) && k > 0) k--;
-            world->light_depths[i + j * world->width] = k;
-            if(depth != k) {
-                int min = depth < k ? depth : k;
-                int max = depth > k ? depth : k;
-                if(world->renderer != NULL) world_renderer_queue_chunks((world_renderer_t *)world->renderer, i - 1, min - 1, j - 1, i + 1, max + 1, j + 1);
-            }
-        }
+uint8_t world_chunk_exists(world_t *world, int x, int z) {
+    //chunk_provider_chunk_exists(&world->chunk_provider, x, z);
+}
+
+chunk_t *world_get_chunk(world_t *world, int x, int z) {
+    //return chunk_provider_provide_chunk(&world->chunk_provider, x, z);
+}
+
+// setTileNoUpdate
+uint8_t world_set_block_no_update(world_t *world, int x, int y, int z, uint8_t block_id) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 0;
     }
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_set_block(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, block_id);
 }
 
-uint8_t world_is_light_blocker(world_t *world, int x, int y, int z) {
-    block_t *block = &block_list[world_get_block(world, x, y, z)];
-    return block->id == blocks.air.id ? 0 : block->is_opaque;
+material_t *world_get_block_material(world_t *world, int x, int y, int z) {
+    uint8_t block_id = world_get_block(world, x, y, z);
+    return block_id == 0 ? &materials.air : block_list[block_id].material;
 }
 
-AABB_t *world_get_cubes(world_t *world, AABB_t box) {
-    AABB_t *list = array_list_create(sizeof(AABB_t));
-    int x0 = box.x0;
-    int y0 = box.y0;
-    int z0 = box.z0;
-    int x1 = box.x1 + 1;
-    int y1 = box.y1 + 1;
-    int z1 = box.z1 + 1;
-    if(box.x0 < 0) x0--;
-    if(box.y0 < 0) y0--;
-    if(box.z0 < 0) z0--;
-    for(int i = x0; i < x1; i++) {
-        for(int j = y0; j < y1; j++) {
-            for(int k = z0; k < z1; k++) {
-                AABB_t bb = { 0 };
-                if(i >= 0 && j >= 0 && k >= 0 && i < world->width && j < world->depth && k < world->height) {
-                    block_t *block = &block_list[world_get_block(world, i, j, k)];
-                    if (block->id != blocks.air.id) {
-                        bb = block->get_collision_aabb(block, i, j, k);
-                        if(!bb.null && AABB_intersects_inner(box, bb)) {
-                            list = array_list_push(list, &bb);
-                        }
-                    }
-                }else if(i < 0 || j < 0 || k < 0 || i >= world->width || k >= world->height) {
-                    block_t *block = &block_list[blocks.bedrock.id];
-                    AABB_t bb = block->get_collision_aabb(block, i, j, k);
-                    if(!bb.null && AABB_intersects_inner(box, bb)) {
-                        list = array_list_push(list, &bb);
-                    }
-                }
-            }
-        }
+uint8_t world_get_block_metadata(world_t *world, int x, int y, int z) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 0;
     }
-    return list;
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_get_block_metadata(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH);
+}
+
+uint8_t world_set_block_metadata(world_t *world, int x, int y, int z, uint8_t data) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 0;
+    }
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_set_block_metadata(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, data);
+    return 1;
+}
+
+uint8_t world_set_block_with_update(world_t *world, int x, int y, int z, uint8_t block_id) {
+    if(!world_set_block_no_update(world, x, y, z, block_id)) return 0;
+
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+        world_renderer_update_block(renderer, x, y, z);
+    }
+
+    world_update_neighbors_at(world, x, y, z, block_id);
+    return 1;
+}
+
+void world_mark_blocks_dirty_vertical(world_t *world, int x, int z, int y1, int y2) {
+    if(y1 > y2) {
+        int swap = y2;
+        y2 = y1;
+        y1 = swap;
+    }
+
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+        world_renderer_update_blocks(renderer, x, y1, z, x, y2, z);
+    }
 }
 
 void world_swap(world_t *world, int x0, int y0, int z0, int x1, int y1, int z1) {
     uint8_t t1 = world_get_block(world, x0, y0, z0);
+    uint8_t m1 = world_get_metadata(world, x0, y0, z0);
     uint8_t t2 = world_get_block(world, x1, y1, z1);
+    uint8_t m2 = world_get_metadata(world, x1, y1, z1);
     world_set_block_no_neighbor_change(world, x0, y0, z0, t2);
+    world_set_block_metadata(world, x0, y0, z0, m2);
     world_set_block_no_neighbor_change(world, x1, y1, z1, t1);
+    world_set_block_metadata(world, x1, y1, z1, m1);
     world_update_neighbors_at(world, x0, y0, z0, t2);
     world_update_neighbors_at(world, x1, y1, z1, t1);
-}
-
-uint8_t world_set_block(world_t *world, int x, int y, int z, uint8_t block_id) {
-    if(world_set_block_no_neighbor_change(world, x, y, z, block_id)) {
-        world_update_neighbors_at(world, x, y, z, block_id);
-        return 1;
-    }
-    return 0;
-}
-
-uint8_t world_set_block_no_neighbor_change(world_t *world, int x, int y, int z, uint8_t block_id) {
-    if (x < 0 || y < 0 || z < 0 || x >= world->width || y >= world->depth || z >= world->height) return 0;
-    int i = (y * world->height + z) * world->width + x;
-    if(block_id == world->blocks[i]) return 0;
-
-    if(block_id == blocks.air.id && (x == 0 || z == 0 || x == world->width - 1 || z == world->height - 1) && y >= world_get_ground_world(world) && y < world_get_water_world(world)) {
-        block_id = blocks.water.id;
-    }
-    uint8_t prev = world->blocks[i];
-    world->blocks[i] = block_id;
-    block_t *block = &block_list[block_id];
-    block_t *prev_block = &block_list[prev];
-    if(prev != blocks.air.id) {
-        prev_block->on_removed(prev_block, (struct world_s *)world, x, y, z);
-    }
-    if(block_id != blocks.air.id) {
-        block->on_added(block, (struct world_s *)world, x, y, z);
-    }
-    world_calculate_light_depths(world, x, z, 1, 1);
-    if(world->renderer != NULL) {
-        world_renderer_queue_chunks((world_renderer_t *)world->renderer, x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
-    }
-
-    return 1;
-}
-
-void world_update_block(world_t *world, int x, int y, int z, uint8_t block_id) {
-    if (x < 0 || y < 0 || z < 0 || x >= world->width || y >= world->depth || z >= world->height) return;
-    block_t *block = &block_list[world->blocks[(y * world->height + z) * world->width + x]];
-    if (block->id != blocks.air.id) { 
-        block->on_neighbor_changed(block, (struct world_s *)world, x, y, z, block_id);
-    }
 }
 
 void world_update_neighbors_at(world_t *world, int x, int y, int z, uint8_t block_id) {
@@ -201,189 +228,120 @@ void world_update_neighbors_at(world_t *world, int x, int y, int z, uint8_t bloc
     world_update_block(world, x, y, z + 1, block_id);
 }
 
-uint8_t world_set_block_no_update(world_t *world, int x, int y, int z, uint8_t block_id) {
-    if (x < 0 || y < 0 || z < 0 || x >= world->width || y >= world->depth || z >= world->height) return 0;
-    int i = (y * world->height + z) * world->width + x;
-    if (block_id == world->blocks[i]) return 0;
-    world->blocks[i] = block_id;
-    return 1;
+void world_update_block(world_t *world, int x, int y, int z, uint8_t block_id) {
+    block_t *block = &block_list[world_get_block(world, x, y, z)];
+    if (block->id != blocks.air.id) { 
+        block->on_neighbor_changed(block, (struct world_s *)world, x, y, z, block_id);
+    }
 }
 
-uint8_t world_is_lit(world_t *world, int x, int y, int z) {
-    return !(x < 0 || y < 0 || z < 0 || x >= world->width || y >= world->depth || z >= world->height) ? y >= world->light_depths[x + z * world->width] : 1;
+uint8_t world_can_block_see_sky(world_t *world, int x, int y, int z) {
+    return chunk_can_block_see_sky(world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH), x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH);
 }
 
-uint8_t world_get_block(world_t *world, int x, int y, int z) {
-    if(x < 0 || y < 0 || z < 0
-        || x >= world->width
-        || y >= world->depth
-        || z >= world->height) {
+uint8_t private_world_get_block_light_value(world_t *world, int x, int y, int z, uint8_t check_neighbors) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 15;
+    }
+
+    if(check_neighbors) {
+        uint8_t block_id = world_get_block(world, x, y, z);
+        if(block_id == BLOCK_SLAB || block_id == BLOCK_FARMLAND) {
+            // I have no idea if these cardinal directions are right but here we are
+            uint8_t light_top = private_world_get_block_light_value(world, x, y + 1, z, 0);
+            uint8_t light_east = private_world_get_block_light_value(world, x + 1, y, z, 0);
+            uint8_t light_west = private_world_get_block_light_value(world, x - 1, y, z, 0);
+            uint8_t light_north = private_world_get_block_light_value(world, x, y, z + 1, 0);
+            uint8_t light_south = private_world_get_block_light_value(world, x, y, z - 1, 0);
+
+            if(light_east > light_top) light_top = light_east;
+            if(light_west > light_top) light_top = light_west;
+            if(light_north > light_top) light_top = light_north;
+            if(light_south > light_top) light_top = light_south;
+
+            return light_top;
+        }
+    }
+
+    if(y < 0) return 0;
+    if(y > CHUNK_SIZE_HEIGHT) {
+        int16_t light = 15 - world->skylight_subtracted;
+        if(light < 0) light = 0;
+        return light;
+    }
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_get_block_light_value(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, world->skylight_subtracted);
+}
+
+uint8_t world_get_block_light_value(world_t *world, int x, int y, int z) {
+    return private_world_get_block_light_value(world, x, y, z, 1);
+}
+
+uint8_t world_can_existing_block_see_sky(world_t *world, int x, int y, int z) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 0;
     }
+    if(y >= CHUNK_SIZE_HEIGHT) return 1;
+    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
 
-    return world->blocks[(y * world->height + z) * world->width + x];
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_can_block_see_sky(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH);
 }
 
-uint8_t world_is_solid_block(world_t *world, int x, int y, int z) {
-    block_t *block = &block_list[world_get_block(world, x, y, z)];
-    return block->is_solid;
+int world_get_height_value(world_t *world, int x, int z) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return 0;
+    }
+    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
+
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_get_height_value(chunk, x % CHUNK_SIZE_WIDTH, z % CHUNK_SIZE_WIDTH);
 }
 
-void world_tick_entities(world_t *world) {
-    entity_map_tick_all(&world->entity_map);
-}
+void world_light_changed(world_t *world, uint8_t light_type, int x, int y, int z, int value) {
+    if(!world_block_exists(world, x, y, z)) return;
 
-uint8_t world_is_free(world_t *world, AABB_t bb) {
-    entity_t ***entities = entity_map_get_entities(&world->entity_map, NULL, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
-    return array_list_length(*entities) == 0;
-}
-
-void world_tick(world_t *world) {
-    world->tick_count++;
-    int a = 1;
-    int b = 1;
-    for(b = 1; 1 << a < world->width; a++);
-    while(1 << b < world->height) b++;
-
-    if(world->tick_count % 5 == 0) {
-        for(int i = 0; i < array_list_length(world->tick_list); i++) {
-            next_tick_data_t next_tick = world->tick_list[0];
-            world->tick_list = array_list_remove(world->tick_list, 0);
-            if(next_tick.ticks > 0) {
-                next_tick.ticks--;
-                world->tick_list = array_list_push(world->tick_list, &next_tick);
-            }else {
-                uint8_t block_id = world->blocks[(next_tick.y * world->height + next_tick.z) * world->width + next_tick.x];
-                block_t *block = &block_list[block_id];
-                if(world_is_in_bounds(world, next_tick.x, next_tick.y, next_tick.z) && block_id == next_tick.type && block_id != blocks.air.id) {
-                    if(block->should_tick) {
-                        block->update(block, (struct world_s *)world, next_tick.x, next_tick.y, next_tick.z, &world->random);
-                    }
-                }
-            }
+    if(light_type == LIGHT_TYPE_SKY) {
+        if(world_can_existing_block_see_sky(world, x, y, z)) {
+            value = 15;
+        }
+    }else if(light_type == LIGHT_TYPE_BLOCK) {
+        uint8_t block_id = world_get_block(world, x, y, z);
+        if(block_list[block_id].light_value > value) {
+            value = block_list[block_id].light_value;
         }
     }
 
-    world->unprocessed += world->width * world->height * world->depth;
-    int c = world->unprocessed / 200;
-    world->unprocessed -= c * 200;
-
-    for(int i = 0; i < c; i++) {
-        world->random_value = world->random_value * 3 + 1013904223;
-        int y = world->random_value >> 2;
-        int x = y & (world->width - 1);
-        int z = y >> a & (world->height - 1);
-        y = y >> (a + b) & (world->depth - 1);
-        uint8_t block_id = world->blocks[(y * world->height + z) * world->width + x];
-        block_t *block = &block_list[block_id];
-        if(block->should_tick) {
-            block->update(block, (struct world_s *)world, x, y, z, &world->random);
-        }
+    if(world_get_saved_light_value(world, light_type, x, y, z) != value) {
+        world_schedule_lighting_update(world, light_type, x, y, z, x, y, z);
     }
 }
 
-uint8_t world_is_in_bounds(world_t *world, int x, int y, int z) {
-    return !(x < 0 || y < 0 || z < 0 || x >= world->width || y >= world->depth || z >= world->height);  
-}
-
-float world_get_ground_world(world_t *world) {
-    return world_get_water_world(world) - 2;
-}
-
-float world_get_water_world(world_t *world) {
-    return world->water_world;
-}
-
-uint8_t world_contains_any_liquid(world_t *world, AABB_t box) {
-    int x0 = box.x0, y0 = box.y0, z0 = box.z0;
-    int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
-    if(box.x0 < 0.0) x0--;
-    if(box.y0 < 0.0) y0--;
-    if(box.z0 < 0.0) z0--;
-    if(x0 < 0) x0 = 0;
-    if(y0 < 0) y0 = 0;
-    if(z0 < 0) z0 = 0;
-    if(x1 > world->width) x1 = world->width;
-    if(y1 > world->depth) y1 = world->depth;
-    if(z1 > world->height) z1 = world->height;
-    for(int i = x0; i < x1; i++) {
-        for(int j = y0; j < y1; j++) {
-            for(int k = z0; k < z1; k++) {
-                block_t *block = &block_list[world_get_block(world, i, j, k)];
-                if (block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) return 1;
-            }
-        }
+int world_get_saved_light_value(world_t *world, uint8_t light_type, int x, int y, int z) {
+    if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
+        return light_type;
     }
-    return 0;
-}
 
-uint8_t world_contains_liquid(world_t *world, AABB_t box, uint8_t liquid_type) {
-    int x0 = box.x0, y0 = box.y0, z0 = box.z0;
-    int x1 = box.x1 + 1, y1 = box.y1 + 1, z1 = box.z1 + 1;
-    if(box.x0 < 0.0) x0--;
-    if(box.y0 < 0.0) y0--;
-    if(box.z0 < 0.0) z0--;
-    if(x0 < 0) x0 = 0;
-    if(y0 < 0) y0 = 0;
-    if(z0 < 0) z0 = 0;
-    if(x1 > world->width) x1 = world->width;
-    if(y1 > world->depth) y1 = world->depth;
-    if(z1 > world->height) z1 = world->height;
-    for(int i = x0; i < x1; i++) {
-        for(int j = y0; j < y1; j++) {
-            for(int k = z0; k < z1; k++) {
-                block_t *block = &block_list[world_get_block(world, i, j, k)];
-                if (block->id != blocks.air.id && block->liquid_type == liquid_type) return 1;
-            }
-        }
-    }
-    return 0;
-}
+    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
 
-void world_add_to_next_tick(world_t *world, int x, int y, int z, uint8_t block_id) {
-    next_tick_data_t tick = { .x = x, .y = y, .z = z, .type = block_id };
-    block_t *block = &block_list[block_id];
-    if(block_id != blocks.air.id) tick.ticks = block->tick_delay;
-    world->tick_list = array_list_push(world->tick_list, &tick);
-}
-
-uint8_t world_is_solid(world_t *world, float x, float y, float z) {
-    uint8_t block_id = world_get_block(world, x, y, z);
-    return block_id != blocks.air.id && block_list[block_id].is_solid;
-}
-
-uint8_t world_is_solid_search(world_t *world, float x, float y, float z, float radius) {
-    if (world_is_solid(world, x - radius, y - radius, z - radius)) return 1;
-    if (world_is_solid(world, x + radius, y - radius, z - radius)) return 1;
-    if (world_is_solid(world, x - radius, y + radius, z - radius)) return 1;
-    if (world_is_solid(world, x + radius, y + radius, z - radius)) return 1;
-    if (world_is_solid(world, x - radius, y - radius, z + radius)) return 1;
-    if (world_is_solid(world, x + radius, y - radius, z + radius)) return 1;
-    if (world_is_solid(world, x - radius, y + radius, z + radius)) return 1;
-    if (world_is_solid(world, x + radius, y + radius, z + radius)) return 1;
-    return 0;
-}
-
-int world_get_highest_block(world_t *world, int x, int z) {
-    int y;
-    for(y = world->height; (world_get_block(world, x, y - 1, z) == 0 || block_list[world_get_block(world, x, y - 1, z)].liquid_type != LIQUID_NONE) && y > 0; y--);
-    return y;
-}
-
-void world_set_spawn_position(world_t *world, int x, int y, int z, float rotation) {
-    world->spawn_x = x;
-    world->spawn_y = y;
-    world->spawn_z = z;
-    world->spawn_rot = rotation;
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk_get_saved_light_value(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, world->skylight_subtracted);
 }
 
 float world_get_brightness(world_t *world, int x, int y, int z) {
-    return world_is_lit(world, x, y, z) ? 1.0 : 0.6;
+    int light_level = world_get_block_light_value(world, x, y, z);
+    return world->light_brightness_table[light_level];
 }
 
-uint8_t world_is_water(world_t *world, int x, int y, int z) {
-    uint8_t block_id = world_get_block(world, x, y, z);
-    return block_id != blocks.air.id && block_list[block_id].liquid_type == LIQUID_WATER;
+uint8_t world_is_daytime(world_t *world) {
+    return world->skylight_subtracted < 8;
 }
 
 hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
@@ -452,20 +410,491 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
     return (hit_result_t){ .null = 1 };
 }
 
-void world_play_sound(world_t *world, uint8_t sound, entity_t *entity, float volume, float pitch) {
-    world_renderer_t *renderer = (world_renderer_t *)world->renderer;
-    game_settings_t *settings = renderer->textures->settings;
-    if(!settings->sound) return;
-    if(vec3_distance_to_sqr((vec3_t){ entity->x, entity->y, entity->z }, (vec3_t){ renderer->world->player->x, renderer->world->player->y, renderer->world->player->z }) < 1024.0) {
-        sounds_play_sound(&settings->minecraft->sounds, sound, volume, pitch);
+void world_play_sound_at_entity(world_t *world, entity_t *entity, uint8_t sound, float volume, float pitch) {
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        float attenuation = 16;
+        if(volume > 1) attenuation *= volume;
+
+        if(entity_distance_to_sqr(world->player, entity) < attenuation * attenuation) {
+            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+            world_renderer_play_sound(renderer, sound, entity->x, entity->y - entity->y_slide_offset, entity->z, volume, pitch);
+        }
     }
 }
 
-void world_play_sound_at(world_t *world, uint8_t sound, float x, float y, float z, float volume, float pitch) {
-    world_renderer_t *renderer = (world_renderer_t *)world->renderer;
-    game_settings_t *settings = renderer->textures->settings;
-    if(!settings->sound) return;
-    sounds_play_sound(&settings->minecraft->sounds, sound, volume, pitch);
+void world_play_sound(world_t *world, double x, double y, double z, uint8_t sound, float volume, float pitch) {
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        float attenuation = 16;
+        if(volume > 1) attenuation *= volume;
+
+        double xx = x - world->player->x;
+        double yy = y - world->player->y;
+        double zz = z - world->player->z;
+        if(xx * xx + yy * yy + zz * zz < attenuation * attenuation) {
+            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+            world_renderer_play_sound(renderer, sound, x, y, z, volume, pitch);
+        }
+    }
+}
+
+void world_spawn_particle(world_t *world, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel) {
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+        world_renderer_spawn_particle(renderer, particle_type, x, y, z, x_vel, y_vel, z_vel);
+    }
+}
+
+void world_spawn_entity(world_t *world, entity_t *entity) {
+    int x = floor_double(entity->x / CHUNK_SIZE_WIDTH);
+    int z = floor_double(entity->z / CHUNK_SIZE_WIDTH);
+    if(!world_chunk_exists(world, x, z)) {
+        printf("Failed to add entity\n");
+        return;
+    }
+    chunk_t *chunk = world_get_chunk(world, x, z);
+    chunk_add_entity(chunk, entity);
+    array_list_push(world->loaded_entity_list, entity);
+
+    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+        world_renderer_obtain_entity_skin(renderer, entity);
+    }
+}
+
+void world_set_entity_dead(world_t *world, entity_t *entity) {
+    entity->is_dead = 1;
+}
+
+void world_add_renderer(world_t *world, world_renderer_t *renderer) {
+    world->world_renderer_list = array_list_push(world->world_renderer_list, renderer);
+}
+
+void world_remove_renderer(world_t *world, world_renderer_t *renderer) {
+    int index = array_list_index_of(world->world_renderer_list, renderer);
+    world->world_renderer_list = array_list_remove(world->world_renderer_list, index);
+}
+
+AABB_t *world_get_cubes(world_t *world, AABB_t box) {
+    AABB_t *list = array_list_create(sizeof(AABB_t));
+    int x0 = floor_double(box.x0);
+    int y0 = floor_double(box.y0);
+    int z0 = floor_double(box.z0);
+    int x1 = floor_double(box.x1 + 1);
+    int y1 = floor_double(box.y1 + 1);
+    int z1 = floor_double(box.z1 + 1);
+
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                AABB_t bb = { 0 };
+                
+                block_t *block = &block_list[world_get_block(world, i, j, k)];
+                if (block->id != blocks.air.id) {
+                    bb = block->get_collision_aabb(block, i, j, k);
+                    if(!bb.null && AABB_intersects_inner(box, bb)) {
+                        list = array_list_push(list, &bb);
+                    }
+                }
+            }
+        }
+    }
+    return list;
+}
+
+vec3_t world_get_sky_color(world_t *world, float partial_tick) {
+    float angle = world_get_celestial_angle(world, partial_tick);
+    angle = tcos(angle * M_PI * 2.0) * 2.0 + 0.5;
+
+    if(angle < 0.0) angle = 0.0;
+    if(angle > 1.0) angle = 1.0;
+
+    float r = (world->sky_color >> 16 & 0xFF) / 0xFF;
+    float g = (world->sky_color >> 8 & 0xFF) / 0xFF;
+    float b = (world->sky_color & 0xFF) / 0xFF;
+
+    r *= angle;
+    g *= angle;
+    b *= angle;
+
+    return (vec3_t){ r, g, b };
+}
+
+float world_get_celestial_angle(world_t *world, float partial_tick) {
+    int time = world->world_time % 24000;
+    float angle = (time + partial_tick) / 24000.0 - 0.15;
+
+    return angle;
+}
+
+vec3_t world_get_cloud_color(world_t *world, float partial_tick) {
+    float angle = world_get_celestial_angle(world, partial_tick);
+    angle = tcos(angle * M_PI * 2.0) * 2.0 + 0.5;
+
+    if(angle < 0.0) angle = 0.0;
+    if(angle > 1.0) angle = 1.0;
+
+    float r = (world->cloud_color >> 16 & 0xFF) / 0xFF;
+    float g = (world->cloud_color >> 8 & 0xFF) / 0xFF;
+    float b = (world->cloud_color & 0xFF) / 0xFF;
+
+    r *= angle * 0.9 + 0.1;
+    g *= angle * 0.9 + 0.1;
+    b *= angle * 0.85 + 0.15;
+
+    return (vec3_t){ r, g, b };
+}
+
+vec3_t world_get_fog_color(world_t *world, float partial_tick) {
+    float angle = world_get_celestial_angle(world, partial_tick);
+    angle = tcos(angle * M_PI * 2.0) * 2.0 + 0.5;
+
+    if(angle < 0.0) angle = 0.0;
+    if(angle > 1.0) angle = 1.0;
+
+    float r = (world->fog_color >> 16 & 0xFF) / 0xFF;
+    float g = (world->fog_color >> 8 & 0xFF) / 0xFF;
+    float b = (world->fog_color & 0xFF) / 0xFF;
+
+    r *= angle * 0.94 + 0.06;
+    g *= angle * 0.94 + 0.06;
+    b *= angle * 0.91 + 0.09;
+
+    return (vec3_t){ r, g, b };
+}
+
+float world_get_star_brightness(world_t *world, float partial_tick) {
+    float angle = world_get_celestial_angle(world, partial_tick);
+    angle = 1.0 - (tcos(angle * M_PI * 2.0) * 2.0 + 2.0 + (12.0 / 16.0));
+
+    if(angle < 0.0) angle = 0.0;
+    if(angle > 1.0) angle = 1.0;
+
+    return angle * angle * 0.5;
+}
+
+void world_schedule_block_update(world_t *world, int x, int y, int z, uint8_t block_id) {
+    next_tick_data_t next_tick = { 0 };
+    next_tick.x = x;
+    next_tick.y = y;
+    next_tick.z = z;
+    next_tick.type = block_id;
+    if(block_id > 0) {
+        next_tick.delay = block_list[block_id].tick_rate;
+    }
+
+    world->next_tick_data_list = array_list_push(world->next_tick_data_list, &next_tick);
+}
+
+void world_update_entities(world_t *world) {
+    for(int i = 0; i < array_list_length(world->loaded_entity_list); i++) {
+        entity_t *entity = array_list_get(world->loaded_entity_list, i);
+        entity_on_update(entity, (struct world_s *)world);
+        if(!entity->is_dead) {
+            int cx = floor_double(entity->x / CHUNK_SIZE_WIDTH);
+            int cy = floor_double(entity->y / CHUNK_SIZE_WIDTH);
+            int cz = floor_double(entity->z / CHUNK_SIZE_WIDTH);
+
+            entity->xo = entity->x;
+            entity->yo = entity->y;
+            entity->zo = entity->z;
+            entity->x_roto = entity->x_rot;
+            entity->y_roto = entity->y_rot;
+
+            int cx2 = floor_double(entity->x / CHUNK_SIZE_WIDTH);
+            int cy2 = floor_double(entity->y / CHUNK_SIZE_WIDTH);
+            int cz2 = floor_double(entity->z / CHUNK_SIZE_WIDTH);
+
+            if(cx2 != cx || cy2 != cy || cz2 != cz) {
+                if(world_chunk_exists(world, cx, cz)) {
+                    chunk_t *old_chunk = world_get_chunk(world, cx, cz);
+                    chunk_remove_entity(old_chunk, entity);
+                }
+                if(world_chunk_exists(world, cx2, cz2)) {
+                    chunk_t *new_chunk = world_get_chunk(world, cx2, cz2);
+                    chunk_add_entity(new_chunk, entity);
+                }else {
+                    entity->is_dead = 1;
+                }
+            }
+        }
+
+        if(entity->is_dead) {
+            int cx = floor_double(entity->x / CHUNK_SIZE_WIDTH);
+            int cz = floor_double(entity->z / CHUNK_SIZE_WIDTH);
+            
+            if(world_chunk_exists(world, cx, cz)) {
+                chunk_t *chunk = world_get_chunk(world, cx, cz);
+                chunk_remove_entity_index(chunk, entity, floor_double(entity->y / CHUNK_SIZE_WIDTH));
+            }
+
+            array_list_remove(world->loaded_entity_list, i);
+            i--;
+
+            for(int j = 0; j < array_list_length(world->world_renderer_list); j++) {
+                world_renderer_t *renderer = array_list_get(world->world_renderer_list, j);
+                world_renderer_release_entity_skin(renderer, entity);
+            }
+        }
+    }
+
+    /*for(int i = 0; i < array_list_length(world->loaded_tile_entity_list); i++) {
+        tile_entity_t *tile_entity = array_list_get(world->loaded_tile_entity_list, i);
+        tile_entity->update(tile_entity);
+    }*/
+}
+
+uint8_t world_is_aabb_clear(world_t *world, AABB_t box) {
+    entity_t **entities = world_get_entities_excluding(NULL, box);
+    for(int i = 0; i < array_list_length(entities); i++) {
+        entity_t *entity = array_list_get(entities, i);
+        if(entity->prevents_spawning) {
+            array_list_free(entities);
+            return 0;
+        }
+    }
+
+    array_list_free(entities);
+
+    return 1;
+}
+
+uint8_t world_is_liquid_in_range(world_t *world, AABB_t box) {
+    int x0 = floor_double(box.x0);
+    int y0 = floor_double(box.y0);
+    int z0 = floor_double(box.z0);
+    int x1 = floor_double(box.x1 + 1);
+    int y1 = floor_double(box.y1 + 1);
+    int z1 = floor_double(box.z1 + 1);
+
+    if(box.x0 < 0.0) x0--;
+    if(box.y0 < 0.0) y0--;
+    if(box.z0 < 0.0) z0--;
+
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                block_t *block = &block_list[world_get_block(world, i, j, k)];
+                if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+uint8_t world_is_bounding_box_burning(world_t *world, AABB_t box) {
+    int x0 = floor_double(box.x0);
+    int y0 = floor_double(box.y0);
+    int z0 = floor_double(box.z0);
+    int x1 = floor_double(box.x1 + 1);
+    int y1 = floor_double(box.y1 + 1);
+    int z1 = floor_double(box.z1 + 1);
+
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                block_t *block = &block_list[world_get_block(world, i, j, k)];
+                if(block->id == BLOCK_FIRE || block->id == BLOCK_LAVA || block->id == BLOCK_STILL_LAVA) return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+uint8_t world_is_material_in_box(world_t *world, AABB_t box, material_t *material) {
+    int x0 = floor_double(box.x0);
+    int y0 = floor_double(box.y0);
+    int z0 = floor_double(box.z0);
+    int x1 = floor_double(box.x1 + 1);
+    int y1 = floor_double(box.y1 + 1);
+    int z1 = floor_double(box.z1 + 1);
+
+    for(int i = x0; i < x1; i++) {
+        for(int j = y0; j < y1; j++) {
+            for(int k = z0; k < z1; k++) {
+                block_t *block = &block_list[world_get_block(world, i, j, k)];
+                if(block->id != blocks.air.id && block->material->id == material->id) return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+void world_explode(world_t *world, entity_t *source_entity, double x, double y, double z, float radius) {
+    world_play_sound(world, x, y, z, SOUND_RANDOM_EXPLODE, 4.0, (1.0 + (random_next_float(&world->random) - random_next_float(&world->random)) * 0.2) * 0.7);
+    vec3_t *affected_blocks = array_list_create(sizeof(vec3_t));
+
+    for(int x_offset = 0; x_offset < CHUNK_SIZE_WIDTH; x_offset++) {
+        for(int y_offset = 0; y_offset < CHUNK_SIZE_WIDTH; y_offset++) {
+            for(int z_offset = 0; z_offset < CHUNK_SIZE_WIDTH; z_offset++) {
+                if(x_offset == 0 || x_offset == CHUNK_SIZE_WIDTH - 1
+                   || y_offset == 0 || y_offset == CHUNK_SIZE_WIDTH - 1
+                   || z_offset == 0 || z_offset == CHUNK_SIZE_WIDTH - 1) {
+                    double x_norm = x_offset / (CHUNK_SIZE_WIDTH - 1) * 2.0 - 1.0;
+                    double y_norm = y_offset / (CHUNK_SIZE_WIDTH - 1) * 2.0 - 1.0;
+                    double z_norm = z_offset / (CHUNK_SIZE_WIDTH - 1) * 2.0 - 1.0;
+                    double distance = sqrt(x_norm * x_norm + y_norm * y_norm + z_norm * z_norm);
+
+                    x_norm /= distance;
+                    y_norm /= distance;
+                    z_norm /= distance;
+
+                    float strength = radius * (0.7 + random_next_float(&world->random) * 0.6);
+                    double x_ray = x;
+                    double y_ray = y;
+                    double z_ray = z;
+                    
+                    for(; strength > 0; strength -= 0.22500001) {
+                        int block_x = floor_double(x_ray);
+                        int block_y = floor_double(y_ray);
+                        int block_z = floor_double(z_ray);
+
+                        uint8_t block_id = world_get_block(world, block_x, block_y, block_z);
+                        if(block_id > 0) {
+                            strength -= ((block_list[block_id].resistance / 5.0) + 0.3) * 0.3;
+                        }
+
+                        if(strength > 0) {
+                            vec3_t pos = { block_x, block_y, block_z };
+                            array_list_push(affected_blocks, &pos);
+                        }
+
+                        x_ray += x_norm * 0.3;
+                        y_ray += y_norm * 0.3;
+                        z_ray += z_norm * 0.3;
+                    }
+                }
+            }
+        }
+    }
+
+    radius *= 2;
+    int x0 = floor_double(x - radius) - 1;
+    int x1 = floor_double(x + radius) + 1;
+    int y0 = floor_double(y - radius) - 1;
+    int y1 = floor_double(y + radius) + 1;
+    int z0 = floor_double(z - radius) - 1;
+    int z1 = floor_double(z + radius) + 1;
+
+    entity_t *affected_entities = world_get_entities_excluding(world, source_entity, (AABB_t){ x0, y0, z0, x1, y1, z1 });
+    vec3_t origin = { x, y, z };
+
+    for(int i = 0; i < array_list_size(affected_entities); i++) {
+        entity_t *entity = *(entity_t **)array_list_get(affected_entities, i);
+        double dx = entity->x - x;
+        double dy = entity->y - y;
+        double dz = entity->z - z;
+        double distance = sqrt(dx * dx + dy * dy + dz * dz);
+
+        if(distance <= 1) {
+            dx /= distance;
+            dy /= distance;
+            dz /= distance;
+
+            double density = world_get_block_density(world, origin, entity->bb);
+            double impact = (1 - distance) * density;
+
+            entity_hurt(entity, source_entity, (impact * impact + impact) / 2.0 * 8.0 * radius + 1);
+            entity->xd += dx * impact;
+            entity->yd += dy * impact;
+            entity->zd += dz * impact;
+        }
+    }
+
+    array_list_free(affected_entities);
+
+    for(int i = 0; i < array_list_length(affected_blocks); i++) {
+        vec3_t *pos = array_list_get(affected_blocks, i);
+        int block_x = pos->x;
+        int block_y = pos->y;
+        int block_z = pos->z;
+
+        uint8_t block_id = world_get_block(world, block_x, block_y, block_z);
+        for(int j = 0; j < 1; j++) {
+            double particle_x = block_x + random_next_float(&world->random);
+            double particle_y = block_y + random_next_float(&world->random);
+            double particle_z = block_z + random_next_float(&world->random);
+            double vel_x = particle_x - x;
+            double vel_y = particle_y - y;
+            double vel_z = particle_z - z;
+
+            double magnitude = sqrt(vel_x * vel_x + vel_y * vel_y + vel_z * vel_z);
+            vel_x /= magnitude;
+            vel_y /= magnitude;
+            vel_z /= magnitude;
+
+            double particle_vel = 0.5 / (magnitude / radius + 0.1);
+            particle_vel *= (random_next_float(&world->random) * random_next_float(&world->random) + 0.3);
+            vel_x *= particle_vel;
+            vel_y *= particle_vel;
+            vel_z *= particle_vel;
+
+            world_spawn_particle(world, PARTICLE_EXPLODE, (particle_x + x) / 2.0, (particle_y + y) / 2.0, (particle_z + z) / 2.0, vel_x, vel_y, vel_z);
+            world_spawn_particle(world, PARTICLE_SMOKE, particle_x, particle_y, particle_z, vel_x, vel_y, vel_z);
+        }
+
+        if(block_id > 0) {
+            block_t *block = &block_list[block_id];
+            block_drop_with_chance(block, world, x, y, z, world_get_block_metadata(world, block_x, block_y, block_z), 0.3);
+            world_set_block_with_update(world, block_x, block_y, block_z, blocks.air.id);
+            block->on_exploded(block, x, y, z);
+        }
+    }
+
+    array_list_free(affected_blocks);
+}
+
+float world_get_block_density(world_t *world, vec3_t pos, AABB_t box) {
+    double x = 1.0 / ((box.x1 - box.x0) * 2.0 + 1);
+    double y = 1.0 / ((box.y1 - box.y0) * 2.0 + 1);
+    double z = 1.0 / ((box.z1 - box.z0) * 2.0 + 1);
+
+    int unobstructed_points = 0;
+    int total_points = 0;
+
+    for(float x_offset = 0; x_offset <= 1; x_offset = x_offset + x) {
+        for(float y_offset = 0; y_offset <= 1; y_offset = y_offset + y) {
+            for(float z_offset = 0; z_offset <= 1; z_offset = z_offset + z) {
+                vec3_t sample_pos = { box.x0 + x_offset, box.y0 + y_offset, box.z0 + z_offset };
+                if(world_clip(world, sample_pos, pos).null == 1) {
+                    unobstructed_points++;
+                }
+                total_points++;
+            }
+        }
+    }
+    return (float)unobstructed_points / (float)total_points;
+}
+
+void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side) {
+    if(side == 0) y--;
+    if(side == 1) y++;
+    if(side == 2) z--;
+    if(side == 3) z++;
+    if(side == 4) x--;
+    if(side == 5) x++;
+
+    if(world_get_block(world, x, y, z) == BLOCK_FIRE) {
+        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_RANDOM_FIZZ, 0.5, 2.6 + (random_next_float(&world->random) - random_next_float(&world->random)) * 0.8);
+        world_set_block_with_update(world, x, y, z, blocks.air.id);
+    }
+}
+
+
+
+
+
+void world_set_spawn_position(world_t *world, int x, int y, int z) {
+    world->spawn_x = x;
+    world->spawn_y = y;
+    world->spawn_z = z;
+}
+
+uint8_t world_is_water(world_t *world, int x, int y, int z) {
+    uint8_t block_id = world_get_block(world, x, y, z);
+    return block_id != blocks.air.id && block_list[block_id].liquid_type == LIQUID_WATER;
 }
 
 uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z) {
@@ -509,47 +938,6 @@ uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z) {
         return 1;
     }
     return 0;
-}
-
-void world_explode(world_t *world, entity_t *entity, float x, float y, float z, float radius) {
-    int x0 = (int)(x - radius - 1);
-    int x1 = (int)(x + radius + 1);
-    int y0 = (int)(y - radius - 1);
-    int y1 = (int)(y + radius + 1);
-    int z0 = (int)(z - radius - 1);
-    int z1 = (int)(z + radius + 1);
-
-    for(int i = x0; i < x1; i++) {
-        for(int j = y1 - 1; j >= y0; j--) {
-            for(int k = z0; k < z1; k++) {
-                float x2 = i + 0.5 - x;
-                float y2 = j + 0.5 - y;
-                float z2 = k + 0.5 - z;
-                uint8_t block_id = world_get_block(world, i, j, k);
-                block_t *block = &block_list[block_id];
-                if(i >= 0 && j >= 0 && k >= 0 && i < world->width && j < world->depth && k < world->height
-                  && x2 * x2 + y2 * y2 + z2 * z2 < radius * radius && block_id > 0 && block->explodable) {
-                    // block->spawn_items
-                    world_set_block(world, i, j, k, blocks.air.id);
-                    // block->was exploded
-                }
-            }
-        }
-    }
-
-    entity_t ***entities = entity_map_get_entities(&world->entity_map, entity, x0, y0, z0, x1, y1, z1);
-    printf("size: %d\n", array_list_length(*entities));
-
-    for(int i = 0; i < array_list_length(*entities); i++) {
-        entity_t *victim = array_list_get(*entities, i);
-        float dist = vec3_distance_to((vec3_t){ x, y, z }, (vec3_t){ victim->x, victim->y, victim->z });
-        printf("Explosion damage: %f %f %f\n", (1 - dist / radius) * 15 + 1, dist, radius);
-        printf("creeper: %f %f %f\n", entity->x, entity->y, entity->z);
-        printf("victim: %f %f %f\n", victim->x, victim->y, victim->z);
-        if(dist / radius <= 1) {
-            victim->hurt(victim, entity, (1 - dist / radius) * 15 + 1);
-        }
-    }
 }
 
 void world_add_entity(world_t *world, entity_t *entity) {

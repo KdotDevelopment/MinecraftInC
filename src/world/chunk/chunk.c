@@ -185,7 +185,7 @@ void chunk_set_block_metadata(chunk_t *chunk, int x, int y, int z, int data) {
     nibble_array_set(chunk->data, x, y, z, data);
 }
 
-uint8_t chunk_get_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z) {
+uint8_t chunk_get_saved_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z) {
     return light_type == LIGHT_TYPE_SKY ? nibble_array_get(chunk->sky_light_map, x, y, z) : (light_type == LIGHT_TYPE_BLOCK ? nibble_array_get(chunk->block_light_map, x, y, z) : 0);
 }
 

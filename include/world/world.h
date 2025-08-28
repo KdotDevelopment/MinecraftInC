@@ -9,6 +9,7 @@
 #include <particle/particles.h>
 #include <world/entity_map.h>
 #include <nbt/nbt_tag_compound.h>
+#include <world/block/tile_entity/tile_entity.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@
 
 struct enitity_s;
 struct minecraft_s;
+struct chunk_s;
 
 enum {
     LIGHT_TYPE_SKY = 15,
@@ -72,7 +74,7 @@ void world_save(world_t *world, uint8_t check_entities);
 uint8_t world_get_block(world_t *world, int x, int y, int z);
 uint8_t world_block_exists(world_t *world, int x, int y, int z);
 uint8_t world_chunk_exists(world_t *world, int x, int z);
-chunk_t *world_get_chunk(world_t *world, int x, int z);
+struct chunk_s *world_get_chunk(world_t *world, int x, int z);
 uint8_t world_set_block_no_update(world_t *world, int x, int y, int z, uint8_t block_id);
 material_t *world_get_block_material(world_t *world, int x, int y, int z);
 uint8_t world_get_block_metadata(world_t *world, int x, int y, int z);
@@ -113,15 +115,17 @@ void world_explode(world_t *world, entity_t *source_entity, double x, double y, 
 float world_get_block_density(world_t *world, vec3_t pos, AABB_t box);
 void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side);
 // world_debug_loaded_entities
-// world_get_tile_entity
-// world_set_tile_entity
+tile_entity_t *world_get_tile_entity(world_t *world, int x, int y, int z);
+void world_set_tile_entity(world_t *world, int x, int y, int z, tile_entity_t *tile_entity);
 // world_remove_tile_entity
 // world_is_solid
 // world_save_indirectly
+uint8_t world_update_lighting(world_t *world);
+void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int y0, int z0, int x1, int y1, int z1);
+void world_restart_time_of_day(world_t *world);
+void world_visual_update(world_t *world, int x, int y, int z);
 
 void world_set_spawn_position(world_t *world, int x, int y, int z);
 uint8_t world_is_water(world_t *world, int x, int y, int z);
 uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z);
-void world_add_entity(world_t *world, entity_t *entity);
-void world_remove_all_non_creative_entities(world_t *world);
 void world_destroy(world_t *world);

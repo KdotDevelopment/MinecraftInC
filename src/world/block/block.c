@@ -44,6 +44,7 @@ block_t block_create(uint8_t id, int texture_id, block_sound_t *sound, float har
     block.get_selection_aabb = block_get_selection_aabb;
     block.get_collision_aabb = block_get_collision_aabb;
     block.get_drop_count = block_get_drop_count;
+    block.visual_update = block_visual_update;
 
     block_set_bounds(&block, 0, 0, 0, 1, 1, 1);
 
@@ -159,6 +160,10 @@ void block_render_side_with_texture(block_t *block, int x, int y, int z, int sid
 
 void block_render_side(block_t *block, int x, int y, int z, int side) {
     block_render_side_with_texture(block, x, y, z, side, block->get_texture_id(block, side));
+}
+
+void block_visual_update(block_t *block, int x, int y, int z, random_t *random) {
+    return;
 }
 
 AABB_t block_get_selection_aabb(block_t *block, int x, int y, int z) {

@@ -24,13 +24,15 @@ typedef struct nbt_base_s {
     union {
         uint8_t byte_value;
         uint8_t *byte_array; // arraylist
-        void *list; // arraylist
         double double_value;
         float float_value;
         int32_t int_value;
         int64_t long_value;
         int16_t short_value;
         char *string_value;
-        nbt_base_t **tag_array; // arraylist, nbt_tag_compound
+        struct {
+            nbt_base_t *tag_array; // arraylist, nbt_tag_compound
+            uint8_t array_list_type; // tag_list
+        };
     };
 } nbt_base_t;

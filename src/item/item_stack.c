@@ -12,6 +12,16 @@ item_stack_t item_stack_create(uint8_t block_item_id, uint8_t stack_size, int16_
     return item_stack;
 }
 
+item_stack_t item_stack_from_nbt(nbt_base_t *nbt) {
+    item_stack_t item_stack = { 0 };
+
+    item_stack.item_id = nbt_tag_compound_get_short(nbt, "id");
+    item_stack.stack_size = nbt_tag_compound_get_byte(nbt, "Count") & 0xFF;
+    item_stack.item_damage = nbt_tag_compound_get_short(nbt, "Damage");
+
+    return item_stack;
+}
+
 item_stack_t item_stack_split(item_stack_t *item_stack, uint8_t split_size) {
     item_stack->stack_size -= split_size;
 

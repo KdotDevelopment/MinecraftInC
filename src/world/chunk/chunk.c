@@ -209,6 +209,25 @@ uint8_t chunk_get_block_light_value(chunk_t *chunk, int x, int y, int z, uint8_t
     return sky;
 }
 
+void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
+    nbt_tag_compound_set_int(nbt, "xPos", chunk->x_pos);
+    nbt_tag_compound_set_int(nbt, "zPos", chunk->z_pos);
+    nbt_tag_compound_set_long(nbt, "LastUpdate", chunk->world->world_time);
+    nbt_tag_compound_set_byte_array(nbt, "Blocks", chunk->blocks, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+    nbt_tag_compound_set_byte_array(nbt, "Data", chunk->data, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    nbt_tag_compound_set_byte_array(nbt, "SkyLight", chunk->sky_light_map, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    nbt_tag_compound_set_byte_array(nbt, "BlockLight", chunk->block_light_map, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    nbt_tag_compound_set_byte_array(nbt, "HeightMap", (uint8_t *)chunk->height_map, CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH);
+    nbt_tag_compound_set_boolean(nbt, "TerrainPopulated", chunk->is_terrain_populated);
+    chunk->has_entities = 0;
+
+
+}
+
+chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
+
+}
+
 void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
     int x = floor_double(entity->x / CHUNK_SIZE_WIDTH);
     int z = floor_double(entity->z / CHUNK_SIZE_WIDTH);
@@ -224,7 +243,7 @@ void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
     // note to self: we are storing the pointer in these arrays (as they have been malloc'd before)
     // this pointer to a local variable gets dereferenced within the function, storing the entity pointer
     uint64_t ptr = *(uint64_t *)entity; // this might be unnecessary but its easier for me to understand
-    array_list_push(chunk->entities[y], &ptr);
+    chunk->entities[y] = array_list_push(chunk->entities[y], &ptr);
     chunk->is_modified = 1;
 }
 
@@ -234,12 +253,31 @@ void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index) {
     if(!array_list_contains(chunk->entities[index], entity)) printf("There\'s no such entity to remove: %d\n", index);
 
     int array_index = array_list_index_of(chunk->entities[index], entity);
-    array_list_remove(chunk->entities[index], array_index);
+    chunk->entities[index] = array_list_remove(chunk->entities[index], array_index);
     chunk->is_modified = 1;
 }
 
 uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z) {
     return y >= (chunk_get_height_value(chunk, x, z) & 0xFF);
+}
+
+void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list) {
+    int y0 = floor_double((box.y0 - 2) / CHUNK_SIZE_WIDTH);
+    int y1 = floor_double((box.y1 + 2) / CHUNK_SIZE_WIDTH);
+    
+    if(y0 < 0) y0 = 0;
+    if(y1 >= CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH) {
+        y1 = CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH - 1;
+    }
+
+    for(int i = y0; i <= y1; i++) {
+        for(int j = 0; j < array_list_length(chunk->entities[i]); j++) {
+            entity_t *other = (entity_t *)array_list_get(chunk->entities[i], j);
+            if(other != entity && AABB_intersects_inner(box, other->bb)) {
+                entity_list = array_list_push(entity_list, other);
+            }
+        }
+    }
 }
 
 uint8_t chunk_needs_saving(chunk_t *chunk, uint8_t check_entities) {

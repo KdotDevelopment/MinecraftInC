@@ -453,7 +453,7 @@ void world_spawn_entity(world_t *world, entity_t *entity) {
     }
     chunk_t *chunk = world_get_chunk(world, x, z);
     chunk_add_entity(chunk, entity);
-    array_list_push(world->loaded_entity_list, entity);
+    world->loaded_entity_list = array_list_push(world->loaded_entity_list, entity);
 
     for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
         world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
@@ -577,7 +577,7 @@ void world_schedule_block_update(world_t *world, int x, int y, int z, uint8_t bl
     next_tick.x = x;
     next_tick.y = y;
     next_tick.z = z;
-    next_tick.type = block_id;
+    next_tick.block_id = block_id;
     if(block_id > 0) {
         next_tick.delay = block_list[block_id].tick_rate;
     }
@@ -627,7 +627,7 @@ void world_update_entities(world_t *world) {
                 chunk_remove_entity_index(chunk, entity, floor_double(entity->y / CHUNK_SIZE_WIDTH));
             }
 
-            array_list_remove(world->loaded_entity_list, i);
+            world->loaded_entity_list = array_list_remove(world->loaded_entity_list, i);
             i--;
 
             for(int j = 0; j < array_list_length(world->world_renderer_list); j++) {
@@ -644,7 +644,7 @@ void world_update_entities(world_t *world) {
 }
 
 uint8_t world_is_aabb_clear(world_t *world, AABB_t box) {
-    entity_t **entities = world_get_entities_excluding(NULL, box);
+    entity_t **entities = world_get_entities_excluding(world, NULL, box);
     for(int i = 0; i < array_list_length(entities); i++) {
         entity_t *entity = array_list_get(entities, i);
         if(entity->prevents_spawning) {
@@ -758,7 +758,7 @@ void world_explode(world_t *world, entity_t *source_entity, double x, double y, 
 
                         if(strength > 0) {
                             vec3_t pos = { block_x, block_y, block_z };
-                            array_list_push(affected_blocks, &pos);
+                            affected_blocks = array_list_push(affected_blocks, &pos);
                         }
 
                         x_ray += x_norm * 0.3;
@@ -882,7 +882,235 @@ void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side) {
     }
 }
 
+tile_entity_t *world_get_tile_entity(world_t *world, int x, int y, int z) {
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    return chunk != NULL ? chunk_get_tile_entity(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH) : NULL;
+}
 
+void world_set_tile_entity(world_t *world, int x, int y, int z, tile_entity_t *tile_entity) {
+    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    if(chunk != NULL) {
+        chunk_set_tile_entity(chunk, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, tile_entity);
+    }
+}
+
+uint8_t world_update_lighting(world_t *world) {
+    int iterations = 100000;
+
+    while(array_list_length(world->lighting_update_list) > 0) {
+        iterations--;
+        if(iterations <= 0) return 1;
+
+        chunk_metadata_t metadata = *(chunk_metadata_t *)array_list_get(world->lighting_update_list, array_list_length(world->lighting_update_list) - 1);
+        world->lighting_update_list = array_list_pop(world->lighting_update_list);
+
+        for(int x = metadata.x; x <= metadata.max_x; x++) {
+            for(int z = metadata.z; z <= metadata.max_z; z++) {
+                if(world_block_exists(world, x, 0, z)) {
+                    for(int y = metadata.y; y <= metadata.max_y; y++) {
+                        if(y >= 0 && y < CHUNK_SIZE_HEIGHT) {
+                            int current_light_value = world_get_saved_light_value(world, metadata.light_type, x, y, z);
+                            uint8_t block_id = world_get_block(world, x, y, z);
+                            uint8_t opacity = block_list[block_id].light_opacity;
+                            if(opacity == 0) opacity = 1;
+
+                            int new_light_value = 0;
+                            if(metadata.light_type == LIGHT_TYPE_SKY) {
+                                if(world_can_existing_block_see_sky(world, x, y, z)) {
+                                    new_light_value = 15;
+                                }
+                            }else if(metadata.light_type == LIGHT_TYPE_BLOCK) {
+                                new_light_value = block_list[block_id].light_value;
+                            }
+
+                            if(opacity >= 15 || new_light_value == 0) {
+                                block_id = 0;
+                            }else {
+                                int light_west = world_get_saved_light_value(world, metadata.light_type, x - 1, y, z);
+                                int light_east = world_get_saved_light_value(world, metadata.light_type, x + 1, y, z);
+                                int light_north = world_get_saved_light_value(world, metadata.light_type, x, y, z - 1);
+                                int light_south = world_get_saved_light_value(world, metadata.light_type, x, y, z + 1);
+                                int light_up = world_get_saved_light_value(world, metadata.light_type, x, y + 1, z);
+                                int light_down = world_get_saved_light_value(world, metadata.light_type, x, y - 1, z);
+
+                                if(light_east > new_light_value) new_light_value = light_east;
+                                if(light_north > new_light_value) new_light_value = light_north;
+                                if(light_south > new_light_value) new_light_value = light_south;
+                                if(light_up > new_light_value) new_light_value = light_up;
+                                if(light_down > new_light_value) new_light_value = light_down;
+
+                                if(new_light_value > 0) {
+                                    new_light_value = new_light_value - opacity;
+                                }
+                            }
+
+                            if(current_light_value != new_light_value) {
+                                if(x >= -WORLD_MAX_SIZE && x < WORLD_MAX_SIZE
+                                && y >= 0 && y < CHUNK_SIZE_HEIGHT
+                                && z >= -WORLD_MAX_SIZE && z <= WORLD_MAX_SIZE
+                                && world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) {
+                                    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+                                    chunk_set_light_value(chunk, metadata.light_type, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, new_light_value);
+
+                                    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+                                        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+                                        world_renderer_update_block(renderer, x, y, z);
+                                    }
+                                }
+
+                                new_light_value--;
+                                if(new_light_value < 0) new_light_value = 0;
+
+                                world_light_changed(world, metadata.light_type, x - 1, y, z, new_light_value);
+                                world_light_changed(world, metadata.light_type, x, y - 1, z, new_light_value);
+                                world_light_changed(world, metadata.light_type, x, y, z - 1, new_light_value);
+                                if(x + 1 >= metadata.max_x) world_light_changed(world, metadata.light_type, x + 1, y, z, new_light_value);
+                                if(y + 1 >= metadata.max_y) world_light_changed(world, metadata.light_type, x, y + 1, z, new_light_value);
+                                if(z + 1 >= metadata.max_z) world_light_changed(world, metadata.light_type, x, y, z + 1, new_light_value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int y0, int z0, int x1, int y1, int z1) {
+    int update_count = array_list_length(world->lighting_update_list);
+    int max_checks = 4;
+
+    if(max_checks > update_count) max_checks = update_count;
+
+    for(int i = 0; i < max_checks; i++) {
+        chunk_metadata_t *metadata = array_list_get(world->lighting_update_list, array_list_length(world->lighting_update_list) - i - 1);
+
+        if(metadata->light_type == light_type) {
+            uint8_t is_merged;
+            if(x0 >= metadata->x && y0 >= metadata->y && z0 >= metadata->z && x1 <= metadata->max_x && y1 <= metadata->max_y && z1 <= metadata->max_z) {
+                is_merged = 1;
+            }else if(x0 >= metadata->x - 1 && y0 >= metadata->y - 1 && z0 >= metadata->z - 1 && x1 <= metadata->max_x + 1 && y1 <= metadata->max_y + 1 && z1 <= metadata->max_z + 1) {
+                if(x0 < metadata->x) metadata->x = x0;
+                if(y0 < metadata->y) metadata->y = y0;
+                if(z0 < metadata->z) metadata->z = z0;
+                if(x1 > metadata->max_x) metadata->max_x = x1;
+                if(y1 > metadata->max_y) metadata->max_y = y1;
+                if(z1 > metadata->max_z) metadata->max_z = z1;
+
+                is_merged = 1;
+            }else {
+                is_merged = 0;
+            }
+
+            if(is_merged) return;
+        }
+    }
+
+    chunk_metadata_t new_metadata = { light_type, x0, y0, z0, x1, y1, z1 };
+    world->lighting_update_list = array_list_push(world->lighting_update_list, &new_metadata);
+
+    if(array_list_length(world->lighting_update_list) > 1000000) {
+        while(array_list_length(world->lighting_update_list) > 500000) {
+            world_update_lighting(world);
+        }
+    }
+}
+
+void world_restart_time_of_day(world_t *world) {
+    chunk_provider_unload_oldest_chunks(world->chunk_provider);
+    if(!array_list_contains(world->loaded_entity_list, &world->player)) {
+        world_spawn_entity(world, world->player);
+    }
+
+    float angle = world_get_celestial_angle(world, 1.0);
+    angle = 1.0 - (tcos(angle * M_PI * 2.0) * 2.0 + 0.5);
+    if(angle < 0) angle = 0;
+    if(angle > 1) angle = 1;
+
+    int light = angle * 13;
+    if(light != world->skylight_subtracted) {
+        world->skylight_subtracted = light;
+        
+        for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
+            world_renderer_update_all(renderer);
+        }
+    }
+
+    world->world_time++;
+    if(world->world_time % 100 == 0) {
+        world_save(world, 0);
+    }
+
+    int next_tick_size = array_list_length(world->next_tick_data_list);
+    if(next_tick_size > 200) {
+        next_tick_size = 200;
+    }
+
+    for(int i = 0; i < next_tick_size; i++) {
+        next_tick_data_t next_tick = *(next_tick_data_t *)array_list_remove(world->next_tick_data_list, 0);
+        if(next_tick.delay > 0) {
+            next_tick.delay--;
+            world->next_tick_data_list = array_list_push(world->next_tick_data_list, &next_tick);
+        }else if(world_block_exists(world, next_tick.x, next_tick.y, next_tick.z)) {
+            uint8_t block_id = world_get_block(world, next_tick.x, next_tick.y, next_tick.z);
+            if(block_id == next_tick.block_id && block_id > 0) {
+                block_t *block = &block_list[block_id];
+                block->update(block, world, next_tick.x, next_tick.y, next_tick.z, &world->random);
+            }
+        }
+    }
+
+    int x = floor_double(world->player->x);
+    int z = floor_double(world->player->z);
+
+    for(int i = 0; i < 32000; i++) {
+        world->random_number = world->random_number * 3 + HASH_MAGIC;
+        int xx = world->random_number >> 2;
+        int yy = (world->random_number & 0xFF) - 128 + xx;
+        int zz = (world->random_number >> 8 & 0xFF) - 128 + zz;
+        xx = xx >> 16 & 127;
+        uint8_t block_id = world_get_block(world, xx, yy, zz);
+        if(block_list[block_id].should_tick) {
+            block_list[block_id].update(&block_list[block_id], world, xx, yy, zz, &world->random);
+        }
+    }
+}
+
+void world_visual_update(world_t *world, int x, int y, int z) {
+    random_t random = random_create(time(NULL));
+
+    for(int i = 0; i < 1000; i++) {
+        int xx = x + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
+        int yy = y + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
+        int zz = z + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
+        uint8_t block_id = world_get_block(world, xx, yy, zz);
+        if(block_id > 0) {
+            block_list[block_id].visual_update(&block_list[block_id], xx, yy, zz, &random);
+        }
+    }
+}
+
+entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t box) {
+    int x0 = floor_double((box.x0 - 2) / CHUNK_SIZE_WIDTH);
+    int x1 = floor_double((box.x1 + 2) / CHUNK_SIZE_WIDTH);
+    int z0 = floor_double((box.z0 - 2) / CHUNK_SIZE_WIDTH);
+    int z1 = floor_double((box.z1 + 2) / CHUNK_SIZE_WIDTH);
+    entity_t **entity_list = array_list_create(sizeof(entity_t *));
+
+    for(int x = x0; x <= x1; x++) {
+        for(int z = z0; z <= z1; z++) {
+            if(world_chunk_exists(world, x, z)) {
+                chunk_t *chunk = world_get_chunk(world, x, z);
+                chunk_get_entities(chunk, entity, box, entity_list);
+            }
+        }
+    }
+
+    return entity_list;
+}
 
 
 
@@ -940,21 +1168,10 @@ uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z) {
     return 0;
 }
 
-void world_add_entity(world_t *world, entity_t *entity) {
-    entity_map_insert(&world->entity_map, entity);
-    entity->world = (struct world_s *)world;
-}
-
-void world_remove_all_non_creative_entities(world_t *world) {
-    entity_map_clear_non_creative_mode_entities(&world->entity_map);
-}
-
 void world_destroy(world_t *world) {
-    array_list_free(world->entities);
-    array_list_free(world->tick_list);
-    free(world->light_depths);
-    world->light_depths = NULL;
-    free(world->blocks);
-    world->blocks = NULL;
-    entity_map_destroy(&world->entity_map);
+    free(world->lighting_update_list);
+    free(world->loaded_entity_list);
+    free(world->next_tick_data_list);
+    free(world->loaded_tile_entity_list);
+    free(world->world_renderer_list);
 }

@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-typedef struct {
-    int32_t type;
+typedef struct next_tick_data_s {
+    uint8_t block_id;
     int32_t x;
     int32_t y;
     int32_t z;

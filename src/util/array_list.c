@@ -67,7 +67,7 @@ void *array_list_push(void *array_list, void *element) {
     return array_list_insert(array_list, element, array_list_length(array_list));
 }
 
-void *array_list_pop(void *array_list, void *element) {
+void *array_list_pop(void *array_list) {
     return array_list_remove(array_list, array_list_length(array_list) - 1);
 }
 

@@ -15,7 +15,7 @@ uint32_t array_list_capacity(void *array_list);
 void *array_list_insert(void *array_list, void *element, int32_t index);
 void *array_list_remove(void *array_list, int32_t index);
 void *array_list_push(void *array_list, void *element);
-void *array_list_pop(void *array_list, void *element);
+void *array_list_pop(void *array_list);
 void *array_list_remove_all(void *array_list, void *element);
 void array_list_set(void *array_list, int32_t index, void *element);
 void *array_list_get(void *array_list, int32_t index);

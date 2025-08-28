@@ -261,6 +261,14 @@ uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z) {
     return y >= (chunk_get_height_value(chunk, x, z) & 0xFF);
 }
 
+void chunk_load_entities(chunk_t *chunk) {
+
+}
+
+void chunk_unload_entities(chunk_t *chunk) {
+    
+}
+
 void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list) {
     int y0 = floor_double((box.y0 - 2) / CHUNK_SIZE_WIDTH);
     int y1 = floor_double((box.y1 + 2) / CHUNK_SIZE_WIDTH);

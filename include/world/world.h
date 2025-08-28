@@ -10,6 +10,7 @@
 #include <world/entity_map.h>
 #include <nbt/nbt_tag_compound.h>
 #include <world/block/tile_entity/tile_entity.h>
+#include <world/chunk/chunk_provider.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -57,7 +58,7 @@ typedef struct world_s {
     uint8_t is_new_world;
     int64_t random_seed;
     char *save_file; // includes world name
-    //chunk_provider_t chunk_provider
+    chunk_provider_t chunk_provider;
     nbt_base_t player_nbt;
     int64_t size_on_disk;
 
@@ -127,5 +128,4 @@ void world_visual_update(world_t *world, int x, int y, int z);
 
 void world_set_spawn_position(world_t *world, int x, int y, int z);
 uint8_t world_is_water(world_t *world, int x, int y, int z);
-uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z);
 void world_destroy(world_t *world);

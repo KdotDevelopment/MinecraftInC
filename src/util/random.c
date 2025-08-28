@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-random_t random_create(uint64_t seed) {
+random_t random_create(int64_t seed) {
     random_t random = { 0 };
     random.seed = seed;
     random.state = seed;
@@ -13,23 +13,23 @@ random_t random_create(uint64_t seed) {
 }
 
 // Mimics java's RNG behavior
-uint64_t random_next_int(random_t *random) {
+int64_t random_next_int(random_t *random) {
     random->state ^= (random->state >> 12);
     random->state ^= (random->state << 25);
     random->state ^= (random->state >> 27);
     return random->state * 2685821657736338717ULL;
 }
 
-uint64_t random_next_int_range(random_t *random, uint64_t min, uint64_t max) {
+int64_t random_next_int_range(random_t *random, int64_t min, int64_t max) {
     return min + (random_next_int(random) % (max - min + 1));
 }
 
-uint64_t random_int_range(uint64_t min, uint64_t max) {
+int64_t random_int_range(int64_t min, int64_t max) {
     return rand() % (max + 1) - min;
 }
 
 double random_next_uniform(random_t *random) {
-    return (double)random_next_int(random) / (double)UINT64_MAX;
+    return (double)random_next_int(random) / (double)INT64_MAX;
 }
 
 double random_uniform() {

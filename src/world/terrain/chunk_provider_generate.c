@@ -1,416 +1,233 @@
-#include <world/terrain/chunk_provider_generator.h>
-#include <world/block/blocks.h>
-#include <world/world.h>
-#include <world/terrain/noise/noise.h>
-#include <world/terrain/noise/noise_octave.h>
-#include <world/terrain/noise/noise_composite.h>
+#include <world/terrain/chunk_provider_generate.h>
 
 #include <util/array_list.h>
+#include <world/block/blocks.h>
+#include <world/terrain/generate/generate_big_tree.h>
+#include <world/terrain/generate/generate_mineable.h>
+#include <world/terrain/noise/noise.h>
+#include <world/terrain/noise/noise_octave.h>
+#include <world/world.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
 
-world_gen_t world_gen_create() {
-    world_gen_t world_gen;
-    world_gen.flood_data = calloc(1024 * 1024, sizeof(int));
-    world_gen.random = random_create(time(NULL));
-    return world_gen;
+void chunk_provider_generate_create(chunk_provider_t *chunk_provider, world_t *world, int64_t seed){
+    *chunk_provider = (chunk_provider_t){ 0 };
+
+    chunk_provider->world = world;
+
+    chunk_provider->random = random_create(seed);
+
+    chunk_provider->noise_1 = noise_octave_create(chunk_provider->random, 16);
+    chunk_provider->noise_2 = noise_octave_create(chunk_provider->random, 16);
+    chunk_provider->noise_3 = noise_octave_create(chunk_provider->random, 8);
+    chunk_provider->noise_4 = noise_octave_create(chunk_provider->random, 4);
+    chunk_provider->noise_5 = noise_octave_create(chunk_provider->random, 4);
+    chunk_provider->tree_noise = noise_octave_create(chunk_provider->random, 5);
+
+    chunk_provider->chunk_provide = chunk_provider_generate_provide_chunk;
+    chunk_provider->populate = chunk_provider_generate_populate;
 }
 
-void world_gen_populate_ore(world_gen_t *world_gen, uint8_t ore_id, int a1, int a2, int a3) {
-    int w = world_gen->width;
-    int h = world_gen->height;
-    int d = world_gen->depth;
-    int ii = w * d * h / 256 / 64 * a1 / 100;
-    for(int i = 0; i < ii; i++) {
-        //Progress Bar ++
-        float x1 = random_next_uniform(&world_gen->random) * w;
-        float y1 = random_next_uniform(&world_gen->random) * h;
-        float z1 = random_next_uniform(&world_gen->random) * d;
-        int jj = (random_next_uniform(&world_gen->random) + random_next_uniform(&world_gen->random)) * 75 * a1 / 100;
-        float r1x = random_next_uniform(&world_gen->random) * 2 * M_PI;
-        float r1y = random_next_uniform(&world_gen->random) * 2 * M_PI;
-        float r2x = 0;
-        float r2y = 0;
-        for(int j = 0; j < jj; j++) {
-            x1 += tsin(r1x) * tcos(r1y);
-            y1 += tsin(r1y);
-            z1 += tcos(r1x) * tcos(r1y);
-            r1x += r2x * 0.2;
-            r2x = r2x * 0.9 + random_next_uniform(&world_gen->random) - random_next_uniform(&world_gen->random);
-            r1y = (r1y + r2y * 0.5) * 0.5;
-            r2y = r2y * 0.9 + random_next_uniform(&world_gen->random) - random_next_uniform(&world_gen->random);
-            float v2 = tsin(j * M_PI / jj) * a1 / 100 + 1;
-            for(int x = x1 - v2; x <= (int)(x1 + v2); x++) {
-                for(int y = y1 - v2; y <= (int)(y1 + v2); y++) {
-                    for(int z = z1 - v2; z <= (int)(z1 + v2); z++) {
-                        float x2 = x - x1;
-                        float y2 = y - y1;
-                        float z2 = z - z1;
-                        if (x2 * x2 + 2.0 * y2 * y2 + z2 * z2 < v2 * v2 && x >= 1 && y >= 1 && z >= 1 && x < w - 1 && y < h - 1 && z < d - 1) {
-                            int c = (y * d + z) * w + x;
-                            if (world_gen->blocks[c] == blocks.stone.id) world_gen->blocks[c] = ore_id;
+chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider, int chunk_x, int chunk_z) {
+    chunk_provider->random.seed = ((int64_t)chunk_x * 341873128712 + (int64_t)chunk_z * 132897987541);
+
+    uint8_t chunk_data[32768];
+    memset(chunk_data, 0, sizeof(chunk_data));
+    chunk_t *chunk = malloc(sizeof(chunk_t));
+    chunk_create_from(chunk, chunk_provider->world, chunk_data, chunk_x, chunk_z);
+
+    int noise_start_x = chunk_x * 4;
+    int noise_start_z = chunk_z * 4;
+
+    if(chunk_provider->noise_array == NULL) {
+        chunk_provider->noise_array = malloc(sizeof(double) * 425);
+    }
+
+    chunk_provider->noise_array_1 = noise_octave_generate_octaves(chunk_provider->noise_array_1, chunk_provider->noise_1, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
+    chunk_provider->noise_array_2 = noise_octave_generate_octaves(chunk_provider->noise_array_2, chunk_provider->noise_2, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
+    chunk_provider->noise_array_3 = noise_octave_generate_octaves(chunk_provider->noise_array_3, chunk_provider->noise_3, noise_start_x, 0, noise_start_z, 5, 17, 5, 8.555150000000001, 4.277575000000001, 8.555150000000001);
+
+    int noise_index = 0;
+
+    for(int x = 0; x < 5; x++) {
+        for(int z = 0; z < 5; z++) {
+            for(int y = 0; y < 17; y++) {
+                double height_adjustment = ((double)y - 8.5) * 12.0;
+                if(height_adjustment < 0) height_adjustment *= 2;
+
+                double noise_value_1 = chunk_provider->noise_1[noise_index] / 512.0;
+                double noise_value_2 = chunk_provider->noise_2[noise_index] / 512.0;
+                double noise_blend = (chunk_provider->noise_3[noise_index] / 10.0 + 1.0) / 2.0;
+                double final_noise_value = 0;
+
+                if(noise_blend < 0.0) final_noise_value = noise_value_1;
+                else if(noise_blend > 1.0) final_noise_value = noise_value_2;
+                else final_noise_value = noise_value_1 + (noise_value_2 - noise_value_1) * noise_blend;
+
+                final_noise_value -= height_adjustment;
+                chunk_provider->noise_array[noise_index] = final_noise_value;
+                noise_index++;
+            }
+        }
+    }
+
+    // Generates stone and water
+    for(int x = 0; x < 4; x++) {
+        for(int z = 0; z < 4; z++) {
+            for(int y = 0; y < CHUNK_SIZE_WIDTH; y++) {
+                double noise000 = chunk_provider->noise_array[(x * 5 + z) * 17 + y];
+                double noise001 = chunk_provider->noise_array[(x * 5 + z + 1) * 17 + y];
+                double noise100 = chunk_provider->noise_array[((x + 1) * 5 + z) * 17 + y];
+                double noise101 = chunk_provider->noise_array[((x + 1) * 5 + z + 1) * 17 + y];
+                double noise010 = chunk_provider->noise_array[(x * 5 + z) * 17 + y + 1];
+                double noise011 = chunk_provider->noise_array[(x * 5 + z + 1) * 17 + y + 1];
+                double noise110 = chunk_provider->noise_array[((x + 1) * 5 + z) * 17 + y + 1];
+                double noise111 = chunk_provider->noise_array[((x + 1) * 5 + z + 1) * 17 + y + 1];
+
+                for(int yy = 0; yy < 8; yy++) {
+                    double y_lerp = (double)yy / 8.0;
+                    double noise_x00 = noise000 + (noise010 - noise000) * y_lerp;
+                    double noise_x01 = noise001 + (noise011 - noise001) * y_lerp;
+                    double noise_x10 = noise100 + (noise110 - noise100) * y_lerp;
+                    double noise_x11 = noise101 + (noise111 - noise101) * y_lerp;
+
+                    for(int xx = 0; xx < 4; xx++) {
+                        double x_lerp = (double)xx / 4.0;
+                        double noise_z0 = noise_x00 + (noise_x10 - noise_x00) * x_lerp;
+                        double noise_z1 = noise_x01 + (noise_x11 - noise_x01) * x_lerp;
+
+                        for(int zz = 0; zz < 4; zz++) {
+                            double z_lerp = (double)zz / 4.0;
+                            double final_noise = noise_z0 + (noise_z1 - noise_z0) * z_lerp;
+
+                            int block_index = xx + (x << 2) << 11 | zz + (z << 2) << 7 | (y << 3) + yy;
+                            uint8_t block_id = 0;
+
+                            if((y << 3) + yy < 64) {
+                                block_id = blocks.still_water.id;
+                            }
+
+                            if(final_noise > 0.0) {
+                                block_id = blocks.stone.id;
+                            }
+
+                            chunk_data[block_index] = block_id;
                         }
                     }
                 }
             }
         }
     }
-}
 
-int64_t world_gen_flood(world_gen_t *world_gen, int x, int y, int z, uint8_t block_id) {
-    int **flood_stack = array_list_create(sizeof(int *));
+    // Generate surface blocks (grass, dirt, gravel, sand, more water)
+    for(int x = 0; x < CHUNK_SIZE_WIDTH; x++) {
+        for(int z = 0; z < CHUNK_SIZE_WIDTH; z++) {
+            double surface_x = (double)((chunk_x * CHUNK_SIZE_WIDTH) + x);
+            double surface_z = (double)((chunk_z * CHUNK_SIZE_WIDTH) + z);
+            uint8_t sand = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_x * (1.0 / 32.0), surface_z * (1.0 / 32.0), 0) + random_next_uniform(chunk_provider->random) * 0.2 > 0.0;
+            uint8_t gravel = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_z * (1.0 / 32.0), 109.0134, surface_x * (1.0 / 32.0)) + random_next_uniform(chunk_provider->random) * 0.2 > 3.0;
+            int surface_depth = (int)(chunk_provider->noise_5.get(&chunk_provider->noise_5, surface_x * (1.0 / 32.0) * 2.0, surface_z * (1.0 / 32.0) * 2.0, 0) / 3.0 + 3.0 + random_next_uniform(chunk_provider->random) * 0.25);
+            int block_index = x << 11 | z << 7 | (CHUNK_SIZE_HEIGHT - 1);
+            uint8_t top_block = blocks.grass.id;
+            uint8_t filler_block = blocks.dirt.id;
 
-    int xx = 1;
-    int zz = 1;
-    for(xx = 1; 1 << zz < world_gen->width; zz++);
-    while(1 << xx < world_gen->depth) xx++;
-    int d = world_gen->depth - 1;
-    int w = world_gen->width - 1;
-    world_gen->flood_data[0] = (((y << xx) + z) << zz) + x;
-    int i = 1;
-    int64_t j = 0;
-    int ii = world_gen->width * world_gen->depth;
-    while(i > 0) {
-        i--;
-        int f = world_gen->flood_data[i];
-        if(i == 0 && array_list_length(flood_stack) > 0) {
-            free(world_gen->flood_data);
-            world_gen->flood_data = flood_stack[array_list_length(flood_stack) - 1];
-            flood_stack = array_list_remove(flood_stack, array_list_length(flood_stack) - 1);
-        }
-        int v1 = f >> zz & d;
-        int v2 = f >> (zz + xx);
-        int v3 = f & w;
-        int v4 = f & w;
-        for(; v3 > 0 && world_gen->blocks[f - 1] == 0; f--) v3--;
-        while(v4 < world_gen->width && world_gen->blocks[f + v4 - v3] == 0) v4++;
-        int v5 = f >> zz & d;
-        int v6 = f >> (zz + xx);
-        if(v5 != v1 || v6 != v2) printf("Diagonal flood?!\n");
-
-        uint8_t b1 = 0;
-        uint8_t b2 = 0;
-        uint8_t b3 = 0;
-        j += v4 - v3;
-        for(; v3 < v4; v3++) {
-            world_gen->blocks[f] = block_id;
-            if(v1 > 0) {
-                uint8_t b4 = world_gen->blocks[f - world_gen->width] == 0;
-                if(b4 && !b1) {
-                    if(i == 1024 * 1024) {
-                        flood_stack = array_list_push(flood_stack, &world_gen->flood_data);
-                        world_gen->flood_data = calloc(1024 * 1024, sizeof(int));
-                        i = 0;
-                    }
-                    world_gen->flood_data[i++] = f - world_gen->width;
-                }
-                b1 = b4;
-            }
-            if(v1 < world_gen->depth - 1) {
-                uint8_t b4 = world_gen->blocks[f + world_gen->width] == 0;
-                if(b4 && !b2) {
-                    if(i == 1024 * 1024) {
-                        flood_stack = array_list_push(flood_stack, &world_gen->flood_data);
-                        world_gen->flood_data = calloc(1024 * 1024, sizeof(int));
-                        i = 0;
-                    }
-                    world_gen->flood_data[i++] = f + world_gen->width;
-                }
-                b2 = b4;
-            }
-            if(v2 > 0) {
-                uint8_t b = world_gen->blocks[f - ii];
-                if((block_id == blocks.lava.id || block_id == blocks.still_lava.id) && (b == blocks.water.id || b == blocks.still_water.id)) {
-                    world_gen->blocks[f - ii] = blocks.stone.id;
-                }
-                uint8_t b4 = b == 0;
-                if(b4 && !b3) {
-                    if(i == 1024 * 1024) {
-                        flood_stack = array_list_push(flood_stack, &world_gen->flood_data);
-                        world_gen->flood_data = calloc(1024 * 1024, sizeof(int));
-                        i = 0;
-                    }
-                    world_gen->flood_data[i++] = f - ii;
-                }
-                b3 = b4;
-            }
-            f++;
-        }
-    }
-    for(int i = 0; i < array_list_length(flood_stack); i++) {
-        free(flood_stack[i]);
-    }
-    array_list_free(flood_stack);
-    return j;
-}
-
-void world_gen_generate(world_gen_t *world_gen, int width, int depth, struct world_s *proto_world) {
-    world_t *world = (world_t *)proto_world;
-    world_gen->progress_bar = world->progress_bar;
-    progress_bar_set_title(world_gen->progress_bar, "Generating world");
-    world_gen->width = width;
-    world_gen->depth = depth;
-    world_gen->height = 64;
-    world_gen->water_world = 32;
-    world_gen->blocks = calloc(width * depth * 64, 1);
-    int w = world_gen->width;
-    int h = world_gen->height;
-    int d = world_gen->depth;
-
-    progress_bar_set_text(world_gen->progress_bar, "Raising...");
-    printf("Raising...\n");
-    noise_t oct[4], n1, n2, n3;
-    for(int i = 0; i < sizeof(oct) / sizeof(oct[0]); i++) {
-        oct[i] = noise_octave_create(&world_gen->random, 8);
-    }
-
-    n1 = noise_composite_create(&oct[0], &oct[1]);
-    n2 = noise_composite_create(&oct[2], &oct[3]);
-    n3 = noise_octave_create(&world_gen->random, 6);
-    int *height_map = calloc(w * d, sizeof(int));
-    for(int x = 0; x < w; x++) {
-        progress_bar_set_progress(world_gen->progress_bar, x * 100 / (w - 1));
-        for(int y = 0; y < d; y++) {
-            float v1 = noise_get(&n1, x * 1.3, y * 1.3) / 6 - 4;
-            float v2 = noise_get(&n2, x * 1.3, y * 1.3) / 5 + 6;
-            if(noise_get(&n3, x, y) / 8 > 0) v2 = v1;
-            float m = fmaxf(v1, v2) / 2;
-            if(m < 0) m *= 0.8;
-            height_map[x + y * w] = m;
-        }
-    }
-
-    progress_bar_set_text(world_gen->progress_bar, "Eroding...");
-    printf("Eroding...\n");
-    for(int x = 0; x < w; x++) {
-        progress_bar_set_progress(world_gen->progress_bar, x * 100 / (w - 1));
-        for(int y = 0; y < d; y++) {
-            float v1 = noise_get(&n1, x * 2, y * 2) / 8;
-            int v2 = noise_get(&n2, x * 2, y *2) > 0;
-            if(v1 > 2) height_map[x + y * w] = ((height_map[x + y * w] - v2) / 2 << 1) + v2;
-        }
-    }
-
-    progress_bar_set_text(world_gen->progress_bar, "Soiling...");
-    printf("Soiling...\n");
-    for(int x = 0; x < w; x++) {
-        progress_bar_set_progress(world_gen->progress_bar, x * 100 / (w - 1));
-        for(int y = 0; y < d; y++) {
-            int v1 = (int)(noise_get(&n3, x, y) / 24.0) - 4;
-            int v2 = height_map[x + y * w] + world_gen->water_world;
-            int v3 = v2 + v1;
-            height_map[x + y * w] = v2 > v3 ? v2 : v3;
-            if(height_map[x + y * w] > h - 2) height_map[x + y * w] = h - 2;
-            if(height_map[x + y * w] < 1) height_map[x + y * w] = 1;
-            for(int z = 0; z < h; z++) {
-                int c = (z * d + y) * w + x;
-                uint8_t block = blocks.air.id;
-                if(z <= v2) block = blocks.dirt.id;
-                if(z <= v3) block = blocks.stone.id;
-                if(z == 0) block = blocks.lava.id;
-                world_gen->blocks[c] = block;
-            }
-        }
-    }
-
-    progress_bar_set_text(world_gen->progress_bar, "Carving...");
-    printf("Carving...\n");
-    int ii = w * d * h / 256 / 64 << 1;
-    for(int i = 0; i < ii; i++) {
-        progress_bar_set_progress(world_gen->progress_bar, i * 100 / (ii - 1));
-        
-        float x1 = random_next_uniform(&world_gen->random) * w;
-        float y1 = random_next_uniform(&world_gen->random) * h;
-        float z1 = random_next_uniform(&world_gen->random) * d;
-        int jj = (random_next_uniform(&world_gen->random) + random_next_uniform(&world_gen->random)) * 200.0;
-        float r1x = random_next_uniform(&world_gen->random) * M_PI * 2.0;
-        float r1y = random_next_uniform(&world_gen->random) * M_PI * 2.0;
-        float r2y = 0;
-        float v2 = random_next_uniform(&world_gen->random) * random_next_uniform(&world_gen->random);
-
-        for(int j = 0; j < jj; j++) {
-            x1 += tsin(r1x) * tcos(r1y);
-            y1 += tsin(r1y);
-            z1 += tcos(r1x) * tcos(r1y);
-            r1x = (r1x + r1x * 0.2) * 0.9;
-            r1y = (r1y + r2y * 0.5) * 0.5;
-            r2y = r2y * 0.75 + random_next_uniform(&world_gen->random) - random_next_uniform(&world_gen->random);
-            if(random_next_uniform(&world_gen->random) >= 0.25) {
-                float x2 = x1 + (random_next_uniform(&world_gen->random) * 4 - 2) * 0.2;
-                float y2 = y1 + (random_next_uniform(&world_gen->random) * 4 - 2) * 0.2;
-                float z2 = z1 + (random_next_uniform(&world_gen->random) * 4 - 2) * 0.2;
-                float v4 = (h - y2) / h;
-                v4 = 1.2 + (v4 * 3.5 + 1) * v2;
-                v4 *= tsin(j * M_PI / jj);
-                for(int x = x2 - v4; x <= (int)(x2 + v4); x++) {
-                    for(int y = y2 - v4; y <= (int)(y2 + v4); y++) {
-                        for(int z = z2 - v4; z <= (int)(z2 + v4); z++) {
-                            float x3 = x - x2;
-                            float y3 = y - y2;
-                            float z3 = z - z2;
-                            if (x3 * x3 + 2.0 * y3 * y3 + z3 * z3 < v4 * v4 && x >= 1 && y >= 1 && z >= 1 && x < w - 1 && y < h - 1 && z < d - 1) {
-                                int c = (y * d + z) * w + x;
-                                if (world_gen->blocks[c] == blocks.stone.id) { world_gen->blocks[c] = blocks.air.id; }
+            for(int y = CHUNK_SIZE_HEIGHT - 1; y >= 0; y--) {
+                if(chunk_data[block_index] == 0) {
+                    surface_depth = -1;
+                }else if(chunk_data[block_index] == blocks.stone.id) {
+                    if(surface_depth == -1) {
+                        if(surface_depth <= 0) {
+                            top_block = 0;
+                            filler_block = blocks.stone.id;
+                        }else if(y >= 60 && y <= 65) {
+                            top_block = blocks.grass.id;
+                            filler_block = blocks.dirt.id;
+                            if(gravel) {
+                                top_block = 0;
+                            }
+                            if(sand) {
+                                top_block = blocks.sand.id;
+                                filler_block = blocks.sand.id;
                             }
                         }
-                    }
-                }
-            }
-        }
-    }
 
-    world_gen_populate_ore(world_gen, blocks.coal_ore.id, 90, 1, 4);
-    world_gen_populate_ore(world_gen, blocks.iron_ore.id, 70, 2, 4);
-    world_gen_populate_ore(world_gen, blocks.gold_ore.id, 50, 3, 4);
-
-    progress_bar_set_text(world_gen->progress_bar, "Watering...");
-    printf("Watering...\n");
-    progress_bar_set_progress(world_gen->progress_bar, 0);
-
-    uint8_t flood = blocks.still_water.id;
-    for(int x = 0; x < w; x++) {
-        world_gen_flood(world_gen, x, h / 2 - 1, 0, flood);
-        world_gen_flood(world_gen, x, h / 2 - 1, d - 1, flood);
-    }
-
-    for(int z = 0; z < d; z++) {
-        world_gen_flood(world_gen, 0, h / 2 - 1, z, flood);
-        world_gen_flood(world_gen, w - 1, h / 2 - 1, z, flood);
-    }
-
-    ii = w * d / 8000;
-
-    for(int i = 0; i < ii; i++) {
-        if(i % 100) progress_bar_set_progress(world_gen->progress_bar, i * 100 / (ii - 1));
-        int x = (int)random_next_int_range(&world_gen->random, 0, w - 1);
-        int y = world_gen->water_world - 1 - (int)random_next_int_range(&world_gen->random, 0, 1);
-        int z = (int)random_next_int_range(&world_gen->random, 0, d - 1);
-        if(world_gen->blocks[(y * d + z) * w + x] == blocks.air.id) {
-            world_gen_flood(world_gen, x, y, z, flood);
-        }
-    }
-    progress_bar_set_progress(world_gen->progress_bar, 100);
-
-    progress_bar_set_text(world_gen->progress_bar, "Melting...");
-    printf("Melting...\n");
-    ii = w * d * h / 20000;
-    for(int i = 0; i < ii; i++) {
-        if(i % 100) progress_bar_set_progress(world_gen->progress_bar, i * 100 / (ii - 1));
-        int x = (int)random_next_int_range(&world_gen->random, 0, w - 1);
-        int y = (int)random_next_uniform(&world_gen->random) * (int)random_next_uniform(&world_gen->random) * (world_gen->water_world - 3);
-        int z = (int)random_next_int_range(&world_gen->random, 0, d - 1);
-        if(world_gen->blocks[(y * d + z) * w + x] == blocks.air.id) {
-            world_gen_flood(world_gen, x, y, z, blocks.still_lava.id);
-        }
-    }
-    progress_bar_set_progress(world_gen->progress_bar, 100);
-
-    progress_bar_set_text(world_gen->progress_bar, "Growing...");
-    printf("Growing...\n");
-    for(int x = 0; x < w; x++) {
-        progress_bar_set_progress(world_gen->progress_bar, x * 100 / (w - 1));
-        for(int y = 0; y < d; y++) {
-            uint8_t v1 = noise_get(&n1, x, y) > 8;
-            uint8_t v2 = noise_get(&n2, x, y) > 12;
-            int z = height_map[x + y * w];
-            int c = (z * d + y) * w + x;
-            uint8_t above = world_gen->blocks[((z + 1) * d + y) * w + x];
-            if((above == blocks.water.id || above == blocks.still_water.id) && z <= h / 2 - 1 && v2) {
-                world_gen->blocks[c] = blocks.gravel.id;
-            }
-            if(above == blocks.air.id) {
-                uint8_t block = blocks.grass.id;
-                if(z <= h / 2 - 1 && v1) block = blocks.sand.id;
-                world_gen->blocks[c] = block;
-            }
-        }
-    }
-
-    progress_bar_set_text(world_gen->progress_bar, "Planting...");
-    printf("Planting...\n");
-    ii = w * d / 3000;
-    for(int i = 0; i < ii; i++) {
-        progress_bar_set_progress(world_gen->progress_bar, i * 50 / (ii - 1));
-        int x = random_next_int_range(&world_gen->random, 0, w - 1);
-        int z = random_next_int_range(&world_gen->random, 0, d - 1);
-        int f = random_next_int_range(&world_gen->random, 0, 1);
-        for(int j = 0; j < 10; j++) {
-            int xx = x;
-            int zz = z;
-            for(int k = 0; k < 5; k++) {
-                xx += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                zz += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                if((f < 2 || random_next_int_range(&world_gen->random, 0, 3) == 0) && xx >= 0 && zz >= 0 && xx < w && zz < d) {
-                    int y = height_map[xx + zz * w] + 1;
-                    int c = (y * d + zz) * w + xx;
-                    if(world_gen->blocks[c] == blocks.air.id) {
-                        if(world_gen->blocks[((y - 1) * d + zz) * w + xx] == blocks.grass.id) {
-                            if(f == 0) world_gen->blocks[c] = blocks.dandelion.id;
-                            else if(f == 1) world_gen->blocks[c] = blocks.rose.id;
+                        if(y < 64 && top_block == 0) {
+                            top_block = blocks.still_water.id;
                         }
+
+                        if(y >= 63) {
+                            chunk_data[block_index] = top_block;
+                        }else {
+                            chunk_data[block_index] = filler_block;
+                        }
+                    }else if(surface_depth > 0) {
+                        surface_depth--;
+                        chunk_data[block_index] = filler_block;
                     }
                 }
+
+                block_index--;
             }
         }
     }
 
-    ii = w * d * h / 2000;
-    for(int i = 0; i < ii; i++) {
-        progress_bar_set_progress(world_gen->progress_bar, i * 50 / (ii - 1) + 50);
-        int m = (int)random_next_int_range(&world_gen->random, 0, 1);
-        int x = (int)random_next_int_range(&world_gen->random, 0, w - 1);
-        int y = (int)random_next_int_range(&world_gen->random, 0, h - 1);
-        int z = (int)random_next_int_range(&world_gen->random, 0, d - 1);
-        for(int j = 0; j < 20; j++) {
-            int xx = x;
-            int yy = y;
-            int zz = z;
-            for(int k = 0; k < 5; k++) {
-                xx += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                yy += (int)random_next_int_range(&world_gen->random, 0, 1) - (int)random_next_int_range(&world_gen->random, 0, 1);
-                zz += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                int c = (yy * d + zz) * w + xx;
-                if((m < 2 || random_next_int_range(&world_gen->random, 0, 3) == 0) && xx >= 0 && zz >= 0 && yy >= 1 && xx < w && zz < d && yy < height_map[xx + zz * w] - 1 && world_gen->blocks[c] == 0) {
-                    if(world_gen->blocks[((yy - 1) * d + zz) * w + xx] == blocks.stone.id) {
-                        if(m == 0) world_gen->blocks[c] = blocks.brown_mushroom.id;
-                        else world_gen->blocks[c] = blocks.red_mushroom.id;
-                    }
-                }
-            }
-        }
+    chunk_generate_height_map(chunk);
+    return chunk;
+}
+
+void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_provider_t *interface, int chunk_x, int chunk_z) {
+    chunk_provider->random.seed = ((int64_t)chunk_x * 318279123 + (int64_t)chunk_z * 919871212);
+
+    int chunk_start_x = chunk_x / CHUNK_SIZE_WIDTH;
+    int chunk_start_z = chunk_z / CHUNK_SIZE_WIDTH;
+
+    // Coal Ore
+    for(int i = 0; i < 20; i++) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 0, 127);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.coal_ore.id);
     }
 
-    world->water_world = world_gen->water_world;
-    world_set_data(world, w, 64, d, world_gen->blocks);
-    ii = w * d / 4000;
-    for(int i = 0; i < ii; i++) {
-        progress_bar_set_progress(world_gen->progress_bar, i * 50 / (ii - 1) + 50);
-        int x = (int)random_next_int_range(&world_gen->random, 0, w - 1);
-        int z = (int)random_next_int_range(&world_gen->random, 0, d - 1);
-        for(int j = 0; j < 20; j++) {
-            int xx = x;
-            int zz = z;
-            for(int k = 0; k < 20; k++) {
-                xx += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                zz += (int)random_next_int_range(&world_gen->random, 0, 5) - (int)random_next_int_range(&world_gen->random, 0, 5);
-                if(xx >= 0 && zz >= 0 && xx < w && zz < d) {
-                    int y = height_map[xx + zz * w] + 1;
-                    if(random_next_int_range(&world_gen->random, 0, 3) == 0) world_maybe_grow_tree(world, xx, y, zz);
-                }
-            }
-        }
+    // Iron Ore
+    for(int i = 0; i < 10; i++) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 0, 63);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.iron_ore.id);
     }
 
-    for(int i = 0; i < sizeof(oct) / sizeof(oct[0]); i++) {
-        noise_destroy(&oct[i]);
+    // Gold Ore
+    if(random_next_int_range(&chunk_provider->random, 0, 1) == 0) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 0, 31);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.gold_ore.id);
     }
-    noise_destroy(&n1);
-    noise_destroy(&n2);
-    noise_destroy(&n3);
-    free(world_gen->blocks);
-    free(height_map);
-    free(world_gen->flood_data);
+
+    // Diamond Ore
+    if(random_next_int_range(&chunk_provider->random, 0, 7) == 0) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 0, 15);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.diamond_ore.id);
+    }
+
+    // Trees
+    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, ((double)chunk_start_x * 0.05, ((double)chunk_start_z * 0.05), 0) - random_next_uniform(&chunk_provider->random)));
+    if(tree_count < 0) tree_count = 0;
+
+    if(random_next_int_range(&chunk_provider->random, 0, 99) == 0) {
+        tree_count++;
+    }
+
+    for(int i = 0; i < tree_count; i++) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH) + 8;
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH) + 8;
+        int y = world_get_height_value(chunk_provider->world, x, z);
+        generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
+    }
 }

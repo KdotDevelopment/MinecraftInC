@@ -113,7 +113,7 @@ void world_save(world_t *world, uint8_t check_entities) {
     nbt_tag_compound_set_tag(&base_nbt, "Data", &nbt);
 
     // TODO: LoadingScreenRenderer write base_nbt
-    // TODO: chunk_provider_save_chunks(check_entities)
+    chunk_provider_load_save_chunks(&world->chunk_provider, check_entities);
 
     fclose(file);
 }
@@ -137,11 +137,11 @@ uint8_t world_block_exists(world_t *world, int x, int y, int z) {
 }
 
 uint8_t world_chunk_exists(world_t *world, int x, int z) {
-    //chunk_provider_chunk_exists(&world->chunk_provider, x, z);
+    return world->chunk_provider.chunk_exists(&world->chunk_provider, x, z);
 }
 
-chunk_t *world_get_chunk(world_t *world, int x, int z) {
-    //return chunk_provider_provide_chunk(&world->chunk_provider, x, z);
+struct chunk_s *world_get_chunk(world_t *world, int x, int z) {
+    return world->chunk_provider.chunk_provide(&world->chunk_provider, x, z);
 }
 
 // setTileNoUpdate
@@ -1019,7 +1019,7 @@ void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int
 }
 
 void world_restart_time_of_day(world_t *world) {
-    chunk_provider_unload_oldest_chunks(world->chunk_provider);
+    world->chunk_provider.unload_oldest_chunks(&world->chunk_provider);
     if(!array_list_contains(world->loaded_entity_list, &world->player)) {
         world_spawn_entity(world, world->player);
     }
@@ -1123,49 +1123,6 @@ void world_set_spawn_position(world_t *world, int x, int y, int z) {
 uint8_t world_is_water(world_t *world, int x, int y, int z) {
     uint8_t block_id = world_get_block(world, x, y, z);
     return block_id != blocks.air.id && block_list[block_id].liquid_type == LIQUID_WATER;
-}
-
-uint8_t world_maybe_grow_tree(world_t *world, int x, int y, int z) {
-    int r = (int)random_next_int_range(&world->random, 0, 2) + 4;
-    uint8_t grow = 1;
-    int i, j, k;
-    for(j = y; j <= y + 1 + r; j++) {
-        int offset = 1;
-        if(j == y) offset = 0;
-        if(j >= y + 1 + r - 2) offset = 2;
-
-        for(i = x - offset; i <= x + offset && grow; i++) {
-            for(k = z - offset; k <= z + offset && grow; k++) {
-                if(i >= 0 && j >= 0 && k >= 0 && i < world->width && j < world->depth && k < world->height) {
-                    if((world->blocks[(j * world->height + k) * world->width + i] & 0xFF) != 0) grow = 0;
-                }else grow = 0;
-            }
-        }
-    }
-
-    if(!grow) return 0;
-    if((world->blocks[((y - 1) * world->height + z) * world->width + x] & 0xFF) == blocks.grass.id && y < world->depth - r - 1) {
-        world_set_block(world, x, y - 1, z, blocks.dirt.id);
-        int l;
-        for(l = y - 3 + r; l <= y + r; l++) {
-            i = l - (y + r);
-            k = 1 - i / 2;
-            for(int m = x - k; m <= x + k; m++) {
-                int diff = m - x;
-                for(j = z - k; j <= z + k; j++) {
-                    int diff2 = j - z;
-                    if(abs(diff) != k || abs(diff2) != k || (random_next_int_range(&world->random, 0, 1) != 0 && i != 0)) {
-                        world_set_block(world, m, l, j, blocks.leaves.id);
-                    }
-                }
-            }
-        }
-        for(l = 0; l < r; l++) {
-            world_set_block(world, x, y + l, z, blocks.log.id);
-        }
-        return 1;
-    }
-    return 0;
 }
 
 void world_destroy(world_t *world) {

@@ -1,16 +1,19 @@
 #pragma once
 
-#include <world/world.h>
+#include <entity/entity.h>
+#include <nbt/nbt_base.h>
 
 #include <stdint.h>
 
 #define CHUNK_SIZE_WIDTH 16
 #define CHUNK_SIZE_HEIGHT 128
 
+struct world_s;
+
 typedef struct chunk_s {
     uint8_t is_lit;
     uint8_t blocks[CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH];
-    world_t *world;
+    struct world_s *world;
     uint8_t *data; // nibblearray  block metadata
     uint8_t *sky_light_map; // nibblearray
     uint8_t *block_light_map; // nibblearray
@@ -25,8 +28,8 @@ typedef struct chunk_s {
     uint8_t has_entities; 
 } chunk_t;
 
-void chunk_create(chunk_t *chunk, world_t *world, int x, int z);
-void chunk_create_from(chunk_t *chunk, world_t *world, uint8_t *data, int x, int z);
+void chunk_create(chunk_t *chunk, struct world_s *world, int     x, int z);
+void chunk_create_from(chunk_t *chunk, struct world_s *world, uint8_t *data, int x, int z);
 int chunk_get_height_value(chunk_t *chunk, int x, int z);
 void chunk_generate_height_map(chunk_t *chunk);
 void chunk_update_skylight(chunk_t *chunk, int x, int z);
@@ -44,5 +47,7 @@ chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt);
 void chunk_add_entity(chunk_t *chunk, entity_t *entity);
 void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index);
 uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z);
+void chunk_load_entities(chunk_t *chunk);
+void chunk_unload_entities(chunk_t *chunk);
 void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list);
 uint8_t chunk_needs_saving(chunk_t *chunk, uint8_t check_entities);

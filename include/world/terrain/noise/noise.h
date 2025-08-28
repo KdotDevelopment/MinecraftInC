@@ -12,20 +12,31 @@
 typedef struct noise_s {
     uint8_t noise_type;
     union {
+        // Perlin
         struct {
             int hash[512];
-        } perlin;
+            double x_coord;
+            double y_coord;
+            double z_coord;
+        };
+
+        // Octave
         struct {
             int count;
             struct noise_s *noises;
-        } octave;
+        };
+
+        // Composite
         struct {
             struct noise_s *noise1;
             struct noise_s *noise2;
-        } combined;
+        };
     };
+
+    double (*get)(noise_t *noise, double x, double y, double z);
+    void (*destroy)(noise_t *noise);
 } noise_t;
 
 noise_t noise_create();
 void noise_destroy(noise_t *noise);
-float noise_get(noise_t *noise, float x, float y);
+double noise_get(noise_t *noise, double x, double y, double z);

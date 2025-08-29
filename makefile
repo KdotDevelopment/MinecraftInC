@@ -72,7 +72,7 @@ $(HEADERSDIR)/%.h: $(ASSETSDIR)/%.png
 	@mkdir -p $(@D)
 	@FILENAME=$(shell basename $< .png | tr -c 'a-zA-Z0-9' '_') && \
 	PREFIXED_NAME="asset_$${FILENAME}" && \
-	convert $< -depth 8 rgba:- | xxd -i | \
+	convert $< -depth 8 rgba:- | xxd -i -c 16 | \
 	sed "1s/^/static const unsigned char $${PREFIXED_NAME}rgba[] = {\n/" | \
 	sed "\$$s/\$$/};/" > $@ && \
 	echo "static const unsigned int $${PREFIXED_NAME}width = $(shell identify -format "%w" $<);" >> $@ && \
@@ -83,7 +83,7 @@ $(HEADERSDIR)/%.h: $(ASSETSDIR)/%.ogg
 	@mkdir -p $(@D)
 	@FILENAME=$(shell basename $< .ogg | tr -c 'a-zA-Z0-9' '_') && \
 	PREFIXED_NAME="asset_$${FILENAME}" && \
-	xxd -p -c 1 $< | sed 's/\(..\)/0x\1,/g' | \
+	xxd -p -c 16 $< | sed 's/\(..\)/0x\1,/g' | \
 	sed "1s/^/static const unsigned char $${PREFIXED_NAME}ogg[] = {\n/" | \
 	sed "\$$s/,\$$/\n};/" > $@ && \
 	echo "static const unsigned int $${PREFIXED_NAME}size = $(shell stat -c%s $<);" >> $@

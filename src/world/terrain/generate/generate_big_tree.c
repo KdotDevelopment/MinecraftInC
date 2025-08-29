@@ -1,6 +1,7 @@
 #include <world/terrain/generate/generate_big_tree.h>
 
 #include <world/block/block.h>
+#include <world/block/blocks.h>
 
 #include <math.h>
 #include <stdint.h>
@@ -17,8 +18,7 @@
 
 static uint8_t coord_pairs[] = { 2, 0, 0, 1, 2, 1 };
 
-// TODO: make leaf_nodes within the gen function when needed
-// https://pastebin.com/XBLdGqXQ may be helpful for naming
+// https://pastebin.com/XBLdGqXQ <-- Paul Spooner's code
 
 int check_line(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec) {
     int delta[] = { 0, 0, 0 };
@@ -52,7 +52,7 @@ int check_line(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec) {
         coordinate[prim_i] = start[prim_i] + i;
         coordinate[sec_1] = floor(start[sec_1] + (i * sec_fac_1));
         coordinate[sec_2] = floor(start[sec_2] + (i * sec_fac_2));
-        block_id = world_get_block(world, coordinate[0], coordinate[1], coordinate[2]);
+        block_id = world_get_block(this->world, coordinate[0], coordinate[1], coordinate[2]);
         if(block_id != blocks.air.id && block_id != blocks.leaves.id) break;
     }
 
@@ -61,9 +61,9 @@ int check_line(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec) {
 }
 
 uint8_t check_position(generate_big_tree_t *this) {
-    vec3_t base_pos = (vec3_t){ this.origin.x, this.origin.y, this.origin.z };
-    vec3_t top_pos = (vec3_t){ this.origin.x, this.origin.y + this.height - 1, this.origin.z };
-    uint8_t ground_block_id = world_get_block(world, base_pos.x, base_pos.y - 1, base_pos.z);
+    vec3_t base_pos = (vec3_t){ this->origin.x, this->origin.y, this->origin.z };
+    vec3_t top_pos = (vec3_t){ this->origin.x, this->origin.y + this->height - 1, this->origin.z };
+    uint8_t ground_block_id = world_get_block(this->world, base_pos.x, base_pos.y - 1, base_pos.z);
 
     if(ground_block_id != blocks.grass.id && ground_block_id != blocks.dirt.id) {
         return 0;
@@ -72,7 +72,7 @@ uint8_t check_position(generate_big_tree_t *this) {
     if(block_line_check == -1) return 1;
     else if(block_line_check < 6) return 0;
     else {
-        this.height = block_line_check;
+        this->height = block_line_check;
         return 1;
     }
 }
@@ -171,8 +171,8 @@ void cross_section(generate_big_tree_t *this, int x, int y, int z, float radius,
     int rad = radius + 0.618;
     uint8_t sec_1 = coord_pairs[direction];
     uint8_t sec_2 = coord_pairs[direction + 3];
-    int center = { x, y, z };
-    int position = { 0, 0, 0 };
+    int center[] = { x, y, z };
+    int position[] = { 0, 0, 0 };
     uint8_t block_id = 0;
     
     for(int x = -rad; x <= rad; x++) {
@@ -309,14 +309,14 @@ uint8_t generate_big_tree_gen(world_t *world, random_t *random, int x, int y, in
         this.height = 5 + random_next_int_range(&rand, 0, this.height);
     }
 
-    if(!check_position(this)) return 0;
+    if(!check_position(&this)) return 0;
 
-    prepare(this);
-    make_foliage(this);
-    make_trunk(this);
-    make_branches(this);
+    prepare(&this);
+    make_foliage(&this);
+    make_trunk(&this);
+    make_branches(&this);
 
-    free(this->coords);
+    free(this.coords);
 
     return 1;
 }

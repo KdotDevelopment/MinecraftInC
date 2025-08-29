@@ -23,4 +23,5 @@ int32_t array_list_index_of(void *array_list, void *element);
 uint8_t array_list_contains(void *array_list, void *element);
 void *array_list_clear(void *array_list);
 void *array_list_clone(void *array_list);
+void array_list_sort(void *array_list, int (*comparator)(const void *, const void *));
 void array_list_free(void *array_list);

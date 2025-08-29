@@ -7,7 +7,7 @@ typedef struct generate_big_tree_s {
     random_t *rand;
     world_t *world;
     vec3_t origin;
-    int *coords[4];
+    int (*coords)[4];
     int coord_length;
 
     int height;

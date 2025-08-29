@@ -10,8 +10,8 @@
 
 int chunk_updates = 0;
 
-chunk_t chunk_create(world_t *world, int x, int y, int z, int chunk_size, int base_list_id) {
-    chunk_t chunk = { 0 };
+chunk_old_t chunk_create(world_t *world, int x, int y, int z, int chunk_size, int base_list_id) {
+    chunk_old_t chunk = { 0 };
     chunk.visible = 0;
     chunk.world = world;
     chunk.x = x;
@@ -27,7 +27,7 @@ chunk_t chunk_create(world_t *world, int x, int y, int z, int chunk_size, int ba
     return chunk;
 }
 
-void chunk_update(chunk_t *chunk) {
+void chunk_update(chunk_old_t *chunk) {
     chunk_updates++;
     int x0 = chunk->x;
     int y0 = chunk->y;
@@ -63,21 +63,21 @@ void chunk_update(chunk_t *chunk) {
     }
 }
 
-float chunk_distance_squared(chunk_t *chunk, player_t *player) {
+float chunk_distance_squared(chunk_old_t *chunk, player_t *player) {
     return (player->x - chunk->x) * (player->x - chunk->x) + (player->y - chunk->y) * (player->y - chunk->y) + (player->z - chunk->z) * (player->z - chunk->z);
 }
 
-void chunk_set_all_dirty(chunk_t *chunk) {
+void chunk_set_all_dirty(chunk_old_t *chunk) {
     for (int i = 0; i < 2; i++) {
         chunk->dirty[i] = 1;
     }
 }
 
-void chunk_dispose(chunk_t *chunk) {
+void chunk_dispose(chunk_old_t *chunk) {
     chunk_set_all_dirty(chunk);
 }
 
-int chunk_append_lists(chunk_t *chunk, int data_cache[], int count, int pass) {
+int chunk_append_lists(chunk_old_t *chunk, int data_cache[], int count, int pass) {
     if(!chunk->visible) return count;
     if(!chunk->dirty[pass]) {
         data_cache[count++] = chunk->base_list_id + pass;
@@ -85,13 +85,13 @@ int chunk_append_lists(chunk_t *chunk, int data_cache[], int count, int pass) {
     return count;
 }
 
-void chunk_clip(chunk_t *chunk, frustum_t frustum) {
+void chunk_clip(chunk_old_t *chunk, frustum_t frustum) {
     chunk->visible = frustum_contains_box(frustum, chunk->x, chunk->y, chunk->z, chunk->x + chunk->width, chunk->y + chunk->height, chunk->z + chunk->depth);
 }
 
 int chunk_list_comparator(const void *a, const void *b) {
-    chunk_t *ca = *(chunk_t **)a;
-    chunk_t *cb = *(chunk_t **)b;
+    chunk_old_t *ca = *(chunk_old_t **)a;
+    chunk_old_t *cb = *(chunk_old_t **)b;
 
     float apx = ca->world->player->x, apy = ca->world->player->y, apz = ca->world->player->z;
     float bpx = cb->world->player->x, bpy = cb->world->player->y, bpz = cb->world->player->z;
@@ -101,8 +101,8 @@ int chunk_list_comparator(const void *a, const void *b) {
 }
 
 int chunk_visible_distance_comparator(const void *a, const void *b) {
-    chunk_t *ca = *(chunk_t **)a;
-    chunk_t *cb = *(chunk_t **)b;
+    chunk_old_t *ca = *(chunk_old_t **)a;
+    chunk_old_t *cb = *(chunk_old_t **)b;
     if (ca->visible || !cb->visible) {
         if (cb->visible) {
             float apx = ca->world->player->x, apy = ca->world->player->y, apz = ca->world->player->z;

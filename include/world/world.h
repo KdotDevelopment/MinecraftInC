@@ -2,7 +2,7 @@
 
 #include <util/random.h>
 #include <world/next_tick_data.h>
-#include <world/terrain/chunk_provider_generator.h>
+#include <world/terrain/chunk_provider_generate.h>
 #include <player/player.h>
 #include <player/hit_result.h>
 #include <gui/progress_bar.h>
@@ -59,10 +59,10 @@ typedef struct world_s {
     int64_t random_seed;
     char *save_file; // includes world name
     chunk_provider_t chunk_provider;
+    chunk_provider_t chunk_provider_gen;
     nbt_base_t player_nbt;
     int64_t size_on_disk;
 
-    world_gen_t generator; // <-- this becomes chunk_provider_t
     int64_t random_number;
     particles_t *particles;
     player_t *player;

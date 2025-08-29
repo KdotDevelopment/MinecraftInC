@@ -1,5 +1,7 @@
 #pragma once
 
+#include <physics/AABB.h>
+
 #include <stdint.h>
 
 typedef struct {
@@ -11,3 +13,4 @@ typedef struct {
 
 frustum_t frustum_get();
 uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, float bx, float by, float bz);
+uint8_t frustum_contains_box_bb(frustum_t frustum, AABB_t box);

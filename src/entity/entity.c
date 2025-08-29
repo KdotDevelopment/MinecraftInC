@@ -79,7 +79,7 @@ void entity_reset_pos(entity_t *entity) {
     }
 
     entity->xd = entity->yd = entity->zd = 0;
-    entity->y_rot = world->spawn_rot;
+    //entity->y_rot = world->spawn_rot;
     entity->x_rot = 0;
 }
 
@@ -122,7 +122,7 @@ void entity_tick(entity_t *entity) {
 }
 
 void entity_play_sound(entity_t *entity, uint8_t sound, float volume, float pitch) {
-    world_play_sound((world_t *)entity->world, sound, entity, volume, pitch);
+    world_play_sound_at_entity((world_t *)entity->world, entity, sound, volume, pitch);
 }
 
 void entity_move(entity_t *entity, float x, float y, float z) {

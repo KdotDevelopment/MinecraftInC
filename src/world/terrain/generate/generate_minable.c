@@ -1,6 +1,6 @@
 #include <world/terrain/generate/generate_mineable.h>
 
-#include <world/block/block.h>
+#include <world/block/blocks.h>
 
 uint8_t generate_mineable_gen(world_t *world, random_t *random, int gen_x, int gen_y, int gen_z, uint8_t block_id) {
     float angle = random_next_uniform(random) * M_PI;

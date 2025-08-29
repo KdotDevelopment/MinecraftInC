@@ -6,6 +6,7 @@
 #include <minecraft.h>
 #include <world/chunk/chunk.h>
 #include <world/material/materials.h>
+#include <world/chunk/chunk_provider_load.h>
 
 #include <util/array_list.h>
 
@@ -69,9 +70,9 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
         world->spawn_z = 0;
     }
 
-    world->generator = world_gen_create();
-    
-    //world_gen_generate(&world->generator, block_count, block_count, (struct world_s *)world);
+    chunk_provider_generate_create(&world->chunk_provider_gen, world, world->random_seed);
+    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, (const char **)&world->save_file);
+    world_save(world, 0);
 }
 
 nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name) {
@@ -144,7 +145,6 @@ struct chunk_s *world_get_chunk(world_t *world, int x, int z) {
     return world->chunk_provider.chunk_provide(&world->chunk_provider, x, z);
 }
 
-// setTileNoUpdate
 uint8_t world_set_block_no_update(world_t *world, int x, int y, int z, uint8_t block_id) {
     if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
         || y < 0 || y >= CHUNK_SIZE_HEIGHT

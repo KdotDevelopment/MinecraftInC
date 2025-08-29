@@ -191,7 +191,7 @@ void entity_arrow_player_touch(struct entity_s *entity, entity_t *player) {
     if(entity->has_hit && entity->owner == player && real_player->arrows < 99) {
         entity_t *anim = malloc(sizeof(entity_t));
         entity_take_anim_create(anim, entity->world, entity, real_player);
-        world_add_entity(entity->world, anim);
+        world_spawn_entity(entity->world, anim);
         entity_remove(entity);
         real_player->arrows++;
     }

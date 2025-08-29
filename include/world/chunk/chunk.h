@@ -10,8 +10,9 @@
 
 struct world_s;
 
+extern uint8_t chunk_is_lit;
+
 typedef struct chunk_s {
-    uint8_t is_lit;
     uint8_t blocks[CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH];
     struct world_s *world;
     uint8_t *data; // nibblearray  block metadata
@@ -28,7 +29,7 @@ typedef struct chunk_s {
     uint8_t has_entities; 
 } chunk_t;
 
-void chunk_create(chunk_t *chunk, struct world_s *world, int     x, int z);
+void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z);
 void chunk_create_from(chunk_t *chunk, struct world_s *world, uint8_t *data, int x, int z);
 int chunk_get_height_value(chunk_t *chunk, int x, int z);
 void chunk_generate_height_map(chunk_t *chunk);

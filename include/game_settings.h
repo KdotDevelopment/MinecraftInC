@@ -18,6 +18,7 @@ typedef struct {
     uint8_t limit_framerate;
     struct minecraft_s *minecraft;
     int settings_count;
+    uint8_t third_person;
     key_binding_t forward_key;
     key_binding_t left_key;
     key_binding_t back_key;

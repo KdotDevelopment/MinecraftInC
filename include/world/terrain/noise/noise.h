@@ -33,8 +33,8 @@ typedef struct noise_s {
         };
     };
 
-    double (*get)(noise_t *noise, double x, double y, double z);
-    void (*destroy)(noise_t *noise);
+    double (*get)(struct noise_s *noise, double x, double y, double z);
+    void (*destroy)(struct noise_s *noise);
 } noise_t;
 
 noise_t noise_create();

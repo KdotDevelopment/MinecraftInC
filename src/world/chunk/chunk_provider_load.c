@@ -1,6 +1,7 @@
 #include <world/chunk/chunk_provider_load.h>
 
 #include <world/chunk/chunk_provider.h>
+#include <world/world.h>
 
 #include <errno.h>
 #include <stdlib.h>

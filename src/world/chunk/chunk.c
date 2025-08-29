@@ -2,11 +2,15 @@
 
 #include <util/array_list.h>
 #include <util/math_helper.h>
+#include <world/block/block.h>
 #include <world/chunk/nibble_array.h>
+#include <world/world.h>
 
 #include <stdio.h>
 
-void chunk_create(chunk_t *chunk, world_t *world, int x, int z) {
+uint8_t chunk_is_lit = 0;
+
+void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z) {
     memset(chunk, 0, sizeof(chunk_t));
 
     chunk->world = world;
@@ -18,7 +22,7 @@ void chunk_create(chunk_t *chunk, world_t *world, int x, int z) {
     }
 }
 
-void chunk_create_from(chunk_t *chunk, world_t *world, uint8_t *data, int x, int z) {
+void chunk_create_from(chunk_t *chunk, struct world_s *world, uint8_t *data, int x, int z) {
     chunk_create(chunk, world, x, z);
 
     memcpy(chunk->blocks, data, CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT);
@@ -201,7 +205,7 @@ void chunk_set_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int
 // I'm assuming this is time-of-day related
 uint8_t chunk_get_block_light_value(chunk_t *chunk, int x, int y, int z, uint8_t time_factor) {
     uint8_t sky = nibble_array_get(chunk->sky_light_map, x, y, z);
-    if(sky > 0) chunk->is_lit = 1;
+    if(sky > 0) chunk_is_lit = 1;
     sky -= time_factor;
     uint8_t block = nibble_array_get(chunk->block_light_map, x, y, z);
     if(block > sky) sky = block;

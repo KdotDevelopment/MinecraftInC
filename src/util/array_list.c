@@ -120,6 +120,12 @@ void *array_list_clone(void *array_list) {
     return clone + 1;
 }
 
+void array_list_sort(void *array_list, int (*comparator)(const void *, const void *)) {
+    array_list_t *meta = (array_list_t *)array_list - 1;
+
+    qsort(array_list, meta->length, meta->element_size, comparator);
+}
+
 void array_list_free(void *array_list) {
     free((array_list_t *)array_list - 1);
 }

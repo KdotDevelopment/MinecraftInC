@@ -80,3 +80,7 @@ uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, fl
     }
     return 1;
 }
+
+uint8_t frustum_contains_box_bb(frustum_t frustum, AABB_t box) {
+    return frustum_contains_box(frustum, box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
+}

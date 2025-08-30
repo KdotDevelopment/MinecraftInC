@@ -2,7 +2,7 @@
 #include <model/model_humanoid.h>
 #include <world/world.h>
 #include <model/models.h>
-#include <renderer/world_renderer.h>
+#include <renderer/renderer_world.h>
 #include <minecraft.h>
 
 #include <SDL2/SDL.h>

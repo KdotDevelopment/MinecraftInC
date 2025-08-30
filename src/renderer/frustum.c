@@ -14,8 +14,10 @@ void frustum_normalize(frustum_t *frustum, int plane) {
 
 frustum_t frustum_get() {
     frustum_t frustum = { 0 };
+
     glGetFloatv(GL_PROJECTION_MATRIX, frustum.projection);
     glGetFloatv(GL_MODELVIEW_MATRIX, frustum.model_view);
+    
     frustum.clip[0x0] = frustum.model_view[0x0] * frustum.projection[0x0] + frustum.model_view[0x1] * frustum.projection[0x4] + frustum.model_view[0x2] * frustum.projection[0x8] + frustum.model_view[0x3] * frustum.projection[0xC];
     frustum.clip[0x1] = frustum.model_view[0x0] * frustum.projection[0x1] + frustum.model_view[0x1] * frustum.projection[0x5] + frustum.model_view[0x2] * frustum.projection[0x9] + frustum.model_view[0x3] * frustum.projection[0xD];
     frustum.clip[0x2] = frustum.model_view[0x0] * frustum.projection[0x2] + frustum.model_view[0x1] * frustum.projection[0x6] + frustum.model_view[0x2] * frustum.projection[0xA] + frustum.model_view[0x3] * frustum.projection[0xE];
@@ -62,10 +64,17 @@ frustum_t frustum_get() {
     frustum.planes[5][2] = frustum.clip[0xB] + frustum.clip[0xA];
     frustum.planes[5][3] = frustum.clip[0xF] + frustum.clip[0xE];
     frustum_normalize(&frustum, 5);
+
     return frustum;
 }
 
 uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, float bx, float by, float bz) {
+    ax -= frustum.x;
+    ay -= frustum.y;
+    az -= frustum.z;
+    bx -= frustum.x;
+    by -= frustum.y;
+    bz -= frustum.z;
     for(int i = 0; i < 6; i++) {
         uint8_t b = 1;
         b = b && frustum.planes[i][0] * ax + frustum.planes[i][1] * ay + frustum.planes[i][2] * az + frustum.planes[i][3] <= 0.0;
@@ -83,4 +92,10 @@ uint8_t frustum_contains_box(frustum_t frustum, float ax, float ay, float az, fl
 
 uint8_t frustum_contains_box_bb(frustum_t frustum, AABB_t box) {
     return frustum_contains_box(frustum, box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
+}
+
+void frustum_set_position(frustum_t *frustum, double x, double y, double z) {
+    frustum->x = x;
+    frustum->y = y;
+    frustum->z = z;
 }

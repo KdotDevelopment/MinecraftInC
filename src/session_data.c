@@ -4,6 +4,8 @@
 
 #include <util/array_list.h>
 
+#include <stdio.h>
+
 uint8_t *session_allowed_blocks = { 0 };
 
 void session_data_initialize() {
@@ -16,8 +18,9 @@ void session_data_initialize() {
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.wood.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.log.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.leaves.id);
-    session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.glass.id);
+    session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.torch.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.slab.id);
+    session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.glass.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.mossy_cobblestone.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.sapling.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.dandelion.id);
@@ -51,4 +54,5 @@ void session_data_initialize() {
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.bookshelf.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.tnt.id);
     session_allowed_blocks = array_list_push(session_allowed_blocks, &blocks.obsidian.id);
+    printf("%d\n", array_list_length(session_allowed_blocks));
 }

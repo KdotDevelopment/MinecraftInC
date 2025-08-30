@@ -3,7 +3,7 @@
 #include <entity/ai/ai_sheep.h>
 #include <world/world.h>
 #include <model/models.h>
-#include <renderer/world_renderer.h>
+#include <renderer/renderer_world.h>
 #include <model/model_sheep.h>
 #include <model/model_sheep_fur.h>
 #include <minecraft.h>

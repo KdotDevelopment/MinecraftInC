@@ -1,4 +1,4 @@
-#include <renderer/chunk_renderer.h>
+#include <renderer/renderer_chunk.h>
 
 #include <entity/entity.h>
 #include <renderer/tesselator.h>
@@ -11,21 +11,21 @@
 
 int chunk_updates = 0;
 
-void chunk_renderer_create(chunk_renderer_t *renderer, world_t *world, int x, int y, int z, int size, int render_list) {
-    *renderer = (chunk_renderer_t){ 0 };
+void renderer_chunk_create(renderer_chunk_t *renderer, world_t *world, int x, int y, int z, int size, int render_list) {
+    *renderer = (renderer_chunk_t){ 0 };
     renderer->world = world;
     renderer->render_list = render_list;
     renderer->width = size;
     renderer->height = size;
     renderer->depth = size;
-    block_renderer_create(&renderer->block_renderer, world);
-    chunk_renderer_set_position(renderer, x, y, z);
+    renderer_block_create(&renderer->renderer_block, world);
+    renderer_chunk_set_position(renderer, x, y, z);
     renderer->is_visible = 1;
 }
 
-void chunk_renderer_set_position(chunk_renderer_t *renderer, int x, int y, int z) {
+void renderer_chunk_set_position(renderer_chunk_t *renderer, int x, int y, int z) {
     if(x == renderer->x && y == renderer->y && z == renderer->z) return;
-    chunk_renderer_dont_draw(renderer);
+    renderer_chunk_dont_draw(renderer);
     renderer->x = x;
     renderer->y = y;
     renderer->z = z;
@@ -94,7 +94,7 @@ void chunk_renderer_set_position(chunk_renderer_t *renderer, int x, int y, int z
     renderer->needs_update = 1;
 }
 
-void chunk_renderer_update(chunk_renderer_t *renderer) {
+void renderer_chunk_update(renderer_chunk_t *renderer) {
     if(!renderer->needs_update) return;
     chunk_updates++;
     int x0 = renderer->x;
@@ -143,42 +143,50 @@ void chunk_renderer_update(chunk_renderer_t *renderer) {
     renderer->is_lit = chunk_is_lit;
 }
 
-float chunk_renderer_distance_to_entity_squared(chunk_renderer_t *renderer, entity_t *entity) {
+float renderer_chunk_distance_to_entity_squared(renderer_chunk_t *renderer, entity_t *entity) {
     float dx = entity->x - renderer->x;
     float dy = entity->y - renderer->y;
     float dz = entity->z - renderer->z;
     return dx * dx + dy * dy + dz * dz;
 }
 
-void chunk_renderer_dont_draw(chunk_renderer_t *renderer) {
+void renderer_chunk_dont_draw(renderer_chunk_t *renderer) {
     for(int i = 0; i < 2; i++) {
         renderer->skip_render[i] = 1;
     }
 }
 
-void chunk_renderer_stop_rendering(chunk_renderer_t *renderer) {
-    chunk_renderer_dont_draw(renderer);
+void renderer_chunk_stop_rendering(renderer_chunk_t *renderer) {
+    renderer_chunk_dont_draw(renderer);
     renderer->world = NULL;
 }
 
-int chunk_renderer_get_gl_call_list(chunk_renderer_t *renderer, int list) {
+int renderer_chunk_get_gl_call_list(renderer_chunk_t *renderer, int list) {
     return !renderer->is_in_frustum ? -1 : (!renderer->skip_render[list] ? renderer->render_list + list : -1);
 }
 
-void chunk_renderer_update_frustum(chunk_renderer_t *renderer, frustum_t *frustum) {
+void renderer_chunk_update_frustum(renderer_chunk_t *renderer, frustum_t *frustum) {
     renderer->is_in_frustum = frustum_contains_box(*frustum, renderer->bb.x0, renderer->bb.y0, renderer->bb.z0, renderer->bb.x1, renderer->bb.y1, renderer->bb.z1);
 }
 
-void chunk_renderer_call_occlusion_query_list(chunk_renderer_t *renderer) {
+void renderer_chunk_call_occlusion_query_list(renderer_chunk_t *renderer) {
     glCallList(renderer->render_list + 2);
 }
 
-uint8_t chunk_renderer_skip_all_render_passes(chunk_renderer_t *renderer) {
+uint8_t renderer_chunk_skip_all_render_passes(renderer_chunk_t *renderer) {
     return renderer->skip_render[0] && renderer->skip_render[1];
 }
 
-int chunk_renderer_compare(const void *a, const void *b) {
-    chunk_renderer_t *chunk_a = *(chunk_renderer_t **)a;
-    chunk_renderer_t *chunk_b = *(chunk_renderer_t **)b;
-    return chunk_renderer_distance_to_entity_squared(chunk_a, chunk_a->world->player) < chunk_renderer_distance_to_entity_squared(chunk_b, chunk_b->world->player) ? -1 : 1;
+int renderer_chunk_entity_compare(const void *a, const void *b) {
+    renderer_chunk_t *chunk_a = *(renderer_chunk_t **)a;
+    renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
+    return renderer_chunk_distance_to_entity_squared(chunk_a, chunk_a->world->player) < renderer_chunk_distance_to_entity_squared(chunk_b, chunk_b->world->player) ? -1 : 1;
+}
+
+int renderer_chunk_player_compare(const void *a, const void *b) {
+    renderer_chunk_t *chunk_a = *(renderer_chunk_t **)a;
+    renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
+    uint8_t b1 = chunk_a->is_in_frustum;
+    uint8_t b2 = chunk_b->is_in_frustum;
+    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, chunk_a->world->player) < renderer_chunk_distance_to_entity_squared(chunk_b, chunk_b->world->player) ? -1 : 1);
 }

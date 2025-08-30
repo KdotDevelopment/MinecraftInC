@@ -4,10 +4,10 @@
 
 #include <stdint.h>
 
-typedef struct block_renderer_s {
+typedef struct renderer_block_s {
     world_t *world;
     int16_t fixed_texture_id;
     uint8_t flip_texture;
-} block_renderer_t;
+} renderer_block_t;
 
-void block_renderer_create(block_renderer_t *block_renderer, world_t *world);
+void renderer_block_create(renderer_block_t *renderer_block, world_t *world);

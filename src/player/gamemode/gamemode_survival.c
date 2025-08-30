@@ -75,9 +75,9 @@ void gamemode_survival_stop_destroy_block(struct gamemode_s *gamemode) {
 
 void gamemode_survival_render(struct gamemode_s *gamemode, float delta) {
     if(gamemode->destroy_progress <= 0) {
-        gamemode->minecraft->world_renderer.destroy_progress = 0;
+        gamemode->minecraft->renderer_world.destroy_progress = 0;
     }else {
-        gamemode->minecraft->world_renderer.destroy_progress = ((float)gamemode->destroy_progress + delta - 1.0) / (float)gamemode->destroy_progress_old;
+        gamemode->minecraft->renderer_world.destroy_progress = ((float)gamemode->destroy_progress + delta - 1.0) / (float)gamemode->destroy_progress_old;
     }
 }
 

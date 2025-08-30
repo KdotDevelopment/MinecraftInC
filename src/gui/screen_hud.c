@@ -1,6 +1,6 @@
 #include <gui/screen_hud.h>
 #include <gui/gui.h>
-#include <renderer/game_renderer.h>
+#include <renderer/renderer_camera.h>
 #include <renderer/tesselator.h>
 #include <player/player.h>
 #include <minecraft.h>
@@ -20,7 +20,7 @@ screen_hud_t screen_hud_create(struct minecraft_s *minecraft, int width, int hei
 }
 
 void screen_hud_render(screen_hud_t *hud, float delta, float mx, float my) {
-    renderer_setup_gui_camera(&hud->minecraft->renderer);
+    renderer_camera_setup_gui(&hud->minecraft->renderer);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/gui.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_BLEND);
@@ -106,7 +106,7 @@ void screen_hud_render(screen_hud_t *hud, float delta, float mx, float my) {
             glTranslatef(-1.5, 0.5, 0.5);
             glScalef(-1.0, -1.0, -1.0);
             glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "terrain.png"));
-            tesselator_begin();
+            tesselator_begin_quads();
             block->render_full_brightness(&block_list[block_id]);
             tesselator_end();
             glPopMatrix();

@@ -1,5 +1,5 @@
 #include <world/world.h>
-#include <renderer/world_renderer.h>
+#include <renderer/renderer_world.h>
 #include <world/block/block.h>
 #include <world/block/blocks.h>
 #include <sound/sounds.h>
@@ -24,7 +24,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->loaded_entity_list = array_list_create(sizeof(uint64_t));
     world->next_tick_data_list = array_list_create(sizeof(uint64_t));
     world->loaded_tile_entity_list = array_list_create(sizeof(uint64_t));
-    world->world_renderer_list = array_list_create(sizeof(uint64_t));
+    world->renderer_world_list = array_list_create(sizeof(uint64_t));
     world->world_time = 0;
     world->sky_color = 0x99CCFFFF;
     world->fog_color = 0xB0D0FFFF;
@@ -184,9 +184,9 @@ uint8_t world_set_block_metadata(world_t *world, int x, int y, int z, uint8_t da
 uint8_t world_set_block_with_update(world_t *world, int x, int y, int z, uint8_t block_id) {
     if(!world_set_block_no_update(world, x, y, z, block_id)) return 0;
 
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-        world_renderer_update_block(renderer, x, y, z);
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+        renderer_world_update_block(renderer, x, y, z);
     }
 
     world_update_neighbors_at(world, x, y, z, block_id);
@@ -200,9 +200,9 @@ void world_mark_blocks_dirty_vertical(world_t *world, int x, int z, int y1, int 
         y1 = swap;
     }
 
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-        world_renderer_update_blocks(renderer, x, y1, z, x, y2, z);
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+        renderer_world_update_blocks(renderer, x, y1, z, x, y2, z);
     }
 }
 
@@ -411,19 +411,19 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
 }
 
 void world_play_sound_at_entity(world_t *world, entity_t *entity, uint8_t sound, float volume, float pitch) {
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
         float attenuation = 16;
         if(volume > 1) attenuation *= volume;
 
         if(entity_distance_to_sqr(world->player, entity) < attenuation * attenuation) {
-            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-            world_renderer_play_sound(renderer, sound, entity->x, entity->y - entity->y_slide_offset, entity->z, volume, pitch);
+            renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+            renderer_world_play_sound(renderer, sound, entity->x, entity->y - entity->y_slide_offset, entity->z, volume, pitch);
         }
     }
 }
 
 void world_play_sound(world_t *world, double x, double y, double z, uint8_t sound, float volume, float pitch) {
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
         float attenuation = 16;
         if(volume > 1) attenuation *= volume;
 
@@ -431,16 +431,16 @@ void world_play_sound(world_t *world, double x, double y, double z, uint8_t soun
         double yy = y - world->player->y;
         double zz = z - world->player->z;
         if(xx * xx + yy * yy + zz * zz < attenuation * attenuation) {
-            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-            world_renderer_play_sound(renderer, sound, x, y, z, volume, pitch);
+            renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+            renderer_world_play_sound(renderer, sound, x, y, z, volume, pitch);
         }
     }
 }
 
 void world_spawn_particle(world_t *world, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel) {
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-        world_renderer_spawn_particle(renderer, particle_type, x, y, z, x_vel, y_vel, z_vel);
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+        renderer_world_spawn_particle(renderer, particle_type, x, y, z, x_vel, y_vel, z_vel);
     }
 }
 
@@ -455,9 +455,9 @@ void world_spawn_entity(world_t *world, entity_t *entity) {
     chunk_add_entity(chunk, entity);
     world->loaded_entity_list = array_list_push(world->loaded_entity_list, entity);
 
-    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-        world_renderer_obtain_entity_skin(renderer, entity);
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+        renderer_world_obtain_entity_skin(renderer, entity);
     }
 }
 
@@ -465,13 +465,13 @@ void world_set_entity_dead(world_t *world, entity_t *entity) {
     entity->is_dead = 1;
 }
 
-void world_add_renderer(world_t *world, world_renderer_t *renderer) {
-    world->world_renderer_list = array_list_push(world->world_renderer_list, renderer);
+void world_add_renderer(world_t *world, renderer_world_t *renderer) {
+    world->renderer_world_list = array_list_push(world->renderer_world_list, renderer);
 }
 
-void world_remove_renderer(world_t *world, world_renderer_t *renderer) {
-    int index = array_list_index_of(world->world_renderer_list, renderer);
-    world->world_renderer_list = array_list_remove(world->world_renderer_list, index);
+void world_remove_renderer(world_t *world, renderer_world_t *renderer) {
+    int index = array_list_index_of(world->renderer_world_list, renderer);
+    world->renderer_world_list = array_list_remove(world->renderer_world_list, index);
 }
 
 AABB_t *world_get_cubes(world_t *world, AABB_t box) {
@@ -630,9 +630,9 @@ void world_update_entities(world_t *world) {
             world->loaded_entity_list = array_list_remove(world->loaded_entity_list, i);
             i--;
 
-            for(int j = 0; j < array_list_length(world->world_renderer_list); j++) {
-                world_renderer_t *renderer = array_list_get(world->world_renderer_list, j);
-                world_renderer_release_entity_skin(renderer, entity);
+            for(int j = 0; j < array_list_length(world->renderer_world_list); j++) {
+                renderer_world_t *renderer = array_list_get(world->renderer_world_list, j);
+                renderer_world_release_entity_skin(renderer, entity);
             }
         }
     }
@@ -952,9 +952,9 @@ uint8_t world_update_lighting(world_t *world) {
                                     chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
                                     chunk_set_light_value(chunk, metadata.light_type, x % CHUNK_SIZE_WIDTH, y, z % CHUNK_SIZE_WIDTH, new_light_value);
 
-                                    for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-                                        world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-                                        world_renderer_update_block(renderer, x, y, z);
+                                    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+                                        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+                                        renderer_world_update_block(renderer, x, y, z);
                                     }
                                 }
 
@@ -1033,9 +1033,9 @@ void world_restart_time_of_day(world_t *world) {
     if(light != world->skylight_subtracted) {
         world->skylight_subtracted = light;
         
-        for(int i = 0; i < array_list_length(world->world_renderer_list); i++) {
-            world_renderer_t *renderer = array_list_get(world->world_renderer_list, i);
-            world_renderer_update_all(renderer);
+        for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+            renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
+            renderer_world_update_all(renderer);
         }
     }
 
@@ -1130,5 +1130,5 @@ void world_destroy(world_t *world) {
     free(world->loaded_entity_list);
     free(world->next_tick_data_list);
     free(world->loaded_tile_entity_list);
-    free(world->world_renderer_list);
+    free(world->renderer_world_list);
 }

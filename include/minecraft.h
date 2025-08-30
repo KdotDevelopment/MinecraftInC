@@ -1,7 +1,7 @@
 #pragma once
 
-#include <renderer/game_renderer.h>
-#include <renderer/world_renderer.h>
+#include <renderer/renderer_camera.h>
+#include <renderer/renderer_world.h>
 #include <renderer/held_block.h>
 #include <gui/screen_hud.h>
 #include <gui/screen.h>
@@ -23,13 +23,13 @@
 #include <stdint.h>
 
 typedef struct minecraft_s {
-    game_renderer_t renderer;
+    renderer_camera_t renderer;
     world_t world;
     textures_t textures;
     player_t player;
     game_settings_t settings;
     font_t font;
-    world_renderer_t world_renderer;
+    renderer_world_t renderer_world;
     game_timer_t timer;
     hit_result_t hit_result;
     screen_t *current_screen;
@@ -57,4 +57,5 @@ typedef struct minecraft_s {
 
 void minecraft_grab_mouse(minecraft_t *minecraft);
 void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen);
+void minecraft_pause(minecraft_t *minecraft);
 void minecraft_regenerate_world(minecraft_t *minecraft, int size);

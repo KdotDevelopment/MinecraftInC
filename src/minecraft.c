@@ -1,6 +1,6 @@
 #include <minecraft.h>
 #include <session_data.h>
-#include <renderer/game_renderer.h>
+#include <renderer/renderer_camera.h>
 #include <renderer/tesselator.h>
 #include <renderer/frustum.h>
 #include <renderer/texture/texture_lava.h>
@@ -89,7 +89,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->gamemode = gamemode_creative_create(minecraft);
     #endif
 
-    minecraft->renderer = game_renderer_create(minecraft);
+    minecraft->renderer = renderer_camera_create(minecraft);
     game_settings_create(&minecraft->settings, (struct minecraft_s *)minecraft);
     SDL_GL_SetSwapInterval(minecraft->settings.limit_framerate ? 1 : 0);
     minecraft->textures = textures_create(&minecraft->settings);
@@ -113,9 +113,9 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
 
-    minecraft->world_renderer = world_renderer_create(minecraft, &minecraft->world, &minecraft->textures);
-    minecraft->world.renderer = (struct world_renderer_s *)&minecraft->world_renderer;
-    world_renderer_refresh((world_renderer_t *)&minecraft->world_renderer);
+    minecraft->renderer_world = renderer_world_create(minecraft, &minecraft->world, &minecraft->textures);
+    minecraft->world.renderer = (struct renderer_world_s *)&minecraft->renderer_world;
+    renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
     minecraft->particles = particles_create(&minecraft->world, &minecraft->textures);
     minecraft->world.particles = &minecraft->particles;
 
@@ -168,10 +168,10 @@ void minecraft_regenerate_world(minecraft_t *minecraft, int size) {
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.inputs = inputs_create(&minecraft->settings);
-    world_renderer_destroy(&minecraft->world_renderer);
-    minecraft->world_renderer = world_renderer_create(minecraft, &minecraft->world, &minecraft->textures);
-    minecraft->world.renderer = (struct world_renderer_s *)&minecraft->world_renderer;
-    world_renderer_refresh((world_renderer_t *)&minecraft->world_renderer);
+    renderer_world_destroy(&minecraft->renderer_world);
+    minecraft->renderer_world = renderer_world_create(minecraft, &minecraft->world, &minecraft->textures);
+    minecraft->world.renderer = (struct renderer_world_s *)&minecraft->renderer_world;
+    renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
     particles_destroy(&minecraft->particles);
     minecraft->particles = particles_create(&minecraft->world, &minecraft->textures);
 }
@@ -378,7 +378,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         }
     }
 
-    game_renderer_t *renderer = &minecraft->renderer;
+    renderer_camera_t *renderer = &minecraft->renderer;
     renderer->held_block.last_position = renderer->held_block.position;
     if(renderer->held_block.moving) {
         renderer->held_block.offset++;
@@ -417,7 +417,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         }
     }
 
-    minecraft->world_renderer.ticks++;
+    minecraft->renderer_world.ticks++;
     world_tick_entities(&minecraft->world);
     world_tick(&minecraft->world);
     particles_tick(&minecraft->particles);
@@ -491,7 +491,7 @@ void minecraft_run(minecraft_t *minecraft) {
 
         float delta = timer->delta;
         minecraft->gamemode.render(&minecraft->gamemode, delta);
-        game_renderer_t *renderer = &minecraft->renderer;
+        renderer_camera_t *renderer = &minecraft->renderer;
         if(renderer->display_active && (SDL_GetWindowFlags(minecraft->window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
             minecraft_pause(minecraft);
         }
@@ -519,10 +519,14 @@ void minecraft_run(minecraft_t *minecraft) {
         mx = mx * w / minecraft->width;
         my = my * h / minecraft->height - 1;
 
+
+        ///////////////////////////////////////////////vvvvvv
+
+
         player_t *player = &minecraft->player;
         float rot_x = player->x_roto + (player->x_rot - player->x_roto) * delta;
         float rot_y = player->y_roto + (player->y_rot - player->y_roto) * delta;
-        vec3_t v = renderer_get_player_vector(renderer, delta);
+        vec3_t v = renderer_camera_get_player_vector(renderer, delta);
         float c1 = tcos(-rot_y * M_PI / 180.0 - M_PI);
         float s1 = tsin(-rot_y * M_PI / 180.0 - M_PI);
         float c2 = tcos(-rot_x * M_PI / 180.0);
@@ -612,20 +616,25 @@ void minecraft_run(minecraft_t *minecraft) {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             if(minecraft->settings.anaglyph) glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
-            if(minecraft->settings.show_bobbing) renderer_apply_bobbing(renderer, delta);
+            if(minecraft->settings.show_bobbing) renderer_camera_apply_bobbing(renderer, delta);
 
             glTranslatef(0.0, 0.0, -0.1);
             float rot_x = player->x_roto + (player->x_rot - player->x_roto) * delta;
             float rot_y = player->y_roto + (player->y_rot - player->y_roto) * delta;
             glRotatef(rot_x, 1.0, 0.0, 0.0);
             glRotatef(rot_y, 0.0, 1.0, 0.0);
+
+
+            //////////////////////////////////////////////////////////////^^^^^
+
+
             float pos_x = player->xo + (player->x - player->xo) * delta;
             float pos_y = player->yo + (player->y - player->yo) * delta;
             float pos_z = player->zo + (player->z - player->zo) * delta;
             glTranslatef(-pos_x, -pos_y, -pos_z);
 
             frustum_t frustum = frustum_get();
-            world_renderer_t *lrenderer = &minecraft->world_renderer;
+            renderer_world_t *lrenderer = &minecraft->renderer_world;
             for(int j = 0; j < lrenderer->chunk_cache_count; j++) {
                 chunk_clip(lrenderer->chunk_cache[j], frustum);
             }
@@ -641,9 +650,9 @@ void minecraft_run(minecraft_t *minecraft) {
                 chunk->loaded = 0;
             }
 
-            renderer_setup_fog(renderer);
+            renderer_camera_setup_fog(renderer);
             glEnable(GL_FOG);
-            world_renderer_sort_chunks(lrenderer, player, 0);
+            renderer_world_sort_chunks(lrenderer, player, 0);
             if(world_is_solid_search(world, player->x, player->y, player->z, 0.1)) {
                 int px = player->x;
                 int py = player->y;
@@ -678,11 +687,11 @@ void minecraft_run(minecraft_t *minecraft) {
                 }
             }
 
-            renderer_set_lighting(renderer, 1);
+            renderer_camera_set_lighting(renderer, 1);
             entity_map_render(&minecraft->world.entity_map, v, &frustum, &minecraft->textures, timer->delta);
             particles_t *particles = &minecraft->particles;
-            renderer_set_lighting(renderer, 0);
-            renderer_setup_fog(renderer);
+            renderer_camera_set_lighting(renderer, 0);
+            renderer_camera_setup_fog(renderer);
             float dt = delta;
             float c = -tcos(player->y_rot * M_PI / 180.0);
             float s = -tsin(player->y_rot * M_PI / 180.0);
@@ -707,7 +716,7 @@ void minecraft_run(minecraft_t *minecraft) {
             glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "rock.png"));
             glEnable(GL_TEXTURE_2D);
             glCallList(lrenderer->list_id);
-            renderer_setup_fog(renderer);
+            renderer_camera_setup_fog(renderer);
             glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "clouds.png"));
             glColor4f(1.0, 1.0, 1.0, 1.0);
             float cloud_r = ((world->cloud_color >> 24) & 0xFF) / 255.0;
@@ -762,15 +771,21 @@ void minecraft_run(minecraft_t *minecraft) {
             }
             tesselator_end();
             glEnable(GL_TEXTURE_2D);
-            renderer_setup_fog(renderer);
+            renderer_camera_setup_fog(renderer);
 
             if(!minecraft->hit_result.null) {
                 glDisable(GL_ALPHA_TEST);
                 hit_result_t pos = minecraft->hit_result;
+
+
+                ////////////////////////////////////////////////////////////vvvvv
+
+
                 glEnable(GL_BLEND);
                 glEnable(GL_ALPHA_TEST);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE);
                 glColor4f(1.0, 1.0, 1.0, (tsin(time_millis() / 100.0) * 0.2 + 0.4) * 0.5);
+
                 if(lrenderer->destroy_progress > 0) {
                     glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
                     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
@@ -799,6 +814,11 @@ void minecraft_run(minecraft_t *minecraft) {
                 }
                 glDisable(GL_BLEND);
                 glDisable(GL_ALPHA_TEST);
+
+
+                ///////////////////////////////////////////////////////vvv^^^
+
+
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 glColor4f(0.0, 0.0, 0.0, 0.4);
@@ -837,11 +857,16 @@ void minecraft_run(minecraft_t *minecraft) {
                 glDepthMask(GL_TRUE);
                 glEnable(GL_TEXTURE_2D);
                 glDisable(GL_BLEND);
+
+
+                ///////////////////////////////////////////////////////^^^^^
+
+
                 glEnable(GL_ALPHA_TEST);
             }
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            renderer_setup_fog(renderer);
+            renderer_camera_setup_fog(renderer);
             glEnable(GL_TEXTURE_2D);
             glEnable(GL_BLEND);
             glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "water.png"));
@@ -849,7 +874,7 @@ void minecraft_run(minecraft_t *minecraft) {
             glDisable(GL_BLEND);
             glEnable(GL_BLEND);
             glColorMask(0, 0, 0, 0);
-            int count = world_renderer_sort_chunks(lrenderer, player, 1);
+            int count = renderer_world_sort_chunks(lrenderer, player, 1);
             glColorMask(1, 1, 1, 1);
             if(minecraft->settings.anaglyph) {
                 if(i == 0) glColorMask(0, 1, 1, 0);
@@ -867,6 +892,11 @@ void minecraft_run(minecraft_t *minecraft) {
             glDisable(GL_FOG);
             
             if(minecraft->raining) {
+
+
+                ///////////////////////////////////////////////////////vvvvvv
+
+
                 float t = delta;
                 int px = player->x;
                 int py = player->y;
@@ -909,15 +939,19 @@ void minecraft_run(minecraft_t *minecraft) {
                 glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
             }
             if(minecraft->settings.show_bobbing) {
-                renderer_apply_bobbing(renderer, delta);
+                renderer_camera_apply_bobbing(renderer, delta);
             }
+
+
+            ///////////////////////////////////////////////////////^^^^^
+
 
             held_block_t held = renderer->held_block;
             float held_pos = held.last_position + (held.position - held.last_position) * delta;
             glPushMatrix();
             glRotatef(rot_x, 1.0, 0.0, 0.0);
             glRotatef(rot_y, 0.0, 1.0, 0.0);
-            renderer_set_lighting(renderer, 1);
+            renderer_camera_set_lighting(renderer, 1);
             glPopMatrix();
             glPushMatrix();
             if(held.moving) {
@@ -953,7 +987,7 @@ void minecraft_run(minecraft_t *minecraft) {
             }
             glDisable(GL_NORMALIZE);
             glPopMatrix();
-            renderer_set_lighting(renderer, 0);
+            renderer_camera_set_lighting(renderer, 0);
 
             if(!minecraft->settings.anaglyph) break;
             if(i == 1) glColorMask(1, 1, 1, 1);
@@ -1001,7 +1035,7 @@ int main(int argc, char *argv[]) {
     free(minecraft.textures.animations[0]); //water animated texture
     free(minecraft.textures.animations[1]); //lava animated texture
     textures_destroy(&minecraft.textures);
-    world_renderer_destroy(&minecraft.world_renderer);
+    renderer_world_destroy(&minecraft.renderer_world);
     particles_destroy(&minecraft.particles);
     array_list_free(minecraft.settings.bindings);
     array_list_free(session_allowed_blocks);

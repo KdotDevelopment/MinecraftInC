@@ -42,7 +42,7 @@ typedef struct world_s {
     uint64_t *loaded_entity_list; // entity_t *
     next_tick_data_t *next_tick_data_list; // next_tick_data_t
     uint64_t *loaded_tile_entity_list; // tile_entity_t *
-    uint64_t *world_renderer_list; // world_renderer_t *
+    uint64_t *renderer_world_list; // renderer_world_t *
     int32_t spawn_x;
     int32_t spawn_y;
     int32_t spawn_z;
@@ -98,8 +98,8 @@ void world_play_sound(world_t *world, double x, double y, double z, uint8_t soun
 void world_spawn_particle(world_t *world, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel);
 void world_spawn_entity(world_t *world, entity_t *entity);
 void world_set_entity_dead(world_t *world, entity_t *entity);
-void world_add_renderer(world_t *world, world_renderer_t *renderer);
-void world_remove_renderer(world_t *world, world_renderer_t *renderer);
+void world_add_renderer(world_t *world, renderer_world_t *renderer);
+void world_remove_renderer(world_t *world, renderer_world_t *renderer);
 AABB_t *world_get_cubes(world_t *world, AABB_t box);
 vec3_t world_get_sky_color(world_t *world, float time);
 float world_get_celestial_angle(world_t *world, float partial_tick);
@@ -125,6 +125,7 @@ uint8_t world_update_lighting(world_t *world);
 void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int y0, int z0, int x1, int y1, int z1);
 void world_restart_time_of_day(world_t *world);
 void world_visual_update(world_t *world, int x, int y, int z);
+entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t box);
 
 void world_set_spawn_position(world_t *world, int x, int y, int z);
 uint8_t world_is_water(world_t *world, int x, int y, int z);

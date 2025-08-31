@@ -31,12 +31,11 @@ void tesselator_end() {
     g_tesselator.is_drawing = 0;
     if(g_tesselator.vertex_count > 0) {
         memcpy(g_tesselator.byte_buffer, g_tesselator.raw_buffer, g_tesselator.raw_buffer_index * sizeof(int));
-        int buffer_size = g_tesselator.raw_buffer_index * sizeof(int);
 
         if(g_tesselator.use_vbo) {
             g_tesselator.vbo_index = (g_tesselator.vbo_index + 1) % VBO_COUNT;
             glBindBuffer(GL_ARRAY_BUFFER, g_tesselator.vertex_buffer[g_tesselator.vbo_index]);
-            glBufferData(GL_ARRAY_BUFFER, g_tesselator.byte_buffer, GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, 8388608, g_tesselator.byte_buffer, GL_STREAM_DRAW);
         }
 
         if(g_tesselator.has_texture) {

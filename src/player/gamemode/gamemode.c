@@ -34,11 +34,11 @@ void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     block_t *block = &block_list[world_get_block(world, x, y, z)];
     if(block != NULL) {
         if(block->sound->type != BLOCK_SOUND_NONE) {
-            world_play_sound_at(world, block->sound->base_type, x, y, z, block->sound->volume, block->sound->pitch);
+            world_play_sound(world, block->sound->base_type, x, y, z, block->sound->volume, block->sound->pitch);
         }
         block->destroy(block, world, x, y, z, &gamemode->minecraft->particles);
     }
-    world_set_block(world, x, y, z, blocks.air.id);
+    world_set_block_with_update(world, x, y, z, blocks.air.id);
 }
 
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item) {
@@ -49,7 +49,7 @@ void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int
     gamemode_destroy_block(gamemode, x, y, z);
 }
 
-void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, int face) {
+void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face) {
     return;
 }
 

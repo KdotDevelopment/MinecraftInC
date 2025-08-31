@@ -24,5 +24,5 @@ void mob_skeleton_create(mob_t *mob, struct world_s *world, float x, float y, fl
 void mob_skeleton_shoot_arrow(mob_t *mob, struct world_s *world) {
     entity_t *arrow = malloc(sizeof(entity_t));
     entity_arrow_create(arrow, world, &mob->entity, mob->x, mob->y, mob->z, mob->y_rot + 180.0 + (random_uniform() * 45.0 - 22.5), mob->x_rot - (random_uniform() * 45.0 - 10), 1);
-    world_add_entity(world, arrow);
+    world_spawn_entity(world, arrow);
 }

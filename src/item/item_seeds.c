@@ -19,7 +19,7 @@ uint8_t item_seeds_on_use(item_stack_t *item_stack, world_t *world, int x, int y
 
     uint8_t block_id = world_get_block(world, x, y, z);
     if(block_id == BLOCK_FARMLAND) {
-        world_set_block(world, x, y + 1, z, item_list[item_stack->item_id].block_id);
+        world_set_block_with_update(world, x, y + 1, z, item_list[item_stack->item_id].block_id);
         item_stack->stack_size--;
         return 1;
     }

@@ -9,12 +9,13 @@
 #include <world/block/block_farmland.h>
 #include <world/block/block_fire.h>
 #include <world/block/block_flower.h>
+#include <world/block/block_flowing.h>
 #include <world/block/block_furnace.h>
 #include <world/block/block_gears.h>
 #include <world/block/block_glass.h>
 #include <world/block/block_grass.h>
+#include <world/block/block_gravel.h>
 #include <world/block/block_leaves.h>
-#include <world/block/block_liquid.h>
 #include <world/block/block_log.h>
 #include <world/block/block_metal.h>
 #include <world/block/block_mushroom.h>
@@ -22,8 +23,9 @@
 #include <world/block/block_sand.h>
 #include <world/block/block_sapling.h>
 #include <world/block/block_slab.h>
+#include <world/block/block_spawner.h>
 #include <world/block/block_sponge.h>
-#include <world/block/block_still_liquid.h>
+#include <world/block/block_stationary.h>
 #include <world/block/block_stone.h>
 #include <world/block/block_tnt.h>
 #include <world/block/block_torch.h>
@@ -41,12 +43,12 @@ void blocks_init() {
     blocks.wood = block_create(BLOCK_PLANKS, TEXTURE_WOOD, &block_sounds.wood, 2, 5, &materials.wood);
     blocks.sapling = block_sapling_create();
     blocks.bedrock = block_create(BLOCK_BEDROCK, TEXTURE_BEDROCK, &block_sounds.stone, -1, 6000000, &materials.rock);
-    blocks.water = block_liquid_create(BLOCK_WATER, LIQUID_WATER);
-    blocks.still_water = block_still_liquid_create(BLOCK_STILL_WATER, LIQUID_WATER);
-    blocks.lava = block_liquid_create(BLOCK_LAVA, LIQUID_LAVA);
-    blocks.still_lava = block_still_liquid_create(BLOCK_STILL_LAVA, LIQUID_LAVA);
+    blocks.water = block_flowing_create(BLOCK_WATER, LIQUID_WATER);
+    blocks.still_water = block_stationary_create(BLOCK_STILL_WATER, LIQUID_WATER);
+    blocks.lava = block_flowing_create(BLOCK_LAVA, LIQUID_LAVA);
+    blocks.still_lava = block_stationary_create(BLOCK_STILL_LAVA, LIQUID_LAVA);
     blocks.sand = block_sand_create(BLOCK_SAND, TEXTURE_SAND, 0.5, 0);
-    blocks.gravel = block_sand_create(BLOCK_GRAVEL, TEXTURE_GRAVEL, 0.6, 0);
+    blocks.gravel = block_gravel_create(BLOCK_GRAVEL, TEXTURE_GRAVEL);
     blocks.gold_ore = block_ore_create(BLOCK_GOLD_ORE, TEXTURE_GOLD_ORE, 3, 5);
     blocks.iron_ore = block_ore_create(BLOCK_IRON_ORE, TEXTURE_IRON_ORE, 3, 5);
     blocks.coal_ore = block_ore_create(BLOCK_COAL_ORE, TEXTURE_COAL_ORE, 3, 5);
@@ -84,17 +86,17 @@ void blocks_init() {
     blocks.mossy_cobblestone = block_create(BLOCK_MOSSY_COBBLESTONE, TEXTURE_MOSSY_COBBLESTONE, &block_sounds.stone, 2, 10, &materials.rock);
     blocks.obsidian = block_stone_create(BLOCK_OBSIDIAN, TEXTURE_OBSIDIAN, 10, 10);
     blocks.torch = block_torch_create();
-    blocks.fire = block_fire_create(); //hardness 0
-    //source
-    //source
-    blocks.chest = block_chest_create(); //hardness 2.5
-    blocks.gears = block_gears_create(); //hardness 0.5
+    blocks.fire = block_fire_create();
+    blocks.water_spawner = block_spawner_create(BLOCK_WATER_SPAWNER, blocks.water.id);
+    blocks.lava_spawner = block_spawner_create(BLOCK_LAVA_SPAWNER, blocks.lava.id);
+    blocks.chest = block_chest_create();
+    blocks.gears = block_gears_create();
     blocks.diamond_ore = block_ore_create(BLOCK_DIAMOND_ORE, TEXTURE_DIAMOND_ORE, 3, 5);
-    blocks.workbench = block_workbench_create(); //hardness 2.5
-    blocks.crops = block_crops_create(); //hardness 0
-    blocks.farmland = block_farmland_create(); //hardness 0.6
-    blocks.furnace = block_furnace_create(0); //hardness 3.5
-    blocks.furnace_lit = block_furnace_create(1); //hardness 3.5
+    blocks.workbench = block_workbench_create();
+    blocks.crops = block_crops_create();
+    blocks.farmland = block_farmland_create();
+    blocks.furnace = block_furnace_create(0);
+    blocks.furnace_lit = block_furnace_create(1);
 
     for(int i = 0; i < 256; i++) {
         if(block_list[i].id == BLOCK_AIR) continue;

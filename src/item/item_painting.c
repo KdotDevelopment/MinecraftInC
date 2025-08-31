@@ -1,5 +1,7 @@
 #include <item/item_painting.h>
 
+#include <entity/entity_painting.h>
+
 #include <stdlib.h>
 
 item_t item_painting_create(uint8_t id, uint8_t texture_id) {
@@ -25,9 +27,9 @@ uint8_t item_painting_on_use(item_stack_t *item_stack, world_t *world, int x, in
 
     entity_t *painting = malloc(sizeof(entity_t));
     entity_painting_create(painting, world, x, y, z, new_side);
-    
-    if(entity_painting_on_valid_side(painting)) {
-        world_add_entity(world, painting);
+       
+    if(entity_painting_on_valid_surface(painting)) {
+        world_spawn_entity(world, painting);
         item_stack->stack_size--;
     }
 

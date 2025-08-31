@@ -37,7 +37,7 @@ void mob_humanoid_render_model(struct mob_s *mob, float time, float r, float bob
     }
 
     if(mob->has_armor || mob->has_helmet) {
-        glBindTexture(GL_TEXTURE_2D, textures_load(mob->world->renderer->textures, "armor/plate.png"));
+        glBindTexture(GL_TEXTURE_2D, textures_load(&mob->world->minecraft->textures, "armor/plate.png"));
         glDisable(GL_CULL_FACE);
         model_t armor_model = mob->world->minecraft->models.humanoid_armor;
         armor_model.head.visible = mob->has_helmet;

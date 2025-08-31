@@ -4,13 +4,15 @@
 #include <model/vec3.h>
 #include <renderer/textures.h>
 #include <model/model.h>
+#include <entity/paintings.h>
+#include <nbt/nbt_base.h>
 
-struct entity_map_s;
 struct player_s;
 
 typedef enum {
     ENTITY_ARROW,
     ENTITY_ITEM,
+    ENTITY_PAINTING,
     ENTITY_PRIMED_TNT,
     ENTITY_ITEM_TAKE, //when a mob picks up an item this is the animation it makes
     ENTITY_ITEM_TAKE_MOCK, //the hidden item entity inside of an item take animation
@@ -46,7 +48,6 @@ typedef struct entity_s {
     uint8_t make_step_sound; // = true
     float fall_distance; // = 0.0F
     int32_t next_step; // = 1
-    struct entity_map_s *entity_map;
     uint8_t allowed_in_creative_mode;
     int32_t texture_id; // = 0
     float y_slide_offset; // = 0.0F
@@ -77,8 +78,16 @@ typedef struct entity_s {
         };
         struct { // item
             struct entity_s *item;
-            uint8_t block_id; //item
+            item_stack_t item_stack;
             uint8_t delay_before_pickup;
+        };
+        struct { // painting
+            painting_t *painting;
+            int painting_pos_x;
+            int painting_pos_y;
+            int painting_pos_z;
+            uint8_t painting_direction;
+            int painting_ticks;
         };
     };
     
@@ -93,6 +102,8 @@ typedef struct entity_s {
     float (*get_brightness)(struct entity_s *entity, float tick);
     void (*player_touch)(struct entity_s *entity, struct entity_s *player);
     uint8_t (*can_be_hit)(struct entity_s *entity);
+    void (*write_nbt)(struct entity_s *entity, nbt_base_t *nbt);
+    void (*read_nbt)(struct entity_s *entity, nbt_base_t *nbt);
 } entity_t;
 
 void entity_create(entity_t *entity, struct world_s *world);
@@ -125,3 +136,5 @@ void entity_cause_fall_damage(entity_t *entity, float distance);
 void entity_award_kill_score(entity_t *entity, entity_t *causer, int score);
 void entity_player_touch(entity_t *entity, entity_t *player);
 uint8_t entity_can_be_hit(entity_t *entity);
+void entity_read_nbt(entity_t *entity, nbt_base_t *nbt);
+void entity_write_nbt(entity_t *entity, nbt_base_t *nbt);

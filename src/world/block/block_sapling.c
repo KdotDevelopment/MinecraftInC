@@ -14,7 +14,6 @@ block_t block_sapling_create() {
     return block;
 }
 
-
 void block_sapling_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
     world_t *real_world = (world_t *)world;
     uint8_t block_id = world_get_block(real_world, x, y - 1, z);
@@ -26,7 +25,7 @@ void block_sapling_update(block_t *block, struct world_s *world, int x, int y, i
             }
         }
     }else {
-        world_set_block(real_world, x, y, z, blocks.air.id);
+        world_set_block_with_update(real_world, x, y, z, blocks.air.id);
     }
     return;
 }

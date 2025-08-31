@@ -5,8 +5,9 @@
 
 block_t block_sand_create(uint8_t block_id, int texture_id, float hardness, float resistance) {
     block_t block = block_create(block_id, texture_id, &block_sounds.gravel, hardness, resistance, &materials.sand);
+
     block.on_neighbor_changed = block_sand_on_neighbor_placed;
-    block.on_placed = block_sand_on_placed;
+    block.on_added = block_sand_on_added;
 
     block_list[block.id] = block;
 
@@ -20,11 +21,14 @@ void fall(block_t *block, struct world_s *world, int x, int y, int z) {
     int vz = z;
     for(;;) {
         uint8_t block_id = world_get_block(real_world, vx, vy - 1, vz);
-        uint8_t liquid_type = block_id == blocks.air.id ? LIQUID_NONE : block_list[block_id].liquid_type;
-        if(!(block_id == blocks.air.id ? 1 : (liquid_type == LIQUID_WATER ? 1 : liquid_type == LIQUID_LAVA)) || vy <= 0) {
+        uint8_t liquid_type = block_id == blocks.air.id ? 0 : block_list[block_id].material == &materials.water ? 1 : block_list[block_id].material == &materials.lava ? 2 : 0;
+        if(!liquid_type && vy < 0) {
+            if(vy < 0) {
+                world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
+            }
             if(y != vy) {
                 block_id = world_get_block(real_world, vx, vy, vz);
-                if(block_id != blocks.air.id && block_list[block_id].liquid_type != LIQUID_NONE) {
+                if(block_id != blocks.air.id && block_list[block_id].material != &materials.air) {
                     world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
                 }
                 world_swap(real_world, x, y, z, vx, vy, vz);
@@ -32,6 +36,9 @@ void fall(block_t *block, struct world_s *world, int x, int y, int z) {
             return;
         }
         vy--;
+        if(world_get_block(world, x, vy, z) == blocks.fire.id) {
+            world_set_block_no_update(real_world, x, vy, z, blocks.air.id);
+        }
     }
 }
 
@@ -39,6 +46,6 @@ void block_sand_on_neighbor_placed(block_t *block, struct world_s *world, int x,
     fall(block, world, x, y, z);
 }
 
-void block_sand_on_placed(block_t *block, struct world_s *world, int x, int y, int z) {
+void block_sand_on_added(block_t *block, struct world_s *world, int x, int y, int z) {
     fall(block, world, x, y, z);
 }

@@ -7,6 +7,7 @@
 #include <world/world.h>
 
 #include <stdio.h>
+#include <string.h>
 
 uint8_t chunk_is_lit = 0;
 
@@ -71,9 +72,9 @@ void chunk_update_skylight(chunk_t *chunk, int x, int z) {
 void chunk_check_skylight_neighbor_height(chunk_t *chunk, int x, int z, int height) {
     int neighbor_height = chunk_get_height_value(chunk, x, z);
     if (neighbor_height > height) {
-        //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_SKY, x, height, z, x, neighbor_height, z);
+        world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, x, height, z, x, neighbor_height, z);
     }else if(neighbor_height < height) {
-        //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_SKY, x, neighbor_height, z, x, height, z);
+        world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, x, neighbor_height, z, x, height, z);
     }
 
     chunk->is_modified = 1;
@@ -89,7 +90,7 @@ void chunk_relight_block(chunk_t *chunk, int x, int y, int z) {
     }
 
     if(height_index != height) {
-        //world_mark_blocks_dirty_vertical(chunk->world, x, z, height_index, height);
+        world_mark_blocks_dirty_vertical(chunk->world, x, z, height_index, height);
         chunk->height_map[z * CHUNK_SIZE_WIDTH + x] = (uint8_t)height_index;
         if(height_index < chunk->lowest_block_height) {
             chunk->lowest_block_height = height_index;
@@ -114,7 +115,7 @@ void chunk_relight_block(chunk_t *chunk, int x, int y, int z) {
                 nibble_array_set(chunk->sky_light_map, x, i, z, 15);
             }
         }else {
-            //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_SKY, xx, height, zz, xx, height_index, zz);
+            world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, xx, height, zz, xx, height_index, zz);
 
             for(int i = height; i < height_index; i++) {
                 nibble_array_set(chunk->sky_light_map, x, i, z, 0);
@@ -136,7 +137,7 @@ void chunk_relight_block(chunk_t *chunk, int x, int y, int z) {
         }
 
         if(height_index != height) {
-            //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_SKY, xx - 1, height_index, zz - 1, xx + 1, height, zz);
+            world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, xx - 1, height_index, zz - 1, xx + 1, height, zz);
         }
 
         chunk->is_modified = 1;
@@ -168,8 +169,8 @@ uint8_t chunk_set_block(chunk_t *chunk, int x, int y, int z, int block_id) {
         chunk_relight_block(chunk, x, y, z);
     }
 
-    //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_SKY, xx, y, zz, xx, y, zz);
-    //world_schedule_lighting_update(chunk->world, LIGHT_TYPE_BLOCK, xx, y, zz, xx, y, zz);
+    world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, xx, y, zz, xx, y, zz);
+    world_schedule_light_update(chunk->world, LIGHT_TYPE_BLOCK, xx, y, zz, xx, y, zz);
     chunk_update_skylight(chunk, x, z);
 
     if(block_id != 0) {

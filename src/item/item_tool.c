@@ -15,6 +15,7 @@ item_t item_tool_create(uint8_t id, uint8_t texture_id, uint8_t tool_piece, uint
     item.tool_piece = tool_piece;
     item.proper_tool_efficiency = (tool_piece + 1) / 2;
     item.durability = 32 << tool_type;
+    item.max_stack_size = 1;
     if(tool_type == 3) {
         item.durability <<= 1;
     }

@@ -16,6 +16,7 @@ typedef struct {
     held_block_t held_block;
     uint8_t display_active;
     random_t random;
+    int ticks;
     float fog_r;
     float fog_g;
     float fog_b;
@@ -25,11 +26,11 @@ typedef struct {
 } renderer_camera_t;
 
 renderer_camera_t renderer_camera_create(minecraft_t *minecraft);
+void renderer_camera_update(renderer_camera_t *renderer);
 vec3_t renderer_camera_get_player_vector(renderer_camera_t *renderer, float delta);
 void renderer_camera_hurt_effect(renderer_camera_t *renderer, float delta);
 void renderer_camera_apply_bobbing(renderer_camera_t *renderer, float delta);
-void renderer_camera_update(renderer_camera_t *renderer, float delta);
 void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta);
-void renderer_camera_set_lighting(renderer_camera_t *renderer_camera, uint8_t lighting);
+void renderer_camera_update_camera(renderer_camera_t *renderer, float delta);
 void renderer_camera_setup_gui(renderer_camera_t *renderer_camera);
 void renderer_camera_setup_fog(renderer_camera_t *renderer_camera);

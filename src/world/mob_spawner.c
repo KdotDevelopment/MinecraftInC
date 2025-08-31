@@ -21,7 +21,7 @@ mob_spawner_t mob_spawner_create(struct world_s *world) {
 }
 
 void mob_spawner_tick(mob_spawner_t *spawner, int world_size, entity_t *entity, progress_bar_t *progress_bar) {
-    int count = 0;
+    /*int count = 0;
 
     for(int i = 0; i < world_size; i++) {
         if(progress_bar != NULL) {
@@ -77,7 +77,7 @@ void mob_spawner_tick(mob_spawner_t *spawner, int world_size, entity_t *entity, 
                         else mob_pig_create(mob, spawner->world, rndx2, rndy2, rndz2);
 
                         if(world_is_free(spawner->world, mob->bb)) {
-                            world_add_entity(spawner->world, &mob->entity);
+                            world_spawn_entity(spawner->world, &mob->entity);
                             count++;
                         }else {
                             free(mob);
@@ -86,5 +86,5 @@ void mob_spawner_tick(mob_spawner_t *spawner, int world_size, entity_t *entity, 
                 }
             }
         }
-    }
+    }*/
 }

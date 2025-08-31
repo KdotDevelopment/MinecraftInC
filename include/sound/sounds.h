@@ -19,10 +19,7 @@ enum {
     SOUND_MOB_SHEEP,  // 3
 
     SOUND_RANDOM_BOW,
-    SOUND_RANDOM_BREAK,
     SOUND_RANDOM_CLICK,
-    SOUND_RANDOM_DOOR_OPEN,
-    SOUND_RANDOM_DOOR_CLOSE,
     SOUND_RANDOM_DRR, // arrow hit
     SOUND_RANDOM_EXPLODE,
     SOUND_RANDOM_FIZZ,
@@ -50,10 +47,7 @@ typedef struct sounds_s {
     sound_t sand[4];
     sound_t wool[4];
     sound_t bow;
-    sound_t destroy; //break
     sound_t click;
-    sound_t door_open;
-    sound_t door_close;
     sound_t drr;
     sound_t explode;
     sound_t fizz;

@@ -53,7 +53,7 @@ static void private_text_render(font_t *font, char *str, int x, int y, uint32_t 
     if(str != NULL) {
         if(darken) color = (((color >> 8) & 0xfcfcfc) >> 2) << 8;
         glBindTexture(GL_TEXTURE_2D, font->texture);
-        tesselator_begin();
+        tesselator_begin_quads();
         tesselator_color_int(color);
         for(int i = 0, w = 0; i < strlen(str); i++) {
             if(str[i] == 38 && strlen(str) > i + 1) {

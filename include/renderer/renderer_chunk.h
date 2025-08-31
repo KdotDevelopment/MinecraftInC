@@ -1,13 +1,16 @@
 #pragma once
 
+#include <entity/entity.h>
 #include <physics/AABB.h>
+#include <renderer/frustum.h>
 #include <renderer/renderer_block.h>
-#include <world/world.h>
 
 #include <stdint.h>
 
+struct world_s;
+
 typedef struct renderer_chunk_s {
-    world_t *world;
+    struct world_s *world;
     int render_list;
     int x, y, z;
     int width, height, depth;
@@ -25,7 +28,7 @@ typedef struct renderer_chunk_s {
     uint8_t is_lit;
 } renderer_chunk_t;
 
-void renderer_chunk_create(renderer_chunk_t *renderer, world_t *world, int x, int y, int z, int size, int render_list);
+void renderer_chunk_create(renderer_chunk_t *renderer, struct world_s *world, int x, int y, int z, int size, int render_list);
 void renderer_chunk_set_position(renderer_chunk_t *renderer, int x, int y, int z);
 void renderer_chunk_update(renderer_chunk_t *renderer);
 float renderer_chunk_distance_to_entity_squared(renderer_chunk_t *renderer, entity_t *entity);

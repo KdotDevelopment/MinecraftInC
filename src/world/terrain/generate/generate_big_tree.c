@@ -5,6 +5,8 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Paul Spooner big tree code
 
@@ -25,7 +27,7 @@ int check_line(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec) {
     int start[] = { start_vec.x, start_vec.y, start_vec.z };
     int end[] = { end_vec.x, end_vec.y, end_vec.z };
 
-    uint8_t prim_i;
+    uint8_t prim_i = 0;
     for(int i = 0; i < 3; i++) {
         delta[i] = end[i] - start[i];
         if(fabs(delta[i]) > fabs(delta[prim_i])) {
@@ -173,7 +175,7 @@ void cross_section(generate_big_tree_t *this, int x, int y, int z, float radius,
     uint8_t sec_2 = coord_pairs[direction + 3];
     int center[] = { x, y, z };
     int position[] = { 0, 0, 0 };
-    uint8_t block_id = 0;
+    block_id = 0;
     
     for(int x = -rad; x <= rad; x++) {
         position[sec_1] = center[sec_1] + x;
@@ -183,7 +185,7 @@ void cross_section(generate_big_tree_t *this, int x, int y, int z, float radius,
             position[sec_2] = center[sec_2] + z;
             block_id = world_get_block(this->world, position[0], position[1], position[2]);
             if(block_id != blocks.air.id && block_id != blocks.leaves.id) continue;
-            world_set_block(this->world, position[0], position[1], position[2], block_id);
+            world_set_block_no_update(this->world, position[0], position[1], position[2], block_id);
         }
     }
 }
@@ -204,7 +206,7 @@ void limb(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec, uint8_t b
     int start[] = { start_vec.x, start_vec.y, start_vec.z };
     int end[] = { end_vec.x, end_vec.y, end_vec.z };
 
-    uint8_t prim_i;
+    uint8_t prim_i = 0;
     for(int i = 0; i < 3; i++) {
         delta[i] = end[i] - start[i];
         if(fabs(delta[i]) > fabs(delta[prim_i])) {
@@ -212,7 +214,7 @@ void limb(generate_big_tree_t *this, vec3_t start_vec, vec3_t end_vec, uint8_t b
         }
     }
 
-    if(delta[prim_i] == 0) return -1;
+    if(delta[prim_i] == 0) return;
 
     uint8_t sec_1 = coord_pairs[prim_i];
     uint8_t sec_2 = coord_pairs[prim_i + 3];

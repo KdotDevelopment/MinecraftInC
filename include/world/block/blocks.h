@@ -56,8 +56,8 @@ enum {
     BLOCK_OBSIDIAN,
     BLOCK_TORCH,
     BLOCK_FIRE,
-    BLOCK_WATER_SOURCE,
-    BLOCK_LAVA_SOURCE,
+    BLOCK_WATER_SPAWNER,
+    BLOCK_LAVA_SPAWNER,
     BLOCK_CHEST,
     BLOCK_GEARS,
     BLOCK_DIAMOND_ORE,
@@ -188,6 +188,8 @@ extern struct blocks_s {
     block_t obsidian;
     block_t torch;
     block_t fire;
+    block_t water_spawner;
+    block_t lava_spawner;
     block_t chest;
     block_t gears;
     block_t diamond_ore;

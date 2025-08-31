@@ -1,4 +1,5 @@
 #include <world/block/block_flower.h>
+
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
@@ -14,12 +15,15 @@ block_t block_flower_create(uint8_t id, int texture_id) {
     block.is_solid = 0;
     block.has_physics = 1;
     block.should_tick = 1;
+    block.render_type = BLOCK_RENDER_TYPE_FLOWER;
 
     block.update = block_flower_update;
     block.get_collision_aabb = block_flower_get_collision_aabb;
     block.render_preview = block_flower_render_preview;
     block.render = block_flower_render;
     block.render_full_brightness = block_flower_render_full_brightness;
+    block.can_grow_on = block_flower_can_grow_on;
+    block.can_stay = block_flower_can_stay;
 
     float w = 0.2;
     block_set_bounds(&block, 0.5 - w, 0, 0.5 - w, 0.5 + w, 3.0 * w, 0.5 + w);
@@ -29,12 +33,23 @@ block_t block_flower_create(uint8_t id, int texture_id) {
     return block;
 }
 
-void block_flower_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
-    world_t *real_world = (world_t *)world;
-    uint8_t block_id = world_get_block(real_world, x, y - 1, z);
-    if(!world_is_lit(real_world, x, y, z) || (block_id != blocks.dirt.id && block_id != blocks.grass.id)) {
-        world_set_block(real_world, x, y, z, blocks.air.id);
+uint8_t block_flower_can_grow_on(block_t *block, uint8_t block_id) {
+    return block_id == BLOCK_GRASS || block_id == BLOCK_DIRT || block_id == BLOCK_FARMLAND;
+}
+
+uint8_t block_flower_can_stay(block_t *block, world_t *world, int x, int y, int z) {
+    return (world_get_block_light_value(world, x, y, z) >= 8 || world_can_block_see_sky(world, x, y, z)) && block->can_grow_on(block, world_get_block(world, x, y - 1, z));
+}
+
+void private_check_flower_change(block_t *block, world_t *world, int x, int y, int z) {
+    if(!block->can_stay(block, world, x, y, z)) {
+        block_spawn_items(block, world, x, y, z, world_get_block_metadata(world, x, y, z));
+        world_set_block_with_update(world, x, y, z, blocks.air.id);
     }
+}
+
+void block_flower_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
+    private_check_flower_change(block, world, x, y, z);
 }
 
 AABB_t block_flower_get_collision_aabb(block_t *block, int x, int y, int z) {
@@ -42,7 +57,7 @@ AABB_t block_flower_get_collision_aabb(block_t *block, int x, int y, int z) {
 }
 
 void private_block_flower_render(block_t *block, float x, float y, float z) {
-    int tex = block->get_texture_id(block, 15);
+    int tex = block->get_texture_side(block, 15);
     int u0 = (tex % 16) << 4;
     int v0 = (tex / 16) << 4;
     float u1 = u0 / 256.0;
@@ -70,20 +85,19 @@ void private_block_flower_render(block_t *block, float x, float y, float z) {
 
 void block_flower_render_preview(block_t *block) {
     tesselator_normal(0.0, 1.0, 0.0);
-    tesselator_begin();
+    tesselator_begin_quads();
     private_block_flower_render(block, 0, 0.4, -0.3);
     tesselator_end();
 }
 
-uint8_t block_flower_render(block_t *block, struct world_s *world, int x, int y, int z) {
-    world_t *real_world = (world_t *)world;
-    float brightness = world_get_brightness(real_world, x, y, z);
-    tesselator_color(brightness, brightness, brightness);
+uint8_t block_flower_render(block_t *block, world_t *world, int x, int y, int z) {
+    float brightness = world_get_brightness(world, x, y, z);
+    tesselator_color_opaque(brightness, brightness, brightness);
     private_block_flower_render(block, x, y, z);
     return 1;
 }
 
 void block_flower_render_full_brightness(block_t *block) {
-    tesselator_color(1, 1, 1);
+    tesselator_color_opaque(1, 1, 1);
     private_block_flower_render(block, -2, 0, 0);
 }

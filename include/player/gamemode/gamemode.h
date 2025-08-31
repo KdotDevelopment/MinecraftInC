@@ -31,7 +31,7 @@ typedef struct gamemode_s {
     void (*destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
     uint8_t (*remove_item)(struct gamemode_s *gamemode, int item);
     void (*start_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
-    void (*continue_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z, int face);
+    void (*continue_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);
     void (*stop_destroy_block)(struct gamemode_s *gamemode);
     void (*render)(struct gamemode_s *gamemode, float delta);
     uint8_t (*use_item)(struct gamemode_s *gamemode, player_t *player, int item);
@@ -47,7 +47,7 @@ void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world);
 void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item);
 void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
-void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, int face);
+void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);
 void gamemode_stop_destroy_block(struct gamemode_s *gamemode);
 void gamemode_render(struct gamemode_s *gamemode, float delta);
 uint8_t gamemode_use_item(struct gamemode_s *gamemode, player_t *player, int item);

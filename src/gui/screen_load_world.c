@@ -4,7 +4,7 @@
 
 screen_t screen_load_world_create(screen_t *parent) {
     screen_t screen = screen_create();
-    screen.type = SCREEN_TYPE_LOAD_world;
+    screen.type = SCREEN_TYPE_LOAD_WORLD;
     screen.parent = (struct screen_s *)parent;
     screen.title = "Load world";
     //screen.grabs_mouse = 1;
@@ -29,7 +29,7 @@ void screen_load_world_on_open(struct screen_s *proto_screen) {
         }
         button_t button_name = button_create(i, screen->width / 2 - 100, screen->height / 6 + i * 24, name);
         screen->buttons = array_list_push(screen->buttons, &button_name);
-        screen->buttons[i].active = screen->type != SCREEN_TYPE_LOAD_world || screen->names[i][0] != '\0';
+        screen->buttons[i].active = screen->type != SCREEN_TYPE_LOAD_WORLD || screen->names[i][0] != '\0';
     }
 
     button_t button_load = button_create(5, screen->width / 2 - 100, screen->height / 6 + 132, "Load file...");
@@ -37,7 +37,7 @@ void screen_load_world_on_open(struct screen_s *proto_screen) {
     screen->buttons = array_list_push(screen->buttons, &button_load);
     screen->buttons = array_list_push(screen->buttons, &button_cancel);
     screen->buttons[5].active = 0;
-    if(screen->type == SCREEN_TYPE_LOAD_world) screen_save_world_on_open(proto_screen);
+    if(screen->type == SCREEN_TYPE_LOAD_WORLD) screen_save_world_on_open(proto_screen);
 }
 
 void screen_load_world_on_button_clicked(struct screen_s *proto_screen, button_t *button) {
@@ -63,5 +63,5 @@ void screen_load_world_render(struct screen_s *proto_screen, int mouse_x, int mo
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 40, 0xFFFFFFFF);
     screen->type = SCREEN_TYPE_NONE;
     screen_render(proto_screen, mouse_x, mouse_y);
-    screen->type = SCREEN_TYPE_LOAD_world;
+    screen->type = SCREEN_TYPE_LOAD_WORLD;
 }

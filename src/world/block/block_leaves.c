@@ -16,7 +16,7 @@ block_t block_leaves_create() {
     return block;
 }
 
-uint8_t block_leaves_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side) {
+uint8_t block_leaves_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, uint8_t side) {
     world_t *real_world = (world_t *)world;
-    return !world_is_solid_block(real_world, x, y, z);
+    return !world_is_solid(real_world, x, y, z);
 }

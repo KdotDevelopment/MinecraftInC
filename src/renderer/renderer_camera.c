@@ -1,9 +1,20 @@
 #include <renderer/renderer_camera.h>
-#include <world/block/blocks.h>
-#include <model/vec3.h>
+
 #include <minecraft.h>
+#include <model/vec3.h>
+#include <renderer/tesselator.h>
+#include <world/block/blocks.h>
+
+#include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <SDL2/SDL_opengl.h>
 
 #include <time.h>
+
+//gets rid of annoying warning for windows static linking
+extern void random_next_uniformspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
 
 renderer_camera_t renderer_camera_create(minecraft_t *minecraft) {
     renderer_camera_t renderer_camera = { 0 };
@@ -17,6 +28,10 @@ renderer_camera_t renderer_camera_create(minecraft_t *minecraft) {
     renderer_camera.fog_b = 0.0;
 
     return renderer_camera;
+}
+
+void renderer_camera_update(renderer_camera_t *renderer) {
+
 }
 
 vec3_t renderer_camera_get_player_vector(renderer_camera_t *renderer, float delta) {
@@ -56,16 +71,18 @@ void renderer_camera_apply_bobbing(renderer_camera_t *renderer, float delta) {
     glRotatef(tilt, 1.0, 0.0, 0.0);
 }
 
-void renderer_camera_update(renderer_camera_t *renderer, float delta) {
+void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
     if(renderer->display_active && !(SDL_GetWindowFlags(renderer->minecraft->window) & SDL_WINDOW_INPUT_FOCUS)) {
         minecraft_pause(renderer->minecraft);
     }
+
+    // TODO
 
     SDL_Delay(0);
     SDL_GL_SwapWindow(renderer->minecraft->window);
 }
 
-void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
+void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     player_t *player = &renderer->minecraft->player;
     float rot_x = player->x_roto + (player->x_rot - player->x_roto) * delta;
     float rot_y = player->y_roto + (player->y_rot - player->y_roto) * delta;
@@ -188,7 +205,7 @@ void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
             fov /= (1.0 - 500.0 / (ddeath_time + 500.0)) * 2.0 + 1.0;
         }
         
-        gluPerspective(fov, (float)renderer->minecraft->width / (float)renderer->minecraft->height, 0.05, renderer->far_plane_distance);
+        random_next_uniformspective(fov, (float)renderer->minecraft->width / (float)renderer->minecraft->height, 0.05, renderer->far_plane_distance);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         if(renderer->minecraft->settings.anaglyph) glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
@@ -245,23 +262,145 @@ void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
         glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
         // render_helper_disable_standard_item_lighting
         renderer_world_sort_and_render(&renderer->minecraft->renderer_world, &player->mob.entity, 0, delta);
-    }
-}
 
-void renderer_camera_set_lighting(renderer_camera_t *renderer_camera, uint8_t lighting) {
-    if(!lighting) {
-        glDisable(GL_LIGHTING);
-        glDisable(GL_LIGHT0);
-    }else {
-        glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT0);
-        glEnable(GL_COLOR_MATERIAL);
-        vec3_t pos = vec3_normalize((vec3_t){ 0.0, -1.0, 0.5 });
-        glLightfv(GL_LIGHT0, GL_POSITION, (float[]){ pos.x, pos.y, pos.z, 0.0 });
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, (float[]){ 0.3, 0.3, 0.3, 1.0 });
-        glLightfv(GL_LIGHT0, GL_AMBIENT, (float[]){ 0.0, 0.0, 0.0, 1.0 });
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (float[]){ 0.7, 0.7, 0.7, 1.0 });
+        if(world_is_solid(world, dx, dy, dz)) {
+            renderer_block_t block_renderer = (renderer_block_t){ 0 };
+            renderer_block_create(&block_renderer, world);
+
+            for(int x = dx - 1; x <= dx + 1; x++) {
+                for(int y = dy - 1; y <= dy + 1; y++) {
+                    for(int z = dz - 1; z <= dz + 1; z++) {
+                        uint8_t block_id = world_get_block(world, x, y, z);
+                        if(block_id > 0) {
+                            renderer_block_render(&block_renderer, &block_list[block_id], x, y, z);
+                        }
+                    }
+                }
+            }
+        }
+        // render_helper_enable_standard_item_lighting
+        glPushMatrix();
+        renderer_world_update_entities(&renderer->minecraft->renderer_world, renderer_camera_get_player_vector(renderer, delta), &frustum, delta);
+        // render lit particles
+        glPopMatrix();
+        // render_helper_disable_standard_item_lighting
+
+        renderer_camera_setup_fog(renderer);
+        // render particles
+
+        if(!renderer->minecraft->hit_result.null /*&& entity_is_inside_block(player)*/) {
+            glDisable(GL_ALPHA_TEST);
+            //renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, inventory_get_current_item(&player->inventory), delta);
+            renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, delta);
+            glEnable(GL_ALPHA_TEST);
+        }
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        renderer_camera_setup_fog(renderer);
+        glEnable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
+        glColorMask(0, 0, 0, 0);
+        glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
+        int rendered_chunks = renderer_world_sort_and_render(&renderer->minecraft->renderer_world, &player->mob.entity, 1, delta);
+        glColorMask(1, 1, 1, 1);
+
+        if(renderer->minecraft->settings.anaglyph) {
+            if(i == 0) {
+                glColorMask(0, 1, 1, 0);
+            }else {
+                glColorMask(1, 0, 0, 0);
+            }
+        }
+
+        if(rendered_chunks > 0) {
+            glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
+            renderer_world_render_all_lists(&renderer->minecraft->renderer_world, 1, delta);
+        }
+
+        glDepthMask(1);
+        glEnable(GL_CULL_FACE);
+        glDisable(GL_BLEND);
+
+        if(!renderer->minecraft->hit_result.null /*&& !entity_is_inside_block(player)*/) {
+            glDisable(GL_ALPHA_TEST);
+            //renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, inventory_get_current_item(&player->inventory), delta);
+            renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, delta);
+            glEnable(GL_ALPHA_TEST);
+        }
+
+        glDisable(GL_FOG);
+        if(renderer->minecraft->raining) {
+            float t = delta;
+            int px = floor_double(player->x);
+            int py = floor_double(player->y);
+            int pz = floor_double(player->z);
+            glDisable(GL_CULL_FACE);
+            glNormal3f(0, 1, 0);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "rain.png"));
+            for(int x = px - 5; x <= px + 5; x++) {
+                for(int z = pz - 5; z <= pz + 5; z++) {
+                    int y_min = py - 5;
+                    int y_max = py + 5;
+                    // This is why rain particles only render at sea level
+                    if(y_min < 64) y_min = 64;
+                    if(y_max < 64) y_max = 64;
+
+                    if(y_min != y_max) {
+                        float tt = (((renderer->ticks + x * 3121 + z * 418711) % 32) + t) / 32.0;
+                        float d = sqrtf((x + 0.5 - player->x) * (x + 0.5 - player->x) + (z + 0.5 - player->z) * (z + 0.5 - player->z)) / 5.0;
+                        glColor4f(1.0, 1.0, 1.0, (1.0 - d * d) * 0.7);
+                        tesselator_begin_quads();
+                        tesselator_vertex_uv(x, y_min, z, 0.0, y_min / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x + 1, y_min, z + 1, 2.0, y_min / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x + 1, y_max, z + 1, 2.0, y_max / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x, y_max, z, 0.0, y_max / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x, y_min, z + 1, 0.0, y_min / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x + 1, y_min, z, 2.0, y_min / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x + 1, y_max, z, 2.0, y_max / 4.0 + tt * 2.0);
+                        tesselator_vertex_uv(x, y_max, z + 1, 0.0, y_max / 4.0 + tt * 2.0);
+                        tesselator_end();
+                    }
+                }
+            }
+            glEnable(GL_CULL_FACE);
+            glDisable(GL_BLEND);
+        }
+        
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+
+        if(renderer->minecraft->settings.anaglyph) {
+            glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
+        }
+
+        glPushMatrix();
+        renderer_camera_hurt_effect(renderer, delta);
+        if(renderer->minecraft->settings.show_bobbing) {
+            renderer_camera_apply_bobbing(renderer, delta);
+        }
+
+        if(!renderer->minecraft->settings.third_person) {
+            // render item in first person
+        }
+
+        glPopMatrix();
+        if(!renderer->minecraft->settings.third_person) {
+            // item renderer render overlays
+            renderer_camera_hurt_effect(renderer, delta);
+        }
+
+        if(renderer->minecraft->settings.show_bobbing) {
+            renderer_camera_apply_bobbing(renderer, delta);
+        }
+
+        if(!renderer->minecraft->settings.anaglyph) {
+            return;
+        }
     }
+
+    glColorMask(1, 1, 1, 0);
 }
 
 void renderer_camera_setup_gui(renderer_camera_t *renderer_camera) {

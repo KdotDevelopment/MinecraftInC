@@ -12,12 +12,12 @@ typedef enum {
     BLOCK_SOUND_WOOD,
     BLOCK_SOUND_GLASS,
     BLOCK_SOUND_SAND,
-} block_sound_type_e;
+} block_sound_type_t;
 
 typedef struct {
     float volume;
     float pitch;
-    block_sound_type_e type;
+    block_sound_type_t type;
     uint8_t base_type;
 } block_sound_t;
 

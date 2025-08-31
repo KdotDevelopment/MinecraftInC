@@ -1,15 +1,17 @@
 #pragma once
 
+#include <item/item_stack.h>
 #include <player/player.h>
+#include <renderer/frustum.h>
 #include <renderer/renderer_block.h>
 #include <renderer/renderer_chunk.h>
 #include <renderer/textures.h>
-#include <world/world.h>
 
 struct minecraft_s;
+struct world_s;
 
 typedef struct renderer_world_s {
-    world_t *world;
+    struct world_s *world;
     struct minecraft_s *minecraft;
     textures_t *textures;
     int list_id;
@@ -23,8 +25,8 @@ typedef struct renderer_world_s {
     int z_chunks;
     int render_list_base;
     int *render_lists; // array_list
-    int occlusion_query_base[262144];
-    int occlusion_result[64];
+    uint32_t occlusion_query_base[262144];
+    uint32_t occlusion_result[64];
     int *chunk_data_cache;
     int ticks;
     float last_load_x;
@@ -48,12 +50,12 @@ typedef struct renderer_world_s {
     int renderers_rendered;
 } renderer_world_t;
 
-renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *world, textures_t *textures);
-void renderer_world_change_world(renderer_world_t *renderer, world_t *world);
+renderer_world_t renderer_world_create(struct minecraft_s *minecraft, struct world_s *world, textures_t *textures);
+void renderer_world_change_world(renderer_world_t *renderer, struct world_s *world);
 void renderer_world_load_renderers(renderer_world_t *renderer);
 void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frustum_t *frustum, float partial_tick);
 void renderer_world_new_position(renderer_world_t *renderer, int x, int y, int z);
-void renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player, int render_pass, double partial_tick);
+int renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player, int render_pass, double partial_tick);
 void renderer_world_check_occlusion(renderer_world_t *renderer, int start, int end);
 int renderer_world_render_sorted_renderers(renderer_world_t *renderer, int start, int end, int render_pass, double partial_tick);
 void renderer_world_render_all_lists(renderer_world_t *renderer, int render_pass, double partial_tick);
@@ -68,4 +70,7 @@ void renderer_world_update_blocks(renderer_world_t *renderer, int x0, int y0, in
 void renderer_world_update_frustum(renderer_world_t *renderer, frustum_t *frustum);
 void renderer_world_play_sound(renderer_world_t *renderer, uint8_t sound, double x, double y, double z, float volume, float pitch);
 void renderer_world_spawn_particle(renderer_world_t *renderer, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel);
+void renderer_world_obtain_entity_skin(renderer_world_t *renderer, entity_t *entity);
+void renderer_world_release_entity_skin(renderer_world_t *renderer, entity_t *entity);
+void renderer_world_update_all(renderer_world_t *renderer);
 void renderer_world_destroy(renderer_world_t *renderer);

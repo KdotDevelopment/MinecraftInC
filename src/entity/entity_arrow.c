@@ -88,7 +88,7 @@ void entity_arrow_tick(struct entity_s *entity) {
         }
         array_list_free(cubes);
 
-        entity_t ***entities = entity_map_get_entities(entity->entity_map, entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
+        /*entity_t ***entities = entity_map_get_entities(entity->entity_map, entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
 
         for(int j = 0; j < array_list_length(*entities); j++) {
             entity_t *target = *(entity_t **)array_list_get(*entities, j);
@@ -98,7 +98,7 @@ void entity_arrow_tick(struct entity_s *entity) {
                 entity_remove(entity);
                 return;
             }
-        }
+        }*/
 
         if(!entity->has_hit) {
             entity->bb = AABB_move(entity->bb, nxd, nyd, nzd);
@@ -153,14 +153,14 @@ void entity_arrow_render(struct entity_s *entity, textures_t *textures, float de
     float b = 0.05625;
     glScalef(b, b, b);
     glNormal3f(b, 0, 0);
-    tesselator_begin();
+    tesselator_begin_quads();
     tesselator_vertex_uv(-7, -2, -2, 0, stem_v1);
     tesselator_vertex_uv(-7, -2, 2, u, stem_v1);
     tesselator_vertex_uv(-7, 2, 2, u, stem_v2);
     tesselator_vertex_uv(-7, 2, -2, 0, stem_v2);
     tesselator_end();
     glNormal3f(-b, 0, 0);
-    tesselator_begin();
+    tesselator_begin_quads();
     tesselator_vertex_uv(-7, 2, -2, 0, stem_v1);
     tesselator_vertex_uv(-7, 2, 2, u, stem_v1);
     tesselator_vertex_uv(-7, -2, 2, u, stem_v2);
@@ -170,7 +170,7 @@ void entity_arrow_render(struct entity_s *entity, textures_t *textures, float de
     for(int i = 0; i < 4; i++) {
         glRotatef(90, 1, 0, 0);
         glNormal3f(0, -b, 0);
-        tesselator_begin(); //not in original? remove if not working
+        tesselator_begin_quads(); //not in original? remove if not working
         tesselator_vertex_uv(-8, -2, 0, 0, fins_v1);
         tesselator_vertex_uv(8, -2, 0, delta, fins_v1);
         tesselator_vertex_uv(8, 2, 0, delta, fins_v2);

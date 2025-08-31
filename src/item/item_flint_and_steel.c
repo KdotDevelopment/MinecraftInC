@@ -26,7 +26,7 @@ uint8_t item_flint_and_steel_on_use(item_stack_t *item_stack, world_t *world, in
     uint8_t block_id = world_get_block(world, x, y, z);
     if(block_id == 0) {
         // sound fire.ignite
-        world_set_block(world, x, y, z, BLOCK_FIRE);
+        world_set_block_with_update(world, x, y, z, BLOCK_FIRE);
     }
     item_stack_damage(item_stack, 1);
 

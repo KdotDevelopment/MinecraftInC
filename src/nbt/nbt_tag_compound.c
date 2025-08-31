@@ -1,5 +1,7 @@
 #include <nbt/nbt_tag_compound.h>
 
+#include <util/array_list.h>
+
 #include <string.h>
 
 void nbt_tag_compound_create(nbt_base_t *base) {

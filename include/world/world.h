@@ -7,10 +7,10 @@
 #include <player/hit_result.h>
 #include <gui/progress_bar.h>
 #include <particle/particles.h>
-#include <world/entity_map.h>
 #include <nbt/nbt_tag_compound.h>
 #include <world/block/tile_entity/tile_entity.h>
 #include <world/chunk/chunk_provider.h>
+#include <renderer/renderer_world.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -62,6 +62,8 @@ typedef struct world_s {
     chunk_provider_t chunk_provider_gen;
     nbt_base_t player_nbt;
     int64_t size_on_disk;
+
+    uint8_t creative_mode; // remove later
 
     int64_t random_number;
     particles_t *particles;
@@ -118,8 +120,8 @@ void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side);
 // world_debug_loaded_entities
 tile_entity_t *world_get_tile_entity(world_t *world, int x, int y, int z);
 void world_set_tile_entity(world_t *world, int x, int y, int z, tile_entity_t *tile_entity);
-// world_remove_tile_entity
-// world_is_solid
+void world_remove_tile_entity(world_t *world, int x, int y, int z);
+uint8_t world_is_solid(world_t *world, int x, int y, int z);
 // world_save_indirectly
 uint8_t world_update_lighting(world_t *world);
 void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int y0, int z0, int x1, int y1, int z1);

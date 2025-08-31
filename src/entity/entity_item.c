@@ -1,4 +1,5 @@
 #include <entity/entity_item.h>
+
 #include <entity/entity_take_anim.h>
 #include <world/block/blocks.h>
 #include <model/model_item.h>
@@ -20,13 +21,13 @@ void item_models_init() {
     }
 }
 
-void entity_item_create(entity_t *entity, struct world_s *world, float x, float y, float z, int block_id) {
+void entity_item_create(entity_t *entity, struct world_s *world, float x, float y, float z, item_stack_t item_stack) {
     entity_create(entity, world);
     entity->bb_width = 0.25;
     entity->bb_height = 0.25;
     entity->height_offset = entity->bb_height / 2.0;
     entity_set_pos(entity, x, y, z);
-    entity->block_id = block_id;
+    entity->item_stack = item_stack;
     entity->y_rot = (float)(random_uniform() * 360.0);
     entity->xd = (float)(random_uniform() * 0.2 - 0.1);
     entity->yd = 0.2;
@@ -74,7 +75,7 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
                  entity->yo + (entity->y - entity->yo) * delta + hover_height, 
                  entity->zo + (entity->z - entity->zo) * delta);
     glRotatef(rot_delta, 0, 1, 0);
-    model_item_render(&item_models[entity->block_id]);
+    model_item_render(&item_models[entity->item_stack.item_id - 256]);
 
     float a = rotation * 0.5 + 0.5;
     float b = a * a;
@@ -86,7 +87,7 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDisable(GL_ALPHA_TEST);
 
-    model_item_render(&item_models[entity->block_id]);
+    model_item_render(&item_models[entity->item_stack.item_id - 256]);
     glEnable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -97,10 +98,10 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
 
 void entity_item_player_touch(entity_t *entity, entity_t *player) {
     player_t *real_player = (player_t *)player;
-    if(inventory_add_item(&real_player->inventory, entity->block_id)) {
+    if(inventory_add_item(&real_player->inventory, entity->item_stack.item_id)) {
         entity_t *anim = malloc(sizeof(entity_t));
         entity_take_anim_create(anim, entity->world, entity, real_player);
-        world_add_entity(entity->world, anim);
+        world_spawn_entity(entity->world, anim);
         entity_remove(entity);
     }
 }

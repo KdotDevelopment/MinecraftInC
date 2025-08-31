@@ -4,6 +4,7 @@
 #include <renderer/tesselator.h>
 #include <world/block/blocks.h>
 #include <world/chunk/chunk.h>
+#include <world/world.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -180,7 +181,7 @@ uint8_t renderer_chunk_skip_all_render_passes(renderer_chunk_t *renderer) {
 int renderer_chunk_entity_compare(const void *a, const void *b) {
     renderer_chunk_t *chunk_a = *(renderer_chunk_t **)a;
     renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
-    return renderer_chunk_distance_to_entity_squared(chunk_a, chunk_a->world->player) < renderer_chunk_distance_to_entity_squared(chunk_b, chunk_b->world->player) ? -1 : 1;
+    return renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? -1 : 1;
 }
 
 int renderer_chunk_player_compare(const void *a, const void *b) {
@@ -188,5 +189,5 @@ int renderer_chunk_player_compare(const void *a, const void *b) {
     renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
     uint8_t b1 = chunk_a->is_in_frustum;
     uint8_t b2 = chunk_b->is_in_frustum;
-    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, chunk_a->world->player) < renderer_chunk_distance_to_entity_squared(chunk_b, chunk_b->world->player) ? -1 : 1);
+    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? -1 : 1);
 }

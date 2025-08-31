@@ -1,5 +1,7 @@
 #include <world/chunk/chunk_provider.h>
 
+#include <stdlib.h>
+
 void chunk_provider_create(chunk_provider_t *chunk_provider) {
     *chunk_provider = (chunk_provider_t){ 0 };
     

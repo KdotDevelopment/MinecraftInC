@@ -1,3 +1,5 @@
+#include <world/terrain/noise/noise_perlin.h>
+
 #include <world/terrain/noise/noise.h>
 
 #include <math.h>
@@ -73,7 +75,10 @@ void noise_perlin_populate_array(noise_t *noise, double *output, int start_x, in
     int index = 0;
     double amplitude_inverse = 1.0 / amplitude;
     int last_hash_y = -1;
-    double lerp_x1, lerp_x2, lerp_x3, lerp_x4;
+    double lerp_x1 = 0;
+    double lerp_x2 = 0;
+    double lerp_x3 = 0;
+    double lerp_x4 = 0;
 
     for(int x = 0; x < size_x; ++x) {
         double noise_x = (start_x + x) * scale_x + noise->x_coord;

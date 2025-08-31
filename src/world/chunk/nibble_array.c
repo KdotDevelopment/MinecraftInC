@@ -1,5 +1,6 @@
 #include <world/chunk/nibble_array.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 uint8_t *nibble_array_create(int size) {
@@ -25,7 +26,7 @@ uint8_t nibble_array_get(uint8_t *nibble_array, int x, int y, int z) {
     return x == 0 ? nibble_array[y] & 0x0F : nibble_array[y] >> 4 & 0x0F;
 }
 
-uint8_t nibble_array_set(uint8_t *nibble_array, int x, int y, int z, uint8_t data) {
+void nibble_array_set(uint8_t *nibble_array, int x, int y, int z, uint8_t data) {
     x = x << 11 | z << 7 | y;
     y = x / 2;
     x &= 1;

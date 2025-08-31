@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <time.h>
 
@@ -46,9 +47,9 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
         chunk_provider->noise_array = malloc(sizeof(double) * 425);
     }
 
-    chunk_provider->noise_array_1 = noise_octave_generate_octaves(chunk_provider->noise_array_1, &chunk_provider->noise_1, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
-    chunk_provider->noise_array_2 = noise_octave_generate_octaves(chunk_provider->noise_array_2, &chunk_provider->noise_2, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
-    chunk_provider->noise_array_3 = noise_octave_generate_octaves(chunk_provider->noise_array_3, &chunk_provider->noise_3, noise_start_x, 0, noise_start_z, 5, 17, 5, 8.555150000000001, 4.277575000000001, 8.555150000000001);
+    chunk_provider->noise_array_1 = noise_octave_generate_octaves(&chunk_provider->noise_1, chunk_provider->noise_array_1, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
+    chunk_provider->noise_array_2 = noise_octave_generate_octaves(&chunk_provider->noise_2, chunk_provider->noise_array_2, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
+    chunk_provider->noise_array_3 = noise_octave_generate_octaves(&chunk_provider->noise_3, chunk_provider->noise_array_3, noise_start_x, 0, noise_start_z, 5, 17, 5, 8.555150000000001, 4.277575000000001, 8.555150000000001);
 
     int noise_index = 0;
 
@@ -103,7 +104,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                             double z_lerp = (double)zz / 4.0;
                             double final_noise = noise_z0 + (noise_z1 - noise_z0) * z_lerp;
 
-                            int block_index = xx + (x << 2) << 11 | zz + (z << 2) << 7 | (y << 3) + yy;
+                            int block_index = (xx + (x << 2)) << 11 | (zz + (z << 2)) << 7 | ((y << 3) + yy);
                             uint8_t block_id = 0;
 
                             if((y << 3) + yy < 64) {

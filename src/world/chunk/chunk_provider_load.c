@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *chunk_provider_gen, world_t *world, const char **save_directory) {
+void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *chunk_provider_gen, world_t *world, char **save_directory) {
     chunk_provider_load->world = world;
     chunk_provider_load->save_directory = save_directory;
 
@@ -21,7 +21,7 @@ void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_pro
 }
 
 uint8_t chunk_provider_load_chunk_exists(chunk_provider_t *chunk_provider, int x, int z) {
-    int index = x & 31 | (z & 31) << 5;
+    int index = (x & 31) | (z & 31) << 5;
     if(chunk_provider->chunks[index] != NULL) {
         chunk_t *chunk = chunk_provider->chunks[index];
         if(chunk->x_pos == x && chunk->z_pos == z) {
@@ -32,7 +32,7 @@ uint8_t chunk_provider_load_chunk_exists(chunk_provider_t *chunk_provider, int x
 }
 
 chunk_t *chunk_provider_load_provide_chunk(chunk_provider_t *chunk_provider, int x, int z) {
-    int index = x & 31 | (z & 31) << 5;
+    int index = (x & 31) | (z & 31) << 5;
     if(chunk_provider_load_chunk_exists(chunk_provider, x, z)) {
         return chunk_provider->chunks[index];
     }
@@ -74,6 +74,8 @@ chunk_t *chunk_provider_load_provide_chunk(chunk_provider_t *chunk_provider, int
        && chunk_provider_load_chunk_exists(chunk_provider, x - 1, z)) {
         chunk_provider_load_populate(chunk_provider, chunk_provider, x - 1, z - 1);
     }
+
+    return chunk_provider->chunks[index];
 }
 
 char *private_integer_to_string(int32_t value, int radix) {
@@ -128,7 +130,7 @@ int private_create_directories(const char *path) {
 }
 
 // Should be free'd after use
-char *chunk_provider_load_chunk_file_for_xz(const char *save_directory, int x, int z) {
+char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z) {
     char chunk_filename[256];
     char subdir_x[3];
     char subdir_z[3];
@@ -140,7 +142,7 @@ char *chunk_provider_load_chunk_file_for_xz(const char *save_directory, int x, i
     snprintf(subdir_x, sizeof(subdir_x), "%s", private_integer_to_string(x & 63, 36));
     snprintf(subdir_z, sizeof(subdir_z), "%s", private_integer_to_string(z & 63, 36));
 
-    snprintf(full_path, sizeof(full_path), "%s/%s/%s", save_directory, subdir_x, subdir_z);
+    snprintf(full_path, sizeof(full_path), "%s/%s/%s", *save_directory, subdir_x, subdir_z);
 
     if(private_create_directories(full_path) != 0) {
         return NULL;
@@ -168,6 +170,8 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
     *chunk = (chunk_t){ 0 };
     *chunk = chunk_read_nbt_data(chunk, &nbt);
 
+    free(chunk_file);
+
     return chunk;
 }
 
@@ -187,6 +191,8 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     chunk_write_nbt_data(chunk, &nbt);
     // loading_screen_renderer_write(&nbt_base, chunk_file);
     chunk_provider->world->size_on_disk += sb.st_size;
+
+    free(chunk_file);
 }
 
 void chunk_provider_load_populate(chunk_provider_t *chunk_provider, chunk_provider_t *interface, int x, int z) {

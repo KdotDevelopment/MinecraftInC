@@ -36,7 +36,7 @@ void player_create(player_t *player, struct world_s *world) {
 
     if(world) {
         real_world->player = player;
-        world_add_entity(real_world, &player->entity);
+        world_spawn_entity(real_world, &player->entity);
     }
 
     //return player;

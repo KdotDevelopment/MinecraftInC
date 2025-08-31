@@ -86,7 +86,7 @@ void mob_sheep_render_model(struct mob_s *mob, float time, float r, float bob, f
     model->head.z = model->head.z - (mob->graze_o + (mob->graze - mob->graze_o) * r);
     model_quadruped_render(mob->model, time, bob, r + mob->tick_count, y_rot, x_rot, scale);
     if(mob->has_fur) {
-        glBindTexture(GL_TEXTURE_2D, textures_load(mob->world->renderer->textures, "mob/sheep_fur.png"));
+        glBindTexture(GL_TEXTURE_2D, textures_load(&mob->world->minecraft->textures, "mob/sheep_fur.png"));
         glDisable(GL_CULL_FACE);
         model_t fur_model = model_sheep_fur_create();
         fur_model.head.y_rot = model->head.y_rot;

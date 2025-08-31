@@ -54,7 +54,7 @@ void screen_block_select_render(struct screen_s *proto_screen, int mx, int my) {
         if(block_i == i) glScalef(1.6, 1.6, 1.6);
         glTranslatef(-1.5, 0.5, 0.5);
         glScalef(-1.0, -1.0, -1.0);
-        tesselator_begin();
+        tesselator_begin_quads();
         block->render_full_brightness(block);
         tesselator_end();
         glPopMatrix();

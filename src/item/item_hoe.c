@@ -35,7 +35,7 @@ uint8_t item_hoe_on_use(item_stack_t *item_stack, world_t *world, int x, int y, 
         entity_t *item = malloc(sizeof(entity_t));
         entity_item_create(item, world, x + offset_x, y + 1.2, z + offset_z, ITEM_SEEDS);
         item->delay_before_pickup = 10;
-        world_add_entity(world, item);
+        world_spawn_entity(world, item);
     }
 
     return 1;

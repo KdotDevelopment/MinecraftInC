@@ -17,10 +17,7 @@
 #include "assets/sound/mob/sheep3.h"
 
 #include "assets/sound/random/bow.h"
-#include "assets/sound/random/break.h"
 #include "assets/sound/random/click.h"
-#include "assets/sound/random/door_close.h"
-#include "assets/sound/random/door_open.h"
 #include "assets/sound/random/drr.h"
 #include "assets/sound/random/explode.h"
 #include "assets/sound/random/fizz.h"
@@ -91,10 +88,7 @@ void sounds_stop_all(sounds_t *sounds) {
         sound_stop(&sounds->glass[i]);
     }
     sound_stop(&sounds->bow);
-    sound_stop(&sounds->destroy);
     sound_stop(&sounds->click);
-    sound_stop(&sounds->door_open);
-    sound_stop(&sounds->door_close);
     sound_stop(&sounds->drr);
     sound_stop(&sounds->explode);
     sound_stop(&sounds->fizz);
@@ -126,10 +120,7 @@ void sounds_set_sound_volume(sounds_t *sounds, float volume) {
         alSourcef(sounds->glass[i].source, AL_GAIN, volume);
     }
     alSourcef(sounds->bow.source, AL_GAIN, volume);
-    alSourcef(sounds->destroy.source, AL_GAIN, volume);
     alSourcef(sounds->click.source, AL_GAIN, volume);
-    alSourcef(sounds->door_open.source, AL_GAIN, volume);
-    alSourcef(sounds->door_close.source, AL_GAIN, volume);
     alSourcef(sounds->drr.source, AL_GAIN, volume);
     alSourcef(sounds->explode.source, AL_GAIN, volume);
     alSourcef(sounds->fizz.source, AL_GAIN, volume);
@@ -215,17 +206,8 @@ void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitc
         case SOUND_RANDOM_BOW:
             sound_play(&sounds->bow, volume * 0.2 * sounds->sound_volume, pitch);
             return;
-        case SOUND_RANDOM_BREAK:
-            sound_play(&sounds->destroy, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
         case SOUND_RANDOM_CLICK:
             sound_play(&sounds->click, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
-        case SOUND_RANDOM_DOOR_OPEN:
-            sound_play(&sounds->door_open, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
-        case SOUND_RANDOM_DOOR_CLOSE:
-            sound_play(&sounds->door_close, volume * 0.2 * sounds->sound_volume, pitch);
             return;
         case SOUND_RANDOM_DRR:
             sound_play(&sounds->drr, volume * 0.2 * sounds->sound_volume, pitch);
@@ -286,10 +268,7 @@ void sounds_destroy(sounds_t *sounds) {
         sound_destroy(&sounds->glass[i]);
     }
     sound_destroy(&sounds->bow);
-    sound_destroy(&sounds->destroy);
     sound_destroy(&sounds->click);
-    sound_destroy(&sounds->door_open);
-    sound_destroy(&sounds->door_close);
     sound_destroy(&sounds->drr);
     sound_destroy(&sounds->explode);
     sound_destroy(&sounds->fizz);

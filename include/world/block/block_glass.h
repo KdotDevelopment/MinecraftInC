@@ -3,4 +3,4 @@
 #include <world/block/block.h>
 
 block_t block_glass_create();
-uint8_t block_glass_can_render_side(block_t *block, struct world_s *world, int x, int y, int z, int side);
+uint8_t block_glass_get_drop_count(block_t *block, random_t *random);

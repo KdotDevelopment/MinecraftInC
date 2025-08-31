@@ -2,7 +2,7 @@
 
 screen_t screen_save_world_create(screen_t *parent) {
     screen_t screen = screen_create();
-    screen.type = SCREEN_TYPE_SAVE_world;
+    screen.type = SCREEN_TYPE_SAVE_WORLD;
     //screen.grabs_mouse = 1;
     screen.parent = (struct screen_s *)parent;
 

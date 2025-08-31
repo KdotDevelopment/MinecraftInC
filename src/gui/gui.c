@@ -12,7 +12,7 @@ void gui_fill(int x0, int y0, int x1, int y1, uint32_t color) {
     float green = (float)(color >> 16 & 0xFF) / 255.0;
     float blue = (float)(color >> 8 & 0xFF) / 255.0;
     float alpha = (float)(color & 0xFF) / 255.0;
-    tesselator_begin(&g_tesselator);
+    tesselator_begin_quads();
     glEnable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -60,7 +60,7 @@ void gui_draw_string(font_t *font, char *string, int x, int y, uint32_t color) {
 
 void gui_blit(int x0, int y0, int width, int height, int u, int v, float blit_offset) {
     float s = 0.00390625 - 0.00000001;
-    tesselator_begin();
+    tesselator_begin_quads();
     tesselator_vertex_uv(x0, y0 + v, blit_offset, width * s, (height + v) * s);
     tesselator_vertex_uv(x0 + u, y0 + v, blit_offset, (width + u) * s, (height + v) * s);
     tesselator_vertex_uv(x0 + u, y0, blit_offset, (width + u) * s, height * s);

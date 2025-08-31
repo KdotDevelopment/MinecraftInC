@@ -25,7 +25,7 @@ void gamemode_creative_open_inventory(struct gamemode_s *gamemode) {
 
 void gamemode_creative_init_world(struct gamemode_s *gamemode, struct world_s *world) {
     gamemode_init_world(gamemode, world);
-    world_remove_all_non_creative_entities(world);
+    //world_remove_all_non_creative_entities(world);
     world->creative_mode = 1;
 }
 

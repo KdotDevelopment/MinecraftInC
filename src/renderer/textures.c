@@ -21,8 +21,6 @@
 #include <assets/mob/skeleton.h>
 #include <assets/mob/spider.h>
 #include <assets/mob/zombie.h>
-#include <assets/armor/chain.h>
-#include <assets/armor/plate.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -78,8 +76,8 @@ int textures_load(textures_t *textures, const char *resource) {
     if(strcmp(resource, "mob/spider.png") == 0) { p = (uint8_t *)asset_spider_rgba; width = asset_spider_width; height = asset_spider_height; }
     if(strcmp(resource, "mob/zombie.png") == 0) { p = (uint8_t *)asset_zombie_rgba; width = asset_zombie_width; height = asset_zombie_height; }
     if(strcmp(resource, "item/arrows.png") == 0) { p = (uint8_t *)asset_arrows_rgba; width = asset_arrows_width; height = asset_arrows_height; }
-    if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
-    if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
+    //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
+    //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
 
     if (p == NULL) { printf("Failed to load image %s.\n", resource); }
 

@@ -19,7 +19,7 @@ void block_sponge_on_added(block_t *block, struct world_s *world, int x, int y, 
     for(int i = x - 2; i <= x + 2; i++) {
         for(int j = y - 2; j <= y + 2; j++) {
             for(int k = z - 2; k <= z + 2; k++) {
-                if(world_is_water(real_world, i, j, k)) world_set_block_no_neighbor_change(real_world, i, j, k, blocks.air.id);
+                if(world_is_water(real_world, i, j, k)) world_set_block_no_update(real_world, i, j, k, blocks.air.id);
             }
         }
     }

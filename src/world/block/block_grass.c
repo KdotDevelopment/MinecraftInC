@@ -1,4 +1,5 @@
 #include <world/block/block_grass.h>
+
 #include <world/block/blocks.h>
 #include <world/block/block_sound.h>
 #include <world/world.h>
@@ -9,33 +10,39 @@ block_t block_grass_create() {
     block.has_physics = 1;
     block.should_tick = 1;
 
-    block.get_texture_id = block_grass_get_texture_id;
+    block.get_texture_side = block_grass_get_texture_side;
     block.update = block_grass_update;
-    block.drop_id = BLOCK_DIRT;
+    block.get_item_dropped = block_grass_get_item_dropped;
 
     block_list[block.id] = block;
 
     return block;
 }
 
-int block_grass_get_texture_id(block_t *block, int side) {
+int block_grass_get_texture_side(block_t *block, uint8_t side) {
     return side == 1 ? TEXTURE_GRASS : (side == 0 ? TEXTURE_DIRT : TEXTURE_GRASS_SIDE);
 }
 
 void block_grass_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
     world_t *real_world = (world_t *)world;
-    if(random_next_int_range(random, 0, 3) == 0) {
-        if(!world_is_lit(real_world, x, y, z)) {
-            world_set_block(real_world, x, y, z, blocks.dirt.id);
-        }else {
-            for(int i = 0; i < 4; i++) {
-                int xx = x + random_next_int_range(random, 0, 3) - 1;
-                int yy = y + random_next_int_range(random, 0, 5) - 3;
-                int zz = z + random_next_int_range(random, 0, 3) - 1;
-                if(world_get_block(real_world, xx, yy, zz) == blocks.dirt.id && world_is_lit(real_world, xx, yy, zz)) {
-                    world_set_block(real_world, xx, yy, zz, blocks.grass.id);
-                }
+    if(world_get_block_light_value(real_world, x, y, z) < 4 && world_get_block_material(real_world, x, y, z)->can_block_grass) {
+        if(random_next_int_range(random, 0, 3) == 0) {
+            world_set_block_with_update(real_world, x, y, z, blocks.dirt.id);
+        }
+    }else {
+        if(world_get_block_light_value(real_world, x, y + 1, z) >= 9) {
+            int xx = x + random_next_int_range(random, 0, 2) - 1;
+            int yy = y + random_next_int_range(random, 0, 4) - 3;
+            int zz = z + random_next_int_range(random, 0, 2) - 1;
+            if(world_get_block(real_world, xx, yy, zz) == blocks.dirt.id 
+               && world_get_block_light_value(real_world, xx, yy + 1, zz) >= 4 
+               && !world_get_block_material(real_world, xx, yy + 1, zz)->can_block_grass) {
+                world_set_block_with_update(real_world, xx, yy, zz, blocks.grass.id);
             }
         }
     }
+}
+
+int16_t block_grass_get_item_dropped(block_t *block, uint8_t metadata, random_t *random) {
+    return blocks.dirt.get_item_dropped(&blocks.dirt, 0, random);
 }

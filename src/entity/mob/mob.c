@@ -306,8 +306,8 @@ void mob_render(entity_t *entity, textures_t *textures, float delta) {
 void mob_hurt(entity_t *entity, entity_t *entity_causer, int damage) {
     mob_t *mob = (mob_t *)entity;
     mob_t *causer = (mob_t *)entity_causer;
-    world_t *world = (world_t *)entity->world;
-    if(world->creative_mode) return;
+    //world_t *world = (world_t *)entity->world;
+    //if(world->creative_mode) return;
     if(mob->health <= 0) return;
     mob->ai.hurt(&mob->ai, entity_causer, damage);
     if(mob->invulnerable_time > mob->invulnerable_duration / 2) {
@@ -350,8 +350,8 @@ void mob_knockback(mob_t *mob, mob_t *causer, int damage, float x_diff, float z_
 }
 
 void mob_die(struct mob_s *mob, mob_t *causer) {
-    world_t *world = (world_t *)mob->world;
-    if(world->creative_mode) return;
+    //world_t *world = (world_t *)mob->world;
+    //if(world->creative_mode) return;
     if(mob->death_score > 0 && causer) {
         mob->award_kill_score(&mob->entity, (entity_t *)&causer, mob->death_score);
     }
@@ -361,9 +361,9 @@ void mob_die(struct mob_s *mob, mob_t *causer) {
 
 void mob_cause_fall_damage(entity_t *entity, float distance) {
     mob_t *mob = (mob_t *)entity;
-    world_t *world = (world_t *)entity->world;
+    //world_t *world = (world_t *)entity->world;
     entity_cause_fall_damage(&mob->entity, distance);
-    if(world->creative_mode) return;
+    //if(world->creative_mode) return;
     int damage = (int)ceil(distance - 3);
     if(damage > 0) {
         mob->hurt(&mob->entity, NULL, damage);

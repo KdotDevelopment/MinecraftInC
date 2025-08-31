@@ -37,14 +37,14 @@ void player_ai_tick(struct ai_s *proto_ai) {
     player->bob += (bob - player->bob) * 0.4;
     player->tilt += (tilt - player->tilt) * 0.8;
 
-    AABB_t bb = AABB_grow(player->entity.bb, 1.0, 0.0, 1.0);
+    /*AABB_t bb = AABB_grow(player->entity.bb, 1.0, 0.0, 1.0);
     entity_t ***entities = entity_map_get_entities(&player->world->entity_map, &player->entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
     if(player->health > 0 && entities != NULL) {
         for(int i = 0; i < array_list_length(*entities); i++) {
             entity_t *entity = *(entity_t **)array_list_get(*entities, i);
             entity->player_touch(entity, &player->entity);
         }
-    }
+    }*/
 }
 
 void player_ai_update(struct ai_s *proto_ai) {

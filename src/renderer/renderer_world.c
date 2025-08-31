@@ -2,16 +2,20 @@
 
 #include <renderer/tesselator.h>
 #include <world/block/blocks.h>
+#include <world/world.h>
 #include <minecraft.h>
 
 #include <util/array_list.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <SDL2/SDL_opengl.h>
 
 #include <limits.h>
 #include <stdio.h>
+#include <time.h>
 
 renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *world, textures_t *textures) {
     renderer_world_t renderer = { 0 };
@@ -105,7 +109,7 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     free(renderer->renderer_chunks);
     free(renderer->renderer_chunks_sorted);
 
-    int distance = 5 << 3 - renderer->render_distance;
+    int distance = 5 << (3 - renderer->render_distance);
     if(distance > 28) {
         distance = 28;
     }
@@ -184,7 +188,7 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
         double avg_size = (size_x + size_y + size_z) / 3.0;
         avg_size *= 64.0;
         
-        if(distance_sq < avg_size && frustum_contains_box_bb(*frustum, bb) && (entity != &renderer->world->player->mob.entity || renderer->minecraft->settings.third_person)) {
+        if(distance_sq < avg_size && frustum_contains_box_bb(*frustum, bb) && (entity != player || renderer->minecraft->settings.third_person)) {
             renderer->entities_rendered++;
             // render_manager render entity (entity, partial_tick)
         }
@@ -248,7 +252,7 @@ void renderer_world_new_position(renderer_world_t *renderer, int x, int y, int z
     }
 }
 
-void renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player, int render_pass, double partial_tick) {
+int renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player, int render_pass, double partial_tick) {
     if(renderer->minecraft->settings.view_distance != renderer->render_distance) {
         renderer_world_load_renderers(renderer);
     }
@@ -396,7 +400,7 @@ int renderer_world_render_sorted_renderers(renderer_world_t *renderer, int start
         if(chunk_renderer->is_in_frustum && chunk_renderer->is_visible) {
             int rendered = renderer_chunk_get_gl_call_list(chunk_renderer, render_pass);
             if(rendered >= 0) {
-                renderer->render_lists = array_list_add(renderer->render_lists, &renderer->renderer_chunks_sorted[i]);
+                renderer->render_lists = array_list_push(renderer->render_lists, &renderer->renderer_chunks_sorted[i]);
                 total_rendered++;
             }
         }
@@ -407,7 +411,6 @@ int renderer_world_render_sorted_renderers(renderer_world_t *renderer, int start
 }
 
 void renderer_world_render_all_lists(renderer_world_t *renderer, int render_pass, double partial_tick) {
-    entity_t *player = &renderer->minecraft->player.mob.entity;
     double x = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick;
     double y = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
     double z = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
@@ -612,7 +615,7 @@ void renderer_world_draw_selection_box(renderer_world_t *renderer, entity_t *pla
     glLineWidth(2.0);
     glDisable(GL_TEXTURE_2D);
     glDepthMask(GL_FALSE);
-    uint8_t block_id = world_get_block(renderer->world, hit_result->x, hit_result->y, hit_result->z);
+    block_id = world_get_block(renderer->world, hit_result->x, hit_result->y, hit_result->z);
     block_t *block = &block_list[block_id];
     if(block_id > 0) {
         double x = player->xo + (player->x - player->xo) * partial_tick;
@@ -701,6 +704,24 @@ void renderer_world_play_sound(renderer_world_t *renderer, uint8_t sound, double
 
 void renderer_world_spawn_particle(renderer_world_t *renderer, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel) {
     
+}
+
+void renderer_world_obtain_entity_skin(renderer_world_t *renderer, entity_t *entity) {
+
+}
+
+void renderer_world_release_entity_skin(renderer_world_t *renderer, entity_t *entity) {
+
+}
+
+void renderer_world_update_all(renderer_world_t *renderer) {
+    for(int i = 0; i < renderer->renderer_chunk_count; i++) {
+        renderer_chunk_t *chunk_renderer = renderer->renderer_chunks[i];
+        if(!chunk_renderer->needs_update && chunk_renderer->is_lit) {
+            chunk_renderer->needs_update = 1;
+            renderer->renderer_chunks_to_update = array_list_push(renderer->renderer_chunks_to_update, &chunk_renderer);
+        }
+    }
 }
 
 void renderer_world_destroy(renderer_world_t *renderer) {

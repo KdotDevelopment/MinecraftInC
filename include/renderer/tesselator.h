@@ -7,7 +7,7 @@
 typedef struct {
     uint8_t byte_buffer[8388608];
     int raw_buffer[2097152];
-    int vertex_buffer[VBO_COUNT];
+    uint32_t vertex_buffer[VBO_COUNT];
     uint32_t color;
     int vertex_count; // = 0
     double u, v;

@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+// Note: this is the animation for the side of water
+
 texture_animated_t texture_water_flow_create() {
     texture_animated_t texture = texture_animated_create(blocks.water.texture_id + 32);
     texture.tick = texture_water_flow_tick;

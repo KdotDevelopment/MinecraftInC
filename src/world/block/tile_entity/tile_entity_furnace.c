@@ -46,7 +46,7 @@ void tile_entity_furnace_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     nbt_base_t *items = nbt_tag_compound_get_tag_list(nbt, "Items");
     tile_entity->inventory_size = 27;
     
-    for(int i = 0; i < nbt_tag_list_get_count(items); i++) {
+    for(int i = 0; i < array_list_length(items->tag_array); i++) {
         nbt_base_t *item = nbt_tag_list_get_tag(items, i);
         uint8_t slot = nbt_tag_compound_get_byte(item, "Slot") & 0xFF;
         if(slot >= 0 && slot < tile_entity->inventory_size) {
@@ -148,7 +148,7 @@ void tile_entity_furnace_update(tile_entity_t *tile_entity) {
         tile_entity->cook_time = 0;
     }
 
-    if(is_burning != tile_entity->burn_time > 0) {
+    if(is_burning != (tile_entity->burn_time > 0)) {
         is_burning = tile_entity_furnace_is_burning(tile_entity);
         int x = tile_entity->x;
         int y = tile_entity->y;

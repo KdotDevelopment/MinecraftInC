@@ -3,7 +3,7 @@
 
 screen_t screen_world_name_create(screen_t *parent, char *name, int id) {
     screen_t screen = screen_create();
-    screen.type = SCREEN_TYPE_world_NAME;
+    screen.type = SCREEN_TYPE_WORLD_NAME;
     screen.parent = (struct screen_s *)parent;
     screen.name = string_create(name);
     screen.id = id;

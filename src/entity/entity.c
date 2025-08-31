@@ -46,6 +46,8 @@ void entity_create(entity_t *entity, struct world_s *world) {
     entity->heal = entity_heal;
     entity->can_be_hit = entity_can_be_hit;
     entity->player_touch = entity_player_touch;
+    entity->write_nbt = entity_write_nbt;
+    entity->read_nbt = entity_read_nbt;
 
     entity_set_pos(entity, 0, 0, 0);
 
@@ -389,4 +391,10 @@ void entity_award_kill_score(entity_t *entity, entity_t *causer, int score) {
 }
 
 void entity_player_touch(entity_t *entity, entity_t *player) {
+}
+
+void entity_read_nbt(entity_t *entity, nbt_base_t *nbt) {
+}
+
+void entity_write_nbt(entity_t *entity, nbt_base_t *nbt) {
 }

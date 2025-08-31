@@ -8,6 +8,7 @@ block_t block_container_create(uint8_t id, int texture_id, block_sound_t *sound,
 
     block.on_added = block_container_on_added;
     block.on_removed = block_container_on_removed;
+    block.is_container = 1;
 
     block_list[block.id] = block;
 

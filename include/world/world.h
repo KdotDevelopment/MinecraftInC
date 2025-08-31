@@ -130,5 +130,4 @@ void world_visual_update(world_t *world, int x, int y, int z);
 entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t box);
 
 void world_set_spawn_position(world_t *world, int x, int y, int z);
-uint8_t world_is_water(world_t *world, int x, int y, int z);
 void world_destroy(world_t *world);

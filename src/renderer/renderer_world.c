@@ -6,6 +6,7 @@
 #include <minecraft.h>
 
 #include <util/array_list.h>
+#include <util/time.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -15,7 +16,6 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include <time.h>
 
 renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *world, textures_t *textures) {
     renderer_world_t renderer = { 0 };

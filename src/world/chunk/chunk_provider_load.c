@@ -6,8 +6,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <stdio.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#include <stdlib.h>
+#endif
 
 void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *chunk_provider_gen, world_t *world, char **save_directory) {
     chunk_provider_load->world = world;
@@ -113,18 +118,36 @@ int private_create_directories(const char *path) {
 
     while ((next = strchr(current, '/')) != NULL) {
         *next = '\0';
-        if (strlen(temp_path) > 0 && mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
-            perror("mkdir");
-            return -1;
+
+        if (strlen(temp_path) > 0) {
+#ifdef _WIN32
+            if (!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+                fprintf(stderr, "Failed to create directory: %s\n", temp_path);
+                return -1;
+            }
+#else
+            if (mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
+                perror("mkdir");
+                return -1;
+            }
+#endif
         }
+
         *next = '/';
         current = next + 1;
     }
 
+#ifdef _WIN32
+    if (!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+        fprintf(stderr, "Failed to create directory: %s\n", temp_path);
+        return -1;
+    }
+#else
     if (mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
         perror("mkdir");
         return -1;
     }
+#endif
 
     return 0;
 }
@@ -178,10 +201,20 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
 void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *chunk) {
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, chunk->x_pos, chunk->z_pos);
 
+#ifdef _WIN32
+    WIN32_FILE_ATTRIBUTE_DATA file_info;
+    if (GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
+        LARGE_INTEGER file_size;
+        file_size.LowPart = file_info.nFileSizeLow;
+        file_size.HighPart = file_info.nFileSizeHigh;
+        chunk_provider->world->size_on_disk -= file_size.QuadPart;
+    }
+#else
     struct stat sb;
-    if(stat(chunk_file, &sb) == 0) {
+    if (stat(chunk_file, &sb) == 0) {
         chunk_provider->world->size_on_disk -= sb.st_size;
     }
+#endif
 
     nbt_base_t nbt_base = { 0 };
     nbt_tag_compound_create(&nbt_base);
@@ -190,16 +223,28 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     chunk_write_nbt_data(chunk, &nbt);
     // loading_screen_renderer_write(&nbt_base, chunk_file);
-    chunk_provider->world->size_on_disk += sb.st_size;
+
+#ifdef _WIN32
+    if (GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
+        LARGE_INTEGER file_size;
+        file_size.LowPart = file_info.nFileSizeLow;
+        file_size.HighPart = file_info.nFileSizeHigh;
+        chunk_provider->world->size_on_disk += file_size.QuadPart;
+    }
+#else
+    if (stat(chunk_file, &sb) == 0) {
+        chunk_provider->world->size_on_disk += sb.st_size;
+    }
+#endif
 
     free(chunk_file);
 }
 
-void chunk_provider_load_populate(chunk_provider_t *chunk_provider, chunk_provider_t *interface, int x, int z) {
+void chunk_provider_load_populate(chunk_provider_t *chunk_provider, chunk_provider_t *gen, int x, int z) {
     chunk_t *chunk = chunk_provider_provide_chunk(chunk_provider, x, z);
     if(!chunk->is_terrain_populated) {
         chunk->is_terrain_populated = 1;
-        chunk_provider->chunk_provider_gen->populate(chunk_provider->chunk_provider_gen, interface, x, z);
+        chunk_provider->chunk_provider_gen->populate(chunk_provider->chunk_provider_gen, gen, x, z);
     }
 }
 

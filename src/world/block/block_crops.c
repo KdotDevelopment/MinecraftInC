@@ -8,6 +8,7 @@
 #include <world/world.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 block_t block_crops_create() {
     block_t block = block_flower_create(BLOCK_CROPS, TEXTURE_CROPS);
@@ -86,7 +87,7 @@ void block_crops_update(block_t *block, world_t *world, int x, int y, int z, ran
     }
 }
 
-int block_crops_get_texture_side_metadata(block_t *block, uint8_t side, int metadata) {
+int block_crops_get_texture_side_metadata(block_t *block, uint8_t side, uint8_t metadata) {
     if(metadata == 0) metadata = 7;
     return block->texture_id + metadata;
 }

@@ -1,4 +1,5 @@
 #include <world/world.h>
+
 #include <renderer/renderer_world.h>
 #include <world/block/block.h>
 #include <world/block/blocks.h>
@@ -71,7 +72,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     }
 
     chunk_provider_generate_create(&world->chunk_provider_gen, world, world->random_seed);
-    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, (const char **)&world->save_file);
+    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, &world->save_file);
     world_save(world, 0);
 }
 
@@ -588,7 +589,6 @@ void world_schedule_block_update(world_t *world, int x, int y, int z, uint8_t bl
 void world_update_entities(world_t *world) {
     for(int i = 0; i < array_list_length(world->loaded_entity_list); i++) {
         entity_t *entity = array_list_get(world->loaded_entity_list, i);
-        entity_on_update(entity, (struct world_s *)world);
         if(!entity->is_dead) {
             int cx = floor_double(entity->x / CHUNK_SIZE_WIDTH);
             int cy = floor_double(entity->y / CHUNK_SIZE_WIDTH);
@@ -674,7 +674,7 @@ uint8_t world_is_liquid_in_range(world_t *world, AABB_t box) {
         for(int j = y0; j < y1; j++) {
             for(int k = z0; k < z1; k++) {
                 block_t *block = &block_list[world_get_block(world, i, j, k)];
-                if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) return 1;
+                if(block->id != blocks.air.id && block->material->is_liquid) return 1;
             }
         }
     }
@@ -1108,7 +1108,7 @@ void world_visual_update(world_t *world, int x, int y, int z) {
         int zz = z + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
         uint8_t block_id = world_get_block(world, xx, yy, zz);
         if(block_id > 0) {
-            block_list[block_id].visual_update(&block_list[block_id], xx, yy, zz, &random);
+            block_list[block_id].visual_update(&block_list[block_id], world, xx, yy, zz, &random);
         }
     }
 }
@@ -1138,11 +1138,6 @@ void world_set_spawn_position(world_t *world, int x, int y, int z) {
     world->spawn_x = x;
     world->spawn_y = y;
     world->spawn_z = z;
-}
-
-uint8_t world_is_water(world_t *world, int x, int y, int z) {
-    uint8_t block_id = world_get_block(world, x, y, z);
-    return block_id != blocks.air.id && block_list[block_id].liquid_type == LIQUID_WATER;
 }
 
 void world_destroy(world_t *world) {

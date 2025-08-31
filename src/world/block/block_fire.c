@@ -54,6 +54,10 @@ uint8_t block_fire_get_drop_count(block_t *block, random_t *random) {
     return 0;
 }
 
+uint8_t private_can_block_catch_fire(world_t *world, int x, int y, int z) {
+    return block_list[world_get_block(world, x, y, z)].fire_catch_chance > 0;
+}
+
 uint8_t private_can_neighbor_catch_fire(world_t *world, int x, int y, int z) {
     return private_can_block_catch_fire(world, x + 1, y, z) ? 1 :
         private_can_block_catch_fire(world, x - 1, y, z) ? 1 :
@@ -77,10 +81,6 @@ void private_try_spread_fire(world_t *world, int x, int y, int z, int chance, ra
             blocks.tnt.on_destroyed(&blocks.tnt, world, x, y, z, 0);
         }
     }
-}
-
-uint8_t private_can_block_catch_fire(world_t *world, int x, int y, int z) {
-    return block_list[world_get_block(world, x, y, z)].fire_catch_chance > 0;
 }
 
 int private_get_fire_spread_chance(world_t *world, int x, int y, int z, int chance) {
@@ -169,9 +169,8 @@ uint8_t private_fire_check(world_t *world, int x, int y, int z) {
         return 1;
     }else if(block_id == blocks.air.id) {
         world_set_block_with_update(world, x, y, z, blocks.fire.id);
-    }else {
-        return 0;
     }
+    return 0;
 }
 
 void block_fire_spread(world_t *world, int x, int y, int z) {

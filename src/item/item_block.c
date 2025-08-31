@@ -31,7 +31,7 @@ uint8_t item_block_on_use(item_stack_t *item_stack, world_t *world, int x, int y
 
     if((block_id > 0 && block == NULL) || block_id == BLOCK_WATER || block_id == BLOCK_STILL_WATER || block_id == BLOCK_LAVA || block_id == BLOCK_STILL_LAVA || block_id == BLOCK_FIRE) {
         if(aabb.null || world_is_aabb_clear(world, aabb) || (block->can_place_at(block, world, x, y, z) && world_set_block_with_update(world, x, y, z, item_stack->item_id))) {
-            block->on_placed(block, world, x, y, z);
+            block->on_placed(block, world, x, y, z, side);
             double sound_x = x + 0.5;
             double sound_y = y + 0.5;
             double sound_z = z + 0.5;

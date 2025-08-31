@@ -1,7 +1,6 @@
 #pragma once
 
 #include <nbt/nbt_base.h>
-#include <world/block/block.h>
 
 #include <stdint.h>
 

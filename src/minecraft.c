@@ -107,7 +107,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     //world_create(&minecraft->world, minecraft, &minecraft->progress_bar, 1);
     minecraft->gamemode.init_world(&minecraft->gamemode, &minecraft->world);
-    player_create(&minecraft->player, (struct world_s *)&minecraft->world);
+    player_create(&minecraft->player, (struct world_s *)&minecraft->world); // this currently crashes
     minecraft->world.player = &minecraft->player;
     minecraft->player.inputs = inputs_create(&minecraft->settings);
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
@@ -115,7 +115,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     minecraft->renderer_world = renderer_world_create(minecraft, &minecraft->world, &minecraft->textures);
     //minecraft->world.renderer = (struct renderer_world_s *)&minecraft->renderer_world;
-    renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
+    //renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
     minecraft->particles = particles_create(&minecraft->world, &minecraft->textures);
     minecraft->world.particles = &minecraft->particles;
 
@@ -235,7 +235,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                             return;
                         }
                         world_set_block_with_update(&minecraft->world, vx, vy, vz, selected);
-                        selected_block->on_placed(selected_block, (struct world_s *)&minecraft->world, vx, vy, vz);
+                        selected_block->on_placed(selected_block, (struct world_s *)&minecraft->world, vx, vy, vz, minecraft->hit_result.face);
                         minecraft->renderer.held_block.position = 0;
                     }
                 }

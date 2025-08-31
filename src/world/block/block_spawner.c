@@ -17,31 +17,31 @@ block_t block_spawner_create(uint8_t block_id, uint8_t spawn_id) {
 void block_spawner_on_added(block_t *block, world_t *world, int x, int y, int z) {
     block_on_added(block, world, x, y, z);
     if(world_get_block(world, x - 1, y, z) == 0) {
-        world_set_block(world, x - 1, y, z, block->spawner_liquid);
+        world_set_block_with_update(world, x - 1, y, z, block->spawner_liquid);
     }
     if(world_get_block(world, x + 1, y, z) == 0) {
-        world_set_block(world, x + 1, y, z, block->spawner_liquid);
+        world_set_block_with_update(world, x + 1, y, z, block->spawner_liquid);
     }
     if(world_get_block(world, x, y, z - 1) == 0) {
-        world_set_block(world, x, y, z - 1, block->spawner_liquid);
+        world_set_block_with_update(world, x, y, z - 1, block->spawner_liquid);
     }
     if(world_get_block(world, x, y, z + 1) == 0) {
-        world_set_block(world, x, y, z + 1, block->spawner_liquid);
+        world_set_block_with_update(world, x, y, z + 1, block->spawner_liquid);
     }
 }
 
 void block_spawner_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
     block_update(block, world, x, y, z, random);
     if(world_get_block(world, x - 1, y, z) == 0) {
-        world_set_block(world, x - 1, y, z, block->spawner_liquid);
+        world_set_block_with_update(world, x - 1, y, z, block->spawner_liquid);
     }
     if(world_get_block(world, x + 1, y, z) == 0) {
-        world_set_block(world, x + 1, y, z, block->spawner_liquid);
+        world_set_block_with_update(world, x + 1, y, z, block->spawner_liquid);
     }
     if(world_get_block(world, x, y, z - 1) == 0) {
-        world_set_block(world, x, y, z - 1, block->spawner_liquid);
+        world_set_block_with_update(world, x, y, z - 1, block->spawner_liquid);
     }
     if(world_get_block(world, x, y, z + 1) == 0) {
-        world_set_block(world, x, y, z + 1, block->spawner_liquid);
+        world_set_block_with_update(world, x, y, z + 1, block->spawner_liquid);
     }
 }

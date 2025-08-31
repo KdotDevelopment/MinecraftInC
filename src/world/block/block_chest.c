@@ -109,6 +109,8 @@ int block_chest_get_texture(block_t *block, world_t *world, int x, int y, int z,
         }
 
         return (side == preferred_side ? block->texture_id + 16 : block->texture_id + 32) + texture_offset;
+    }else {
+        return block->texture_id;
     }
 }
 

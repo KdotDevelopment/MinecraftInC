@@ -3,6 +3,7 @@
 #include <item/item.h>
 #include <item/items.h>
 #include <nbt/nbt_tag_list.h>
+#include <util/array_list.h>
 #include <world/block/blocks.h>
 #include <world/material/materials.h>
 #include <world/world.h>

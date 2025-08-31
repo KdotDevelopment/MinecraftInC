@@ -28,7 +28,7 @@ void block_flowing_on_added(block_t *block, world_t *world, int x, int y, int z)
 }
 
 void block_flowing_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
-    return 0;
+    return;
 }
 
 uint8_t block_flowing_can_render_side(block_t *block, world_t *world, int x, int y, int z, uint8_t side) {

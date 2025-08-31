@@ -2,6 +2,7 @@
 
 #include <entity/entity.h>
 #include <nbt/nbt_base.h>
+#include <world/block/tile_entity/tile_entity.h>
 
 #include <stdint.h>
 
@@ -24,6 +25,7 @@ typedef struct chunk_s {
     int z_pos;
     // chunk_tile_entity_map
     uint64_t *entities[CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH]; // list (uint64_t = pointer)
+    uint64_t *tile_entities; // array_list
     uint8_t is_terrain_populated;
     uint8_t is_modified;
     uint8_t has_entities; 
@@ -48,6 +50,9 @@ chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt);
 void chunk_add_entity(chunk_t *chunk, entity_t *entity);
 void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index);
 uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z);
+tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z);
+void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *tile_entity);
+void chunk_remove_tile_entity(chunk_t *chunk, int x, int y, int z);
 void chunk_load_entities(chunk_t *chunk);
 void chunk_unload_entities(chunk_t *chunk);
 void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list);

@@ -1,6 +1,8 @@
 #include <world/block/tile_entity/tile_entity.h>
 
 #include <nbt/nbt_base.h>
+#include <world/block/tile_entity/tile_entity_chest.h>
+#include <world/block/tile_entity/tile_entity_furnace.h>
 #include <world/world.h>
 
 #include <string.h>

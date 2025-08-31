@@ -93,7 +93,7 @@ typedef struct block_s {
     AABB_t (*get_collision_aabb)(struct block_s *block, int x, int y, int z);
     uint8_t (*get_drop_count)(struct block_s *block, random_t *random);
     void (*on_exploded)(struct block_s *block, struct world_s *world, int x, int y, int z);
-    void (*visual_update)(struct block_s *block, int x, int y, int z, random_t *random);
+    void (*visual_update)(struct block_s *block, struct world_s *world, int x, int y, int z, random_t *random);
     uint8_t (*can_place_at)(struct block_s *block, struct world_s *world, int x, int y, int z);
     int16_t (*get_item_dropped)(struct block_s *block, uint8_t metadata, random_t *random);
     int (*get_tick_rate)(struct block_s *block);
@@ -124,7 +124,7 @@ float block_get_brightness(block_t *block, struct world_s *world, int x, int y, 
 void block_render_inside(block_t *block, int x, int y, int z, uint8_t side);
 void block_render_side_with_texture(block_t *block, int x, int y, int z, uint8_t side, int tex);
 void block_render_side(block_t *block, int x, int y, int z, uint8_t side);
-void block_visual_update(block_t *block, int x, int y, int z, random_t *random);
+void block_visual_update(block_t *block, struct world_s *world,int x, int y, int z, random_t *random);
 void block_render_preview(block_t *block);
 uint8_t block_render(block_t *block, struct world_s *world, int x, int y, int z);
 void block_render_full_brightness(block_t *block);

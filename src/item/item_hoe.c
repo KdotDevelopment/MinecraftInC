@@ -33,7 +33,8 @@ uint8_t item_hoe_on_use(item_stack_t *item_stack, world_t *world, int x, int y, 
         float offset_x = random_next_uniform(&world->random) * 0.7 + 0.15;
         float offset_z = random_next_uniform(&world->random) * 0.7 + 0.15;
         entity_t *item = malloc(sizeof(entity_t));
-        entity_item_create(item, world, x + offset_x, y + 1.2, z + offset_z, ITEM_SEEDS);
+        item_stack_t item_stack = item_stack_create(ITEM_SEEDS, 1, 0);
+        entity_item_create(item, world, x + offset_x, y + 1.2, z + offset_z, item_stack);
         item->delay_before_pickup = 10;
         world_spawn_entity(world, item);
     }

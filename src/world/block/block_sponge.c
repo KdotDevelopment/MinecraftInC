@@ -14,23 +14,21 @@ block_t block_sponge_create() {
     return block;
 }
 
-void block_sponge_on_added(block_t *block, struct world_s *world, int x, int y, int z) {
-    world_t *real_world = (world_t *)world;
+void block_sponge_on_added(block_t *block, world_t *world, int x, int y, int z) {
     for(int i = x - 2; i <= x + 2; i++) {
         for(int j = y - 2; j <= y + 2; j++) {
             for(int k = z - 2; k <= z + 2; k++) {
-                if(world_is_water(real_world, i, j, k)) world_set_block_no_update(real_world, i, j, k, blocks.air.id);
+                if(world_get_block_material(world, i, j, k) == &materials.water) world_set_block_no_update(world, i, j, k, blocks.air.id);
             }
         }
     }
 }
 
-void block_sponge_on_removed(block_t *block, struct world_s *world, int x, int y, int z) {
-    world_t *real_world = (world_t *)world;
+void block_sponge_on_removed(block_t *block, world_t *world, int x, int y, int z) {
     for(int i = x - 2; i <= x + 2; i++) {
         for(int j = y - 2; j <= y + 2; j++) {
             for(int k = z - 2; k <= z + 2; k++) {
-                world_update_neighbors_at(real_world, i, j, k, world_get_block(real_world, i, j, k));
+                world_update_neighbors_at(world, i, j, k, world_get_block(world, i, j, k));
             }
         }
     }

@@ -60,6 +60,21 @@ uint8_t block_fluid_can_flow(block_t *block, world_t *world, int x, int y, int z
     return 1;
 }
 
+uint8_t can_flow(block_t *block, world_t *world, int x, int y, int z) {
+    if(!(!world_get_block_material(world, x, y, z)->is_liquid && !world_get_block_material(world, x, y, z)->is_solid)) return 0;
+    if(block->material == &materials.water) {
+        for(int i = x - 2; i <= x + 2; i++) {
+            for(int j = y - 2; j <= y + 2; j++) {
+                for(int k = z - 2; k <= z + 2; k++) {
+                    if(world_get_block(world, i, j, k) == blocks.sponge.id) return 0;
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
 uint8_t flow(block_t *block, world_t *world, int x, int y, int z) {
     if(world_get_block(world, x, y, z) == blocks.air.id) {
         if(!can_flow(block, world, x, y, z)) return 0;
@@ -105,21 +120,6 @@ void block_fluid_update(block_t *block, world_t *world, int x, int y, int z, ran
     }
 
     //return set;
-}
-
-uint8_t can_flow(block_t *block, world_t *world, int x, int y, int z) {
-    if(!(!world_get_block_material(world, x, y, z)->is_liquid && !world_get_block_material(world, x, y, z)->is_solid)) return 0;
-    if(block->material == &materials.water) {
-        for(int i = x - 2; i <= x + 2; i++) {
-            for(int j = y - 2; j <= y + 2; j++) {
-                for(int k = z - 2; k <= z + 2; k++) {
-                    if(world_get_block(world, i, j, k) == blocks.sponge.id) return 0;
-                }
-            }
-        }
-    }
-
-    return 1;
 }
 
 float block_fluid_get_brightness(block_t *block, world_t *world, int x, int y, int z) {

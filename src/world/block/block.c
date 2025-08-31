@@ -183,7 +183,7 @@ void block_render_side(block_t *block, int x, int y, int z, uint8_t side) {
     block_render_side_with_texture(block, x, y, z, side, block->get_texture_side(block, side));
 }
 
-void block_visual_update(block_t *block, int x, int y, int z, random_t *random) {
+void block_visual_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
     return;
 }
 

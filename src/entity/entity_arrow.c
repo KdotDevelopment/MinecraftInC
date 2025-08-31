@@ -1,5 +1,4 @@
 #include <entity/entity_arrow.h>
-#include <entity/entity_take_anim.h>
 #include <world/world.h>
 #include <renderer/tesselator.h>
 
@@ -187,14 +186,14 @@ void entity_arrow_award_kill_score(struct entity_s *entity, struct entity_s *cau
 }
 
 void entity_arrow_player_touch(struct entity_s *entity, entity_t *player) {
-    player_t *real_player = (player_t *)player;
+    /*player_t *real_player = (player_t *)player;
     if(entity->has_hit && entity->owner == player && real_player->arrows < 99) {
         entity_t *anim = malloc(sizeof(entity_t));
         entity_take_anim_create(anim, entity->world, entity, real_player);
         world_spawn_entity(entity->world, anim);
         entity_remove(entity);
         real_player->arrows++;
-    }
+    }*/
 }
 
 entity_t *entity_arrow_get_owner(entity_t *entity) {

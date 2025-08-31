@@ -43,10 +43,10 @@ void blocks_init() {
     blocks.wood = block_create(BLOCK_PLANKS, TEXTURE_WOOD, &block_sounds.wood, 2, 5, &materials.wood);
     blocks.sapling = block_sapling_create();
     blocks.bedrock = block_create(BLOCK_BEDROCK, TEXTURE_BEDROCK, &block_sounds.stone, -1, 6000000, &materials.rock);
-    blocks.water = block_flowing_create(BLOCK_WATER, LIQUID_WATER);
-    blocks.still_water = block_stationary_create(BLOCK_STILL_WATER, LIQUID_WATER);
-    blocks.lava = block_flowing_create(BLOCK_LAVA, LIQUID_LAVA);
-    blocks.still_lava = block_stationary_create(BLOCK_STILL_LAVA, LIQUID_LAVA);
+    blocks.water = block_flowing_create(BLOCK_WATER, &materials.water);
+    blocks.still_water = block_stationary_create(BLOCK_STILL_WATER, &materials.water);
+    blocks.lava = block_flowing_create(BLOCK_LAVA, &materials.lava);
+    blocks.still_lava = block_stationary_create(BLOCK_STILL_LAVA, &materials.lava);
     blocks.sand = block_sand_create(BLOCK_SAND, TEXTURE_SAND, 0.5, 0);
     blocks.gravel = block_gravel_create(BLOCK_GRAVEL, TEXTURE_GRAVEL);
     blocks.gold_ore = block_ore_create(BLOCK_GOLD_ORE, TEXTURE_GOLD_ORE, 3, 5);
@@ -95,8 +95,8 @@ void blocks_init() {
     blocks.workbench = block_workbench_create();
     blocks.crops = block_crops_create();
     blocks.farmland = block_farmland_create();
-    blocks.furnace = block_furnace_create(0);
-    blocks.furnace_lit = block_furnace_create(1);
+    blocks.furnace = block_furnace_create(BLOCK_FURNACE, 0);
+    blocks.furnace_lit = block_furnace_create(BLOCK_FURNACE_LIT, 1);
 
     for(int i = 0; i < 256; i++) {
         if(block_list[i].id == BLOCK_AIR) continue;

@@ -54,7 +54,7 @@ static void private_text_render(font_t *font, char *str, int x, int y, uint32_t 
         if(darken) color = (((color >> 8) & 0xfcfcfc) >> 2) << 8;
         glBindTexture(GL_TEXTURE_2D, font->texture);
         tesselator_begin_quads();
-        tesselator_color_int(color);
+        tesselator_color_opaque_int(color);
         for(int i = 0, w = 0; i < strlen(str); i++) {
             if(str[i] == 38 && strlen(str) > i + 1) {
                 char *hex = string_create("0123456789abcdef");
@@ -76,7 +76,7 @@ static void private_text_render(font_t *font, char *str, int x, int y, uint32_t 
                 color = r << 24 | g << 16 | b << 8;
                 i += 2;
                 if(darken) { color = (color & 0xfcfcfc) >> 2; }
-                tesselator_color_int(color);
+                tesselator_color_opaque_int(color);
             }
             
             int u = str[i] % 16 << 3;

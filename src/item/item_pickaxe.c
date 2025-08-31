@@ -24,9 +24,10 @@ uint8_t item_pickaxe_can_harvest_block(item_t *item, uint8_t block_id) {
         case BLOCK_IRON:
         case BLOCK_IRON_ORE:
             return item->tool_type >= TYPE_TOOL_STONE;
-        default:
+        default: {
             block_t *block = &block_list[block_id];
             return block->material->id == materials.rock.id || block->material->id == materials.metal.id;
+        }
     }
 
     return 0;

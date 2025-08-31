@@ -345,22 +345,22 @@ void entity_remove(entity_t *entity) {
 uint8_t entity_is_free(entity_t *entity, float x, float y, float z) {
     AABB_t bb = AABB_move(entity->bb, x, y, z);
     AABB_t *cubes = world_get_cubes((world_t *)entity->world, bb);
-    uint8_t free = array_list_length(cubes) > 0 ? 0 : !world_contains_any_liquid((world_t *)entity->world, bb);
+    uint8_t free = array_list_length(cubes) > 0 ? 0 : !world_is_liquid_in_range((world_t *)entity->world, bb);
     array_list_free(cubes);
     return free;
 }
 
 uint8_t entity_is_underwater(entity_t *entity) {
     uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y, entity->z);
-    return block_id != 0 ? block_list[block_id].liquid_type == LIQUID_WATER : 0;
+    return block_id != 0 ? block_list[block_id].material == &materials.water : 0;
 }
 
 uint8_t entity_is_in_water(entity_t *entity) {
-    return world_contains_liquid((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_WATER);
+    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.water);
 }
 
 uint8_t entity_is_in_lava(entity_t *entity) {
-    return world_contains_liquid((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), LIQUID_LAVA);
+    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.lava);
 }
 
 uint8_t entity_on_ground(entity_t *entity) {

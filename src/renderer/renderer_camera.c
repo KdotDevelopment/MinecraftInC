@@ -14,7 +14,7 @@
 #include <time.h>
 
 //gets rid of annoying warning for windows static linking
-extern void random_next_uniformspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+extern void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
 
 renderer_camera_t renderer_camera_create(minecraft_t *minecraft) {
     renderer_camera_t renderer_camera = { 0 };
@@ -159,13 +159,13 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         renderer->fog_b = (renderer->fog_b + (sky_b - renderer->fog_b) * a);
 
         block_t *block = &block_list[world_get_block(world, floor_double(player->x), floor_double(player->y + 0.12), floor_double(player->z))];
-        if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) {
-            if(block->liquid_type == LIQUID_WATER) {
+        if(block->id != blocks.air.id && block->material != &materials.air) {
+            if(block->material == &materials.water) {
                 renderer->fog_r = 0.02;
                 renderer->fog_g = 0.02;
                 renderer->fog_b = 0.2;
             }
-            if(block->liquid_type == LIQUID_LAVA) {
+            if(block->material == &materials.lava) {
                 renderer->fog_r = 0.6;
                 renderer->fog_g = 0.1;
                 renderer->fog_b = 0.0;
@@ -205,7 +205,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
             fov /= (1.0 - 500.0 / (ddeath_time + 500.0)) * 2.0 + 1.0;
         }
         
-        random_next_uniformspective(fov, (float)renderer->minecraft->width / (float)renderer->minecraft->height, 0.05, renderer->far_plane_distance);
+        gluPerspective(fov, (float)renderer->minecraft->width / (float)renderer->minecraft->height, 0.05, renderer->far_plane_distance);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         if(renderer->minecraft->settings.anaglyph) glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
@@ -272,7 +272,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
                     for(int z = dz - 1; z <= dz + 1; z++) {
                         uint8_t block_id = world_get_block(world, x, y, z);
                         if(block_id > 0) {
-                            renderer_block_render(&block_renderer, &block_list[block_id], x, y, z);
+                            // renderer_block_render(&block_renderer, &block_list[block_id], x, y, z);
                         }
                     }
                 }
@@ -422,13 +422,12 @@ void renderer_camera_setup_fog(renderer_camera_t *renderer_camera) {
     glNormal3f(0.0, -1.0, 0.0);
     glColor4f(1.0, 1.0, 1.0, 1.0);
     block_t *block = &block_list[world_get_block(world, player->x, player->y + 0.12, player->z)];
-    if(block->id != blocks.air.id && block->liquid_type != LIQUID_NONE) {
-        uint8_t liquid = block->liquid_type;
+    if(block->id != blocks.air.id && block->material != &materials.air) {
         glFogi(GL_FOG_MODE, GL_EXP);
-        if(liquid == LIQUID_WATER) {
+        if(block->material == &materials.water) {
             glFogf(GL_FOG_DENSITY, 0.1);
         }
-        if(liquid == LIQUID_LAVA) {
+        if(block->material == &materials.lava) {
             glFogf(GL_FOG_DENSITY, 2.0);
         }
     }else {

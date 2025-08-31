@@ -4,7 +4,7 @@ WINDOWS_CC = x86_64-w64-mingw32-gcc
 
 # Common flags
 CFLAGS = -I./include -I./res -Wall -std=c11 -fms-extensions -g -O1 -flarge-source-files -DSURVIVAL_MODE
-LDFLAGS = -lpthread -lSDL2 -lSDL2main -lGL -lGLU -lm -lopenal -lvorbisfile
+LDFLAGS = -lpthread -lSDL2 -lSDL2main -lGL -lGLU -lm -lopenal -lvorbisfile -lGLEW
 
 # Linux-specific flags
 LINUX_CFLAGS = $(CFLAGS) -fsanitize=address

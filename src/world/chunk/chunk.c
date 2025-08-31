@@ -17,6 +17,7 @@ void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z) {
     chunk->world = world;
     chunk->x_pos = x;
     chunk->z_pos = z;
+    chunk->tile_entities = array_list_create(sizeof(uint64_t));
 
     for(int i = 0; i < 8; i++) {
         chunk->entities[i] = array_list_create(sizeof(uint64_t));
@@ -230,7 +231,7 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
 }
 
 chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
-
+    
 }
 
 void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
@@ -264,6 +265,40 @@ void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index) {
 
 uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z) {
     return y >= (chunk_get_height_value(chunk, x, z) & 0xFF);
+}
+
+tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z) {
+    int index = x + (y << 10) + (z << 10 << 10);
+    // TODO: make into hashmap
+    tile_entity_t *tile_entity = *(tile_entity_t **)array_list_get(chunk->tile_entities, index);
+    if(tile_entity == NULL) {
+        uint8_t block_id = chunk_get_block_id(chunk, x, y, z);
+        block_t *block = &block_list[block_id];
+        block->on_added(block, chunk->world, chunk->x_pos * CHUNK_SIZE_WIDTH + x, y, chunk->z_pos * CHUNK_SIZE_WIDTH + z);
+        tile_entity = *(tile_entity_t **)array_list_get(chunk->tile_entities, index);
+    }
+
+    return tile_entity;
+}
+
+void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *tile_entity) {
+    chunk->is_modified = 1;
+    int index = x + (y << 10) + (z << 10 << 10);
+    tile_entity->x = (chunk->x_pos * CHUNK_SIZE_WIDTH) + x;
+    tile_entity->y = y;
+    tile_entity->z = (chunk->z_pos * CHUNK_SIZE_WIDTH) + z;
+    if(chunk_get_block_id(chunk, x, y, z) != 0 && block_list[chunk_get_block_id(chunk, x, y, z)].is_container) {
+        // hashmap garbage
+        chunk->world->loaded_tile_entity_list = array_list_push(chunk->world->loaded_tile_entity_list, &tile_entity);
+    }else {
+        printf("Attempted to place a tile entity where there was no entity tile!\n");
+    }
+}
+
+void chunk_remove_tile_entity(chunk_t *chunk, int x, int y, int z) {
+    chunk->is_modified = 1;
+    int index = x + (y << 10) + (z << 10 << 10);
+    // hashmap remove
 }
 
 void chunk_load_entities(chunk_t *chunk) {

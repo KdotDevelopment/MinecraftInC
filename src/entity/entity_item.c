@@ -1,6 +1,5 @@
 #include <entity/entity_item.h>
 
-#include <entity/entity_take_anim.h>
 #include <world/block/blocks.h>
 #include <model/model_item.h>
 #include <world/world.h>
@@ -97,11 +96,11 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
 }
 
 void entity_item_player_touch(entity_t *entity, entity_t *player) {
-    player_t *real_player = (player_t *)player;
+    /*player_t *real_player = (player_t *)player;
     if(inventory_add_item(&real_player->inventory, entity->item_stack.item_id)) {
         entity_t *anim = malloc(sizeof(entity_t));
         entity_take_anim_create(anim, entity->world, entity, real_player);
         world_spawn_entity(entity->world, anim);
         entity_remove(entity);
-    }
+    }*/
 }

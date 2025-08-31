@@ -1,6 +1,7 @@
 #include <particle/particle.h>
 #include <entity/entity.h>
 #include <renderer/tesselator.h>
+#include <entity/entity.h>
 
 #include <util/random.h>
 

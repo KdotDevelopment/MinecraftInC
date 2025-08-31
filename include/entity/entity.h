@@ -6,6 +6,7 @@
 #include <model/model.h>
 #include <entity/paintings.h>
 #include <nbt/nbt_base.h>
+#include <item/item_stack.h>
 
 struct player_s;
 

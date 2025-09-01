@@ -1,5 +1,6 @@
 #include <world/chunk/chunk.h>
 
+#include <nbt/nbt_tag_list.h>
 #include <util/array_list.h>
 #include <util/math_helper.h>
 #include <world/block/block.h>
@@ -7,6 +8,7 @@
 #include <world/world.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 uint8_t chunk_is_lit = 0;
@@ -17,7 +19,7 @@ void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z) {
     chunk->world = world;
     chunk->x_pos = x;
     chunk->z_pos = z;
-    chunk->tile_entities = array_list_create(sizeof(uint64_t));
+    chunk->tile_entity_map = array_list_create(sizeof(entity_index_pair_t));
 
     for(int i = 0; i < 8; i++) {
         chunk->entities[i] = array_list_create(sizeof(uint64_t));
@@ -227,11 +229,96 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
     nbt_tag_compound_set_boolean(nbt, "TerrainPopulated", chunk->is_terrain_populated);
     chunk->has_entities = 0;
 
+    nbt_base_t entity_nbt_list = nbt_tag_list_create();
 
+    nbt_base_t entity_nbt = { 0 };
+
+    for(int i = 0; i < CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH; i++) {
+        int size = array_list_length(chunk->entities[i]);
+        for(int j = 0; j < size; j++) {
+            entity_t *entity = *(entity_t **)array_list_get(chunk->entities[i], j);
+            // if (add entity id) (wrapper for entity_write_nbt but adds specific id name)
+            entity_nbt = nbt_tag_compound_create();
+            nbt_tag_list_set_tag(&entity_nbt_list, &entity_nbt);
+            chunk->has_entities = 1;
+        }
+    }
+
+    nbt_tag_compound_set_tag(nbt, "Entities", &entity_nbt_list);
+    nbt_base_t tile_entity_list = nbt_tag_list_create();
+    nbt_base_t tile_entity_nbt = { 0 };
+
+    for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+        entity_index_pair_t *map_pair = *(entity_index_pair_t **)array_list_get(chunk->tile_entity_map, i);
+        tile_entity_t *tile_entity = map_pair->tile_entity;
+        tile_entity_nbt = nbt_tag_compound_create();
+        tile_entity_write_nbt(tile_entity, &tile_entity_nbt);
+        nbt_tag_list_set_tag(&tile_entity_list, &tile_entity_nbt);
+    }
+
+    nbt_tag_compound_set_tag(nbt, "TileEntities", &tile_entity_list);
 }
 
-chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
-    
+chunk_t chunk_read_nbt_data(world_t *world, nbt_base_t *nbt) {
+    int x_pos = nbt_tag_compound_get_int(nbt, "xPos");
+    int z_pos = nbt_tag_compound_get_int(nbt, "zPos");
+    chunk_t chunk = { 0 };
+    chunk_create(&chunk, world, x_pos, z_pos);
+
+    int8_t *block_array = nbt_tag_compound_get_byte_array(nbt, "Blocks", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+    int8_t *data_array = nbt_tag_compound_get_byte_array(nbt, "Data", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    int8_t *sky_light_array = nbt_tag_compound_get_byte_array(nbt, "SkyLight", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    int8_t *block_light_array = nbt_tag_compound_get_byte_array(nbt, "BlockLight", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    int8_t *height_map_array = nbt_tag_compound_get_byte_array(nbt, "HeightMap", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT);
+    chunk.data = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+    chunk.sky_light_map = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+    chunk.block_light_map = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+
+    chunk.is_terrain_populated = nbt_tag_compound_get_boolean(nbt, "TerrainPopulated");
+
+    if(height_map_array == NULL || sky_light_array == NULL) {
+        chunk_generate_height_map(&chunk);
+    }else {
+        memcpy(chunk.height_map, height_map_array, CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH);
+        memcpy(chunk.sky_light_map, sky_light_array, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    }
+
+    if(block_array != NULL) memcpy(chunk.blocks, block_array, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
+    if(data_array != NULL) memcpy(chunk.data, data_array, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+    if(block_light_array != NULL) memcpy(chunk.block_light_map, block_light_array, CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
+
+    chunk.has_entities = 0;
+    nbt_base_t entity_list_nbt = nbt_tag_compound_get_tag_list(nbt, "Entities");
+    if(!entity_list_nbt.null) {
+        for(int i = 0; i < array_list_length(entity_list_nbt.tag_array); i++) {
+            nbt_base_t *entity_nbt = nbt_tag_list_get_tag(&entity_list_nbt, i);
+            entity_t *entity = malloc(sizeof(entity_t));
+            // *entity = entity_read_nbt(entity_nbt, world);
+            chunk.has_entities = 1;
+            // chunk_add_entity(&chunk, entity);
+        }
+    }
+
+    nbt_base_t tile_entity_list_nbt = nbt_tag_compound_get_tag_list(nbt, "TileEntities");
+    if(!tile_entity_list_nbt.null) {
+        for(int i = 0; i < array_list_length(tile_entity_list_nbt.tag_array); i++) {
+            nbt_base_t *tile_entity_nbt = nbt_tag_list_get_tag(&tile_entity_list_nbt, i);
+            tile_entity_t *tile_entity = malloc(sizeof(tile_entity_t));
+            *tile_entity = tile_entity_load(tile_entity_nbt);
+            int x_pos = tile_entity->x - (chunk.x_pos * CHUNK_SIZE_WIDTH);
+            int y_pos = tile_entity->y;
+            int z_pos = tile_entity->z - (chunk.z_pos * CHUNK_SIZE_WIDTH);
+            chunk_set_tile_entity(&chunk, x_pos, y_pos, z_pos, tile_entity);
+        }
+    }
+
+    free(block_array);
+    free(data_array);
+    free(sky_light_array);
+    free(block_light_array);
+    free(height_map_array);
+
+    return chunk;
 }
 
 void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
@@ -267,15 +354,43 @@ uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z) {
     return y >= (chunk_get_height_value(chunk, x, z) & 0xFF);
 }
 
-tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z) {
+// Crackhead (non-)hash map implementation
+tile_entity_t *private_get_tile_entity_at(chunk_t *chunk, int x, int y, int z) {
     int index = x + (y << 10) + (z << 10 << 10);
-    // TODO: make into hashmap
-    tile_entity_t *tile_entity = *(tile_entity_t **)array_list_get(chunk->tile_entities, index);
+    for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+        entity_index_pair_t *map_pair = *(entity_index_pair_t **)array_list_get(chunk->tile_entity_map, i);
+        if(map_pair->index == index) {
+            return map_pair->tile_entity;
+        }
+    }
+    return NULL;
+}
+
+void private_set_tile_entity_at(chunk_t *chunk, int x, int y, int z, tile_entity_t *tile_entity) {
+    int index = x + (y << 10) + (z << 10 << 10);
+
+    chunk->tile_entity_map = array_list_push(chunk->tile_entity_map, &(entity_index_pair_t){ .tile_entity = tile_entity, .index = index });
+}
+
+void private_remove_tile_entity_at(chunk_t *chunk, int x, int y, int z) {
+    int index = x + (y << 10) + (z << 10 << 10);
+    for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+        entity_index_pair_t *map_pair = *(entity_index_pair_t **)array_list_get(chunk->tile_entity_map, i);
+        if(map_pair->index == index) {
+            chunk->tile_entity_map = array_list_remove(chunk->tile_entity_map, i);
+            return;
+        }
+    }
+}
+
+tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z) {
+    tile_entity_t *tile_entity = private_get_tile_entity_at(chunk, x, y, z);
+
     if(tile_entity == NULL) {
         uint8_t block_id = chunk_get_block_id(chunk, x, y, z);
         block_t *block = &block_list[block_id];
         block->on_added(block, chunk->world, chunk->x_pos * CHUNK_SIZE_WIDTH + x, y, chunk->z_pos * CHUNK_SIZE_WIDTH + z);
-        tile_entity = *(tile_entity_t **)array_list_get(chunk->tile_entities, index);
+        tile_entity = private_get_tile_entity_at(chunk, x, y, z);
     }
 
     return tile_entity;
@@ -283,12 +398,11 @@ tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z) {
 
 void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *tile_entity) {
     chunk->is_modified = 1;
-    int index = x + (y << 10) + (z << 10 << 10);
     tile_entity->x = (chunk->x_pos * CHUNK_SIZE_WIDTH) + x;
     tile_entity->y = y;
     tile_entity->z = (chunk->z_pos * CHUNK_SIZE_WIDTH) + z;
     if(chunk_get_block_id(chunk, x, y, z) != 0 && block_list[chunk_get_block_id(chunk, x, y, z)].is_container) {
-        // hashmap garbage
+        private_set_tile_entity_at(chunk, x, y, z, tile_entity);
         chunk->world->loaded_tile_entity_list = array_list_push(chunk->world->loaded_tile_entity_list, &tile_entity);
     }else {
         printf("Attempted to place a tile entity where there was no entity tile!\n");
@@ -297,16 +411,32 @@ void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *t
 
 void chunk_remove_tile_entity(chunk_t *chunk, int x, int y, int z) {
     chunk->is_modified = 1;
-    int index = x + (y << 10) + (z << 10 << 10);
-    // hashmap remove
+    private_remove_tile_entity_at(chunk, x, y, z);
 }
 
 void chunk_load_entities(chunk_t *chunk) {
+    for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+        entity_index_pair_t *map_pair = *(entity_index_pair_t **)array_list_get(chunk->tile_entity_map, i);
+        tile_entity_t *tile_entity = map_pair->tile_entity;
+        chunk->world->loaded_tile_entity_list = array_list_push(chunk->world->loaded_tile_entity_list, &tile_entity);
+    }
 
+    for(int i = 0; i < array_list_length(chunk->entities); i++) {
+        world_add_loaded_entities(chunk->world, (entity_t **)chunk->entities[i]);
+    }
 }
 
 void chunk_unload_entities(chunk_t *chunk) {
-    
+    for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+        entity_index_pair_t *map_pair = *(entity_index_pair_t **)array_list_get(chunk->tile_entity_map, i);
+        tile_entity_t *tile_entity = map_pair->tile_entity;
+        int index = array_list_index_of(chunk->world->loaded_tile_entity_list, &tile_entity);
+        chunk->world->loaded_tile_entity_list = array_list_remove(chunk->world->loaded_tile_entity_list, index);
+    }
+
+    for(int i = 0; i < array_list_length(chunk->entities); i++) {
+        world_unload_entities(chunk->world, (entity_t **)chunk->entities[i]);
+    }
 }
 
 void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list) {

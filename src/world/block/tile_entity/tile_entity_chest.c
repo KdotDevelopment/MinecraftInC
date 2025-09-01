@@ -37,11 +37,11 @@ void tile_entity_chest_set_slot_contents(tile_entity_t *tile_entity, uint8_t slo
 void tile_entity_chest_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity_read_nbt(tile_entity, nbt);
     
-    nbt_base_t *items = nbt_tag_compound_get_tag_list(nbt, "Items");
+    nbt_base_t items = nbt_tag_compound_get_tag_list(nbt, "Items");
     tile_entity->inventory_size = 27;
     
-    for(int i = 0; i < array_list_length(items->tag_array); i++) {
-        nbt_base_t *item = nbt_tag_list_get_tag(items, i);
+    for(int i = 0; i < array_list_length(items.tag_array); i++) {
+        nbt_base_t *item = nbt_tag_list_get_tag(&items, i);
         uint8_t slot = nbt_tag_compound_get_byte(item, "Slot") & 0xFF;
         if(slot >= 0 && slot < tile_entity->inventory_size) {
             tile_entity->chest_contents[slot] = item_stack_from_nbt(item);
@@ -58,13 +58,11 @@ void tile_entity_chest_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
 void tile_entity_chest_write_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity_write_nbt(tile_entity, nbt);
 
-    nbt_base_t tag_list = { 0 };
-    nbt_tag_list_create(&tag_list);
+    nbt_base_t tag_list = nbt_tag_list_create();
 
     for(int i = 0; i < tile_entity->inventory_size; i++) {
         if(tile_entity->chest_contents[i].item_id != 0) {
-            nbt_base_t item = { 0 };
-            nbt_tag_compound_create(&item);
+            nbt_base_t item = nbt_tag_compound_create();
             nbt_tag_compound_set_byte(&item, "Slot", i);
             tile_entity->chest_contents[i] = item_stack_from_nbt(&item);
             nbt_tag_list_set_tag(&tag_list, &item);

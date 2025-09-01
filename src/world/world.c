@@ -52,8 +52,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
 
     if(!world->is_new_world) {
         // TODO: actually grab nbt data from LoadingScreenRenderer
-        nbt_base_t nbt = { 0 };
-        nbt_tag_compound_create(&nbt);
+        nbt_base_t nbt = nbt_tag_compound_create();
         nbt = nbt_tag_compound_get_compound_tag(&nbt, "Data");
         world->random_seed = nbt_tag_compound_get_int(&nbt, "RandomSeed");
         world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
@@ -81,8 +80,13 @@ nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name) {
     snprintf(path, sizeof(path), "%s/saves/%s/level.dat", game_dir, world_name);
     FILE *file = fopen(path, "rb");
     if(!file) printf("Could not open save file %s.\n", path);
-    // TODO
+    // loading screen renderer read(file)
+    nbt_base_t nbt = { 0 };
+    nbt_tag_compound_get_compound_tag(&nbt, "Data");
+
     fclose(file);
+
+    return nbt;
 }
 
 void world_spawn_player(world_t *world) {
@@ -94,8 +98,7 @@ void world_save(world_t *world, uint8_t check_entities) {
     snprintf(path, sizeof(path), "%s/level.dat", world->save_file);
     FILE *file = fopen(path, "wb");
     
-    nbt_base_t nbt = { 0 };
-    nbt_tag_compound_create(&nbt);
+    nbt_base_t nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_long(&nbt, "RandomSeed", world->random_seed);
     nbt_tag_compound_set_int(&nbt, "SpawnX", world->spawn_x);
     nbt_tag_compound_set_int(&nbt, "SpawnY", world->spawn_y);
@@ -104,14 +107,12 @@ void world_save(world_t *world, uint8_t check_entities) {
     nbt_tag_compound_set_long(&nbt, "SizeOnDisk", world->size_on_disk);
     nbt_tag_compound_set_long(&nbt, "LastPlayed", time(NULL));
     if(world->player != NULL) {
-        nbt_base_t player_nbt = { 0 };
-        nbt_tag_compound_create(&player_nbt);
+        nbt_base_t player_nbt = nbt_tag_compound_create();
         // TODO: world->player->write_to_nbt(world->player, &player_nbt);
         nbt_tag_compound_set_compound_tag(&nbt, "Player", &player_nbt);
     }
 
-    nbt_base_t base_nbt = { 0 };
-    nbt_tag_compound_create(&base_nbt);
+    nbt_base_t base_nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_tag(&base_nbt, "Data", &nbt);
 
     // TODO: LoadingScreenRenderer write base_nbt
@@ -1132,7 +1133,36 @@ entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t
     return entity_list;
 }
 
+void world_add_loaded_entities(world_t *world, entity_t **entity_list) {
+    for(int i = 0; i < array_list_length(entity_list); i++) {
+        entity_t *entity = *(entity_t **)array_list_get(entity_list, i);
+        world->loaded_entity_list = array_list_push(world->loaded_entity_list, &entity);
+    }
 
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *world_renderer = *(renderer_world_t **)array_list_get(world->renderer_world_list, i);
+        for(int j = 0; j < array_list_length(entity_list); j++) {
+            entity_t *entity = *(entity_t **)array_list_get(entity_list, j);
+            renderer_world_obtain_entity_skin(world_renderer, entity);
+        }
+    }
+}
+
+void world_unload_entities(world_t *world, entity_t **entity_list) {
+    for(int i = 0; i < array_list_length(entity_list); i++) {
+        entity_t *entity = *(entity_t **)array_list_get(entity_list, i);
+        int index = array_list_index_of(world->loaded_entity_list, &entity);
+        world->loaded_entity_list = array_list_remove(world->loaded_entity_list, index);
+    }
+
+    for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
+        renderer_world_t *world_renderer = *(renderer_world_t **)array_list_get(world->renderer_world_list, i);
+        for(int j = 0; j < array_list_length(entity_list); j++) {
+            entity_t *entity = *(entity_t **)array_list_get(entity_list, j);
+            renderer_world_release_entity_skin(world_renderer, entity);
+        }
+    }
+}
 
 void world_set_spawn_position(world_t *world, int x, int y, int z) {
     world->spawn_x = x;

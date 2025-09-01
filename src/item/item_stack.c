@@ -22,6 +22,14 @@ item_stack_t item_stack_from_nbt(nbt_base_t *nbt) {
     return item_stack;
 }
 
+nbt_base_t *item_stack_write_nbt(item_stack_t *item_stack, nbt_base_t *nbt) {
+    nbt_tag_compound_set_short(nbt, "id", item_stack->item_id);
+    nbt_tag_compound_set_byte(nbt, "Count", item_stack->stack_size);
+    nbt_tag_compound_set_short(nbt, "Damage", item_stack->item_damage);
+    
+    return nbt;
+}
+
 item_stack_t item_stack_split(item_stack_t *item_stack, uint8_t split_size) {
     item_stack->stack_size -= split_size;
 

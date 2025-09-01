@@ -191,7 +191,7 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
 
     chunk_t *chunk = malloc(sizeof(chunk_t));
     *chunk = (chunk_t){ 0 };
-    *chunk = chunk_read_nbt_data(chunk, &nbt);
+    *chunk = chunk_read_nbt_data(chunk_provider->world, &nbt);
 
     free(chunk_file);
 
@@ -216,10 +216,8 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     }
 #endif
 
-    nbt_base_t nbt_base = { 0 };
-    nbt_tag_compound_create(&nbt_base);
-    nbt_base_t nbt = { 0 };
-    nbt_tag_compound_create(&nbt);
+    nbt_base_t nbt_base = nbt_tag_compound_create();
+    nbt_base_t nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     chunk_write_nbt_data(chunk, &nbt);
     // loading_screen_renderer_write(&nbt_base, chunk_file);

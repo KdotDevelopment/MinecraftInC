@@ -128,6 +128,8 @@ void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int
 void world_restart_time_of_day(world_t *world);
 void world_visual_update(world_t *world, int x, int y, int z);
 entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t box);
+void world_add_loaded_entities(world_t *world, entity_t **entity_list);
+void world_unload_entities(world_t *world, entity_t **entity_list);
 
 void world_set_spawn_position(world_t *world, int x, int y, int z);
 void world_destroy(world_t *world);

@@ -4,10 +4,13 @@
 
 #include <string.h>
 
-void nbt_tag_list_create(nbt_base_t *tag) {
-    memset(tag, 0, sizeof(nbt_base_t));
-    tag->type = NBT_TYPE_LIST;
-    tag->tag_array = array_list_create(sizeof(nbt_base_t));
+nbt_base_t nbt_tag_list_create() {
+    nbt_base_t tag = { 0 };
+
+    tag.type = NBT_TYPE_LIST;
+    tag.tag_array = array_list_create(sizeof(nbt_base_t));
+    
+    return tag;
 }
 
 void nbt_tag_list_set_tag(nbt_base_t *base, nbt_base_t *tag) {

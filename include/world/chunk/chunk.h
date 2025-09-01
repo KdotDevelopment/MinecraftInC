@@ -13,19 +13,23 @@ struct world_s;
 
 extern uint8_t chunk_is_lit;
 
+typedef struct entity_index_pair_s {
+    tile_entity_t *tile_entity;
+    uint64_t index;
+} entity_index_pair_t;
+
 typedef struct chunk_s {
     uint8_t blocks[CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH];
     struct world_s *world;
     uint8_t *data; // nibblearray  block metadata
     uint8_t *sky_light_map; // nibblearray
     uint8_t *block_light_map; // nibblearray
-    int16_t height_map[CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH];
+    int8_t height_map[CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH];
     uint8_t lowest_block_height;
     int x_pos;
     int z_pos;
-    // chunk_tile_entity_map
     uint64_t *entities[CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH]; // list (uint64_t = pointer)
-    uint64_t *tile_entities; // array_list
+    entity_index_pair_t **tile_entity_map; // array_list of tile_entity_index_pair_t
     uint8_t is_terrain_populated;
     uint8_t is_modified;
     uint8_t has_entities; 
@@ -46,7 +50,7 @@ uint8_t chunk_get_saved_light_value(chunk_t *chunk, uint8_t light_type, int x, i
 void chunk_set_light_value(chunk_t *chunk, uint8_t light_type, int x, int y, int z, uint8_t level);
 uint8_t chunk_get_block_light_value(chunk_t *chunk, int x, int y, int z, uint8_t time_factor);
 void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt);
-chunk_t chunk_read_nbt_data(chunk_t *chunk, nbt_base_t *nbt);
+chunk_t chunk_read_nbt_data(struct world_s *world, nbt_base_t *nbt);
 void chunk_add_entity(chunk_t *chunk, entity_t *entity);
 void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index);
 uint8_t chunk_can_block_see_sky(chunk_t *chunk, int x, int y, int z);

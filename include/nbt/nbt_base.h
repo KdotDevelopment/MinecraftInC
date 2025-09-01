@@ -21,9 +21,13 @@ enum {
 typedef struct nbt_base_s {
     char key[MAX_NBT_KEY_LENGTH];
     uint8_t type;
+    uint8_t null;
     union {
         uint8_t byte_value;
-        uint8_t *byte_array; // arraylist
+        struct {
+            uint8_t *byte_array;
+            uint64_t byte_array_length;
+        };
         double double_value;
         float float_value;
         int32_t int_value;
@@ -36,3 +40,5 @@ typedef struct nbt_base_s {
         };
     };
 } nbt_base_t;
+
+nbt_base_t *nbt_set_key(nbt_base_t *base, char *key);

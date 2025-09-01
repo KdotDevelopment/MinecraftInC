@@ -1,3 +1,5 @@
+MAKEFLAGS += --silent
+
 # Compiler and flags
 CC = gcc
 WINDOWS_CC = x86_64-w64-mingw32-gcc

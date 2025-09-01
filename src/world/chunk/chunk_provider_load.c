@@ -14,9 +14,10 @@
 #include <stdlib.h>
 #endif
 
-void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *chunk_provider_gen, world_t *world, char **save_directory) {
+void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *gen, world_t *world, char **save_directory) {
     chunk_provider_load->world = world;
     chunk_provider_load->save_directory = save_directory;
+    chunk_provider_load->chunk_provider_gen = gen;
 
     chunk_provider_load->chunk_exists = chunk_provider_load_chunk_exists;
     chunk_provider_load->chunk_provide = chunk_provider_load_provide_chunk;
@@ -154,6 +155,7 @@ int private_create_directories(const char *path) {
 
 // Should be free'd after use
 char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z) {
+    return NULL;
     char chunk_filename[256];
     char subdir_x[3];
     char subdir_z[3];

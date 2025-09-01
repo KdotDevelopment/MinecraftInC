@@ -89,7 +89,7 @@ void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
     renderer->last_load_y = -9999;
     renderer->last_load_z = -9999;
     // rendermanager set world
-    renderer_block_create(&renderer->renderer_block, world);
+    renderer->renderer_block = renderer_block_create(world);
     if(world != NULL) {
         world_add_renderer(world, renderer);
         renderer_world_load_renderers(renderer);
@@ -594,7 +594,7 @@ void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *pl
         tesselator_set_translation(-x, -y, -z);
         tesselator_disable_color();
         if(block == NULL) block = &block_list[blocks.stone.id];
-        //global block renderer render block using texture
+        renderer_block_render_using_texture(&renderer->renderer_block, block, hit_result->x, hit_result->y, hit_result->z, 240 + (renderer->destroy_progress * 10.0));
         tesselator_end();
         tesselator_set_translation(0, 0, 0);
         glPolygonOffset(0, 0);

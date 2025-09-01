@@ -264,15 +264,14 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         renderer_world_sort_and_render(&renderer->minecraft->renderer_world, &player->mob.entity, 0, delta);
 
         if(world_is_solid(world, dx, dy, dz)) {
-            renderer_block_t block_renderer = (renderer_block_t){ 0 };
-            renderer_block_create(&block_renderer, world);
+            renderer_block_t block_renderer = renderer_block_create(world);
 
             for(int x = dx - 1; x <= dx + 1; x++) {
                 for(int y = dy - 1; y <= dy + 1; y++) {
                     for(int z = dz - 1; z <= dz + 1; z++) {
                         uint8_t block_id = world_get_block(world, x, y, z);
                         if(block_id > 0) {
-                            // renderer_block_render(&block_renderer, &block_list[block_id], x, y, z);
+                            renderer_block_render_inside(&block_renderer, &block_list[block_id], x, y, z);
                         }
                     }
                 }
@@ -323,7 +322,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
 
         if(!renderer->minecraft->hit_result.null /*&& !entity_is_inside_block(player)*/) {
             glDisable(GL_ALPHA_TEST);
-            //renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, inventory_get_current_item(&player->inventory), delta);
+            renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, NULL, delta);
             renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, delta);
             glEnable(GL_ALPHA_TEST);
         }

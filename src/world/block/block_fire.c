@@ -54,17 +54,17 @@ uint8_t block_fire_get_drop_count(block_t *block, random_t *random) {
     return 0;
 }
 
-uint8_t private_can_block_catch_fire(world_t *world, int x, int y, int z) {
+uint8_t block_fire_can_catch_fire(world_t *world, int x, int y, int z) {
     return block_list[world_get_block(world, x, y, z)].fire_catch_chance > 0;
 }
 
 uint8_t private_can_neighbor_catch_fire(world_t *world, int x, int y, int z) {
-    return private_can_block_catch_fire(world, x + 1, y, z) ? 1 :
-        private_can_block_catch_fire(world, x - 1, y, z) ? 1 :
-        private_can_block_catch_fire(world, x, y - 1, z) ? 1 :
-        private_can_block_catch_fire(world, x, y + 1, z) ? 1 :
-        private_can_block_catch_fire(world, x, y, z - 1) ? 1 :
-        private_can_block_catch_fire(world, x, y, z + 1);
+    return block_fire_can_catch_fire(world, x + 1, y, z) ? 1 :
+        block_fire_can_catch_fire(world, x - 1, y, z) ? 1 :
+        block_fire_can_catch_fire(world, x, y - 1, z) ? 1 :
+        block_fire_can_catch_fire(world, x, y + 1, z) ? 1 :
+        block_fire_can_catch_fire(world, x, y, z - 1) ? 1 :
+        block_fire_can_catch_fire(world, x, y, z + 1);
 }
 
 void private_try_spread_fire(world_t *world, int x, int y, int z, int chance, random_t *random) {
@@ -193,8 +193,8 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
     float particle_y = 0;
     float particle_z = 0;
 
-    if(!world_is_solid(world, x, y - 1, z) && !private_can_block_catch_fire(world, x, y - 1, z)) {
-        if(private_can_block_catch_fire(world, x - 1, y, z)) {
+    if(!world_is_solid(world, x, y - 1, z) && !block_fire_can_catch_fire(world, x, y - 1, z)) {
+        if(block_fire_can_catch_fire(world, x - 1, y, z)) {
             for(int i = 0; i < 2; i++) {
                 particle_x = x + random_next_uniform(random) * 0.1;
                 particle_y = y + random_next_uniform(random);
@@ -203,7 +203,7 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
             }
         }
 
-        if(private_can_block_catch_fire(world, x + 1, y, z)) {
+        if(block_fire_can_catch_fire(world, x + 1, y, z)) {
             for(int i = 0; i < 2; i++) {
                 particle_x = (x + 1) + random_next_uniform(random) * 0.1;
                 particle_y = y + random_next_uniform(random);
@@ -212,7 +212,7 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
             }
         }
 
-        if(private_can_block_catch_fire(world, x, y, z - 1)) {
+        if(block_fire_can_catch_fire(world, x, y, z - 1)) {
             for(int i = 0; i < 2; i++) {
                 particle_x = x + random_next_uniform(random);
                 particle_y = y + random_next_uniform(random);
@@ -221,7 +221,7 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
             }
         }
 
-        if(private_can_block_catch_fire(world, x, y, z + 1)) {
+        if(block_fire_can_catch_fire(world, x, y, z + 1)) {
             for(int i = 0; i < 2; i++) {
                 particle_x = x + random_next_uniform(random) * 0.1;
                 particle_y = y + random_next_uniform(random);
@@ -230,7 +230,7 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
             }
         }
 
-        if(private_can_block_catch_fire(world, x, y + 1, z)) {
+        if(block_fire_can_catch_fire(world, x, y + 1, z)) {
             for(int i = 0; i < 2; i++) {
                 particle_x = x + random_next_uniform(random);
                 particle_y = (y + 1) + random_next_uniform(random) * 0.1;

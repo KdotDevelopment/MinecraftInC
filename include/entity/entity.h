@@ -71,12 +71,6 @@ typedef struct entity_s {
             float gravity;
             uint8_t has_hit;
         };
-        struct { // take entity anim
-            float xorg;
-            float yorg;
-            float zorg; 
-            struct player_s *player;
-        };
         struct { // item
             struct entity_s *item;
             item_stack_t item_stack;

@@ -19,9 +19,11 @@ void renderer_chunk_create(renderer_chunk_t *renderer, world_t *world, int x, in
     renderer->width = size;
     renderer->height = size;
     renderer->depth = size;
-    renderer_block_create(&renderer->renderer_block, world);
+    renderer->renderer_block = renderer_block_create(world);
     renderer_chunk_set_position(renderer, x, y, z);
     renderer->is_visible = 1;
+    renderer->needs_update = 1;
+    renderer->x = -999;
 }
 
 void renderer_chunk_set_position(renderer_chunk_t *renderer, int x, int y, int z) {
@@ -127,7 +129,7 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
                     if(block_id > 0) {
                         block_t *block = &block_list[block_id];
                         if(block->render_pass != i) b0 = 1;
-                        else b1 |= block->render(block, renderer->world, x, y, z);
+                        else b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
                     }
                 }
             }

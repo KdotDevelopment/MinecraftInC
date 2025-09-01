@@ -19,7 +19,10 @@ nbt_base_t nbt_tag_compound_create() {
 
     base.type = NBT_TYPE_COMPOUND;
     base.tag_array = array_list_create(sizeof(nbt_base_t *));
-    
+
+    base.read_contents = nbt_tag_compound_read_contents;
+    base.write_contents = nbt_tag_compound_write_contents;
+
     return base;
 }
 
@@ -54,12 +57,12 @@ void nbt_tag_compound_set_float(nbt_base_t *base, char *key, float value) {
 }
 
 void nbt_tag_compound_set_string(nbt_base_t *base, char *key, char *value) {
-    nbt_base_t tag = nbt_tag_string_create(value);
+    nbt_base_t tag = nbt_tag_string_create_from(value);
     base->tag_array = array_list_push(base->tag_array, nbt_set_key(&tag, key));
 }
 
-void nbt_tag_compound_set_byte_array(nbt_base_t *base, char *key, uint8_t *value, uint64_t length) {
-    nbt_base_t tag = nbt_tag_byte_array_create(value, length);
+void nbt_tag_compound_set_byte_array(nbt_base_t *base, char *key, uint8_t *value, uint32_t length) {
+    nbt_base_t tag = nbt_tag_byte_array_create_from(value, length);
     base->tag_array = array_list_push(base->tag_array, nbt_set_key(&tag, key));
 }
 
@@ -73,16 +76,16 @@ void nbt_tag_compound_set_boolean(nbt_base_t *base, char *key, int8_t value) {
 
 uint8_t private_has_key(nbt_base_t *base, char *key) {
     for(int i = 0; i < array_list_length(base->tag_array); i++) {
-        nbt_base_t *tag = array_list_get(base->tag_array, i);
-        if(strcmp(tag->key, key) == 0) return 1;
+        nbt_base_t tag = *(nbt_base_t *)array_list_get(base->tag_array, i);
+        if(strcmp(tag.key, key) == 0) return 1;
     }
     return 0;
 }
 
 nbt_base_t private_get_tag(nbt_base_t *base, char *key) {
     for(int i = 0; i < array_list_length(base->tag_array); i++) {
-        nbt_base_t *tag = array_list_get(base->tag_array, i);
-        if(strcmp(tag->key, key) == 0) return *tag;
+        nbt_base_t tag = *(nbt_base_t *)array_list_get(base->tag_array, i);
+        if(strcmp(tag.key, key) == 0) return tag;
     }
     nbt_base_t null_tag = { .null = 1 };
     return null_tag;
@@ -112,7 +115,7 @@ char *nbt_tag_compound_get_string(nbt_base_t *base, char *key) {
     return !private_has_key(base, key) ? NULL : private_get_tag(base, key).string_value;
 }
 
-int8_t *nbt_tag_compound_get_byte_array(nbt_base_t *base, char *key, uint64_t length) {
+int8_t *nbt_tag_compound_get_byte_array(nbt_base_t *base, char *key, uint32_t length) {
     if(!private_has_key(base, key)) return NULL;
 
     nbt_base_t tag = private_get_tag(base, key);
@@ -139,4 +142,23 @@ int8_t nbt_tag_compound_get_boolean(nbt_base_t *base, char *key) {
 
 char *nbt_tag_compound_to_string(nbt_base_t *base) {
     return "";
+}
+
+void nbt_tag_compound_read_contents(nbt_base_t *nbt, gzFile file) {
+    nbt->tag_array = array_list_clear(nbt->tag_array);
+
+    for(;;) {
+        nbt_base_t *tag = malloc(sizeof(nbt_base_t));
+        *tag = nbt_read_named_tag(file);
+        if(tag->null) return;
+        if(tag->type == 0) return; // end tag
+        nbt->tag_array = array_list_push(nbt->tag_array, tag);
+    }
+}
+
+void nbt_tag_compound_write_contents(nbt_base_t *nbt, gzFile file) {
+    for(int i = 0; i < array_list_length(nbt->tag_array); i++) {
+        nbt_base_t *tag = (nbt_base_t *)array_list_get(nbt->tag_array, i);
+        nbt_write_named_tag(file, tag);
+    }
 }

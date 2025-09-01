@@ -3,8 +3,11 @@
 #include <renderer/renderer_camera.h>
 #include <renderer/tesselator.h>
 #include <renderer/frustum.h>
+#include <renderer/texture/texture_fire.h>
+#include <renderer/texture/texture_gears.h>
 #include <renderer/texture/texture_lava.h>
 #include <renderer/texture/texture_water.h>
+#include <renderer/texture/texture_water_flow.h>
 #include <world/block/blocks.h>
 #include <world/world.h>
 #include <gui/screen_pause.h>
@@ -100,14 +103,29 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     texture_animated_t *water_texture = malloc(sizeof(texture_animated_t));
     *water_texture = texture_water_create();
     textures_register_animation(&minecraft->textures, water_texture);
+    texture_animated_t *flowing_texture = malloc(sizeof(texture_animated_t));
+    *flowing_texture = texture_water_flow_create();
+    textures_register_animation(&minecraft->textures, flowing_texture);
+    texture_animated_t *fire_texture = malloc(sizeof(texture_animated_t));
+    *fire_texture = texture_fire_create(0);
+    textures_register_animation(&minecraft->textures, fire_texture);
+    texture_animated_t *fire1_texture = malloc(sizeof(texture_animated_t));
+    *fire1_texture = texture_fire_create(1);
+    textures_register_animation(&minecraft->textures, fire1_texture);
+    texture_animated_t *gears_texture = malloc(sizeof(texture_animated_t));
+    *gears_texture = texture_gears_create(0);
+    textures_register_animation(&minecraft->textures, gears_texture);
+    texture_animated_t *gears1_texture = malloc(sizeof(texture_animated_t));
+    *gears1_texture = texture_gears_create(1);
+    textures_register_animation(&minecraft->textures, gears1_texture);
 
     minecraft->font = font_create(&minecraft->settings, "default.png", &minecraft->textures);
 
     glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
 
-    //world_create(&minecraft->world, minecraft, &minecraft->progress_bar, 1);
+    world_create(&minecraft->world, minecraft, "./.minecraft", "World1", 1234);
     minecraft->gamemode.init_world(&minecraft->gamemode, &minecraft->world);
-    player_create(&minecraft->player, (struct world_s *)&minecraft->world); // this currently crashes
+    player_create(&minecraft->player, (struct world_s *)&minecraft->world);
     minecraft->world.player = &minecraft->player;
     minecraft->player.inputs = inputs_create(&minecraft->settings);
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);

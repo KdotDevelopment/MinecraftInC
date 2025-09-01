@@ -11,11 +11,21 @@
 
 #include <util/array_list.h>
 
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir_recursive _mkdir
+#else
+#include <unistd.h>
+#include <libgen.h>
+#define mkdir_recursive mkdir
+#endif
 
 void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir, char *world_name, int64_t seed) {
     memset(world, 0, sizeof(world_t));
@@ -36,6 +46,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->random_seed = 0;
     world->size_on_disk = 0;
     world->is_new_world = 1;
+    world->save_file = saves_dir;
 
     for(int i = 0; i < 16; i++) {
         float value = 1.0 - (float)i / 15.0;
@@ -79,9 +90,10 @@ nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name) {
     char path[256];
     snprintf(path, sizeof(path), "%s/saves/%s/level.dat", game_dir, world_name);
     FILE *file = fopen(path, "rb");
-    if(!file) printf("Could not open save file %s.\n", path);
-    // loading screen renderer read(file)
-    nbt_base_t nbt = { 0 };
+    if(!file) {
+        return (nbt_base_t){ .null = 1 };
+    }
+    nbt_base_t nbt = progress_bar_read(file);
     nbt_tag_compound_get_compound_tag(&nbt, "Data");
 
     fclose(file);
@@ -93,11 +105,44 @@ void world_spawn_player(world_t *world) {
     
 }
 
+int private_create_directories(char *file_path) {
+    char path[512];
+    strncpy(path, file_path, sizeof(path));
+    path[sizeof(path) - 1] = '\0';
+
+    char *dir_path = dirname(path);
+
+    char temp_path[512] = {0};
+    for (char *p = dir_path; *p; p++) {
+        if (*p == '/' || *p == '\\') {
+            *p = '\0';
+
+            if (mkdir_recursive(temp_path, 0755) != 0 && errno != EEXIST) {
+                fprintf(stderr, "Failed to create directory: %s\n", temp_path);
+                return -1;
+            }
+
+            *p = '/';
+        }
+    }
+
+    if (mkdir_recursive(dir_path, 0755) != 0 && errno != EEXIST) {
+        fprintf(stderr, "Failed to create directory: %s\n", dir_path);
+        return -1;
+    }
+
+    return 0;
+}
+
 void world_save(world_t *world, uint8_t check_entities) {
     char path[256];
     snprintf(path, sizeof(path), "%s/level.dat", world->save_file);
+    printf("%s\n", path);
     FILE *file = fopen(path, "wb");
-    
+    if(!file) {
+        private_create_directories(path);
+    }
+
     nbt_base_t nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_long(&nbt, "RandomSeed", world->random_seed);
     nbt_tag_compound_set_int(&nbt, "SpawnX", world->spawn_x);
@@ -115,7 +160,7 @@ void world_save(world_t *world, uint8_t check_entities) {
     nbt_base_t base_nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_tag(&base_nbt, "Data", &nbt);
 
-    // TODO: LoadingScreenRenderer write base_nbt
+    progress_bar_write(file, &base_nbt);
     chunk_provider_load_save_chunks(&world->chunk_provider, check_entities);
 
     fclose(file);
@@ -1006,7 +1051,7 @@ void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int
     if(max_checks > update_count) max_checks = update_count;
 
     for(int i = 0; i < max_checks; i++) {
-        chunk_metadata_t *metadata = array_list_get(world->lighting_update_list, array_list_length(world->lighting_update_list) - i - 1);
+        chunk_metadata_t *metadata = *(chunk_metadata_t **)array_list_get(world->lighting_update_list, array_list_length(world->lighting_update_list) - i - 1);
 
         if(metadata->light_type == light_type) {
             uint8_t is_merged;
@@ -1029,7 +1074,8 @@ void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int
         }
     }
 
-    chunk_metadata_t new_metadata = { light_type, x0, y0, z0, x1, y1, z1 };
+    chunk_metadata_t *new_metadata = malloc(sizeof(chunk_metadata_t));
+    *new_metadata = (chunk_metadata_t){ light_type, x0, y0, z0, x1, y1, z1 };
     world->lighting_update_list = array_list_push(world->lighting_update_list, &new_metadata);
 
     if(array_list_length(world->lighting_update_list) > 1000000) {

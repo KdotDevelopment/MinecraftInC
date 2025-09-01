@@ -79,7 +79,7 @@ int textures_load(textures_t *textures, const char *resource) {
     //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
     //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
 
-    if (p == NULL) { printf("Failed to load image %s.\n", resource); }
+    if(p == NULL) printf("Failed to load image %s.\n", resource);
 
     uint8_t *pixels = malloc(width * height * sizeof(uint32_t)); //32 bit color
     if(textures->settings->anaglyph) {

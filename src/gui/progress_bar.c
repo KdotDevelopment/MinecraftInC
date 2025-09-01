@@ -1,4 +1,5 @@
 #include <gui/progress_bar.h>
+
 #include <renderer/tesselator.h>
 #include <minecraft.h>
 
@@ -7,6 +8,8 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
+#include <stdio.h>
+#include <zlib.h>
 
 progress_bar_t progress_bar_create(struct minecraft_s *minecraft) {
     progress_bar_t bar = { 0 };
@@ -75,4 +78,30 @@ void progress_bar_set_progress(progress_bar_t *bar, int progress) {
         while(SDL_PollEvent(&(SDL_Event){ 0 }));
         SDL_GL_SwapWindow(bar->minecraft->window);
     }
+}
+
+nbt_base_t progress_bar_read(FILE *chunk_file) {
+    gzFile gz_input = gzdopen(fileno(chunk_file), "rb");
+    if(!gz_input) {
+        printf("Could not open chunk file for reading.\n");
+        return (nbt_base_t){ .null = 1 };
+    }
+
+    nbt_base_t nbt = nbt_read_named_tag(gz_input);
+
+    gzclose(gz_input);
+
+    return nbt;
+}
+
+void progress_bar_write(FILE *chunk_file, nbt_base_t *nbt) {
+    gzFile gz_output = gzdopen(fileno(chunk_file), "wb");
+    if(!gz_output) {
+        printf("Could not open chunk file for writing.\n");
+        return;
+    }
+
+    nbt_write_named_tag(gz_output, nbt);
+
+    gzclose(gz_output);
 }

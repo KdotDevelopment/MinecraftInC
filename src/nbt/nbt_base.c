@@ -17,6 +17,7 @@
 
 nbt_base_t nbt_base_create() {
     nbt_base_t base = { 0 };
+    memset(&base, 0, sizeof(nbt_base_t));
 
     base.read_contents = nbt_base_read_contents;
     base.write_contents = nbt_base_write_contents;
@@ -25,7 +26,7 @@ nbt_base_t nbt_base_create() {
 }
 
 nbt_base_t *nbt_set_key(nbt_base_t *base, char *key) {
-    strncpy(base->key, key, MAX_NBT_KEY_LENGTH);
+    strncpy(base->key, key, MAX_NBT_KEY_LENGTH - 2);
     base->key[MAX_NBT_KEY_LENGTH - 1] = '\0';
     return base;
 }
@@ -39,31 +40,43 @@ void nbt_base_write_contents(nbt_base_t *nbt, gzFile file) {
 }
 
 nbt_base_t nbt_create_tag_of_type(int8_t tag_type) {
+    nbt_base_t nbt = { .null = 1 };
     switch(tag_type) {
         case NBT_TYPE_END:
-            return (nbt_base_t){ .type = NBT_TYPE_END };
+            nbt = (nbt_base_t){ .type = NBT_TYPE_END };
+            break;
         case NBT_TYPE_BYTE:
-            return nbt_tag_byte_create(0);
+            nbt = nbt_tag_byte_create(0);
+            break;
         case NBT_TYPE_SHORT:
-            return nbt_tag_short_create(0);
+            nbt = nbt_tag_short_create(0);
+            break;
         case NBT_TYPE_INT:
-            return nbt_tag_int_create(0);
+            nbt = nbt_tag_int_create(0);
+            break;
         case NBT_TYPE_LONG:
-            return nbt_tag_long_create(0);
+            nbt = nbt_tag_long_create(0);
+            break;
         case NBT_TYPE_FLOAT:
-            return nbt_tag_float_create(0);
+            nbt = nbt_tag_float_create(0);
+            break;
         case NBT_TYPE_DOUBLE:
-            return nbt_tag_double_create(0);
+            nbt = nbt_tag_double_create(0);
+            break;
         case NBT_TYPE_BYTE_ARRAY:
-            return nbt_tag_byte_array_create();
+            nbt = nbt_tag_byte_array_create();
+            break;
         case NBT_TYPE_STRING:
-            return nbt_tag_string_create();
+            nbt = nbt_tag_string_create();
+            break;
         case NBT_TYPE_LIST:
-            return nbt_tag_list_create();
+            nbt = nbt_tag_list_create();
+            break;
         case NBT_TYPE_COMPOUND:
-            return nbt_tag_compound_create();
+            nbt = nbt_tag_compound_create();
+            break;
     }
-    return (nbt_base_t){ .null = 1 };
+    return nbt;
 }
 
 int8_t gz_read_byte(gzFile file) {
@@ -126,10 +139,17 @@ nbt_base_t nbt_read_named_tag(gzFile file) {
 
     nbt_base_t nbt = nbt_create_tag_of_type(tag_type);
     int16_t length = gz_read_short(file);
-    char *key = malloc(sizeof(char) * length);
+    if(length == 0) { // root tag handling
+        nbt_set_key(&nbt, "");
+        nbt.read_contents(&nbt, file);
+        return nbt;
+    }
+    char *key = malloc(sizeof(char) * length + 1);
     gz_read_fully(file, key, length);
+    key[length] = '\0';
     nbt_set_key(&nbt, key);
     free(key);
+    nbt.read_contents(&nbt, file);
 
     return nbt;
 }

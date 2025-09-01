@@ -2,6 +2,7 @@
 
 nbt_base_t nbt_tag_long_create(int64_t value) {
     nbt_base_t tag = { 0 };
+    memset(&tag, 0, sizeof(nbt_base_t));
 
     tag.type = NBT_TYPE_LONG;
     tag.long_value = value;

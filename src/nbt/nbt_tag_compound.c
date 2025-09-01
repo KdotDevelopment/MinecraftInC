@@ -16,9 +16,10 @@
 
 nbt_base_t nbt_tag_compound_create() {
     nbt_base_t base = { 0 };
+    memset(&base, 0, sizeof(nbt_base_t));
 
     base.type = NBT_TYPE_COMPOUND;
-    base.tag_array = array_list_create(sizeof(nbt_base_t *));
+    base.tag_array = array_list_create(sizeof(nbt_base_t));
 
     base.read_contents = nbt_tag_compound_read_contents;
     base.write_contents = nbt_tag_compound_write_contents;
@@ -76,16 +77,16 @@ void nbt_tag_compound_set_boolean(nbt_base_t *base, char *key, int8_t value) {
 
 uint8_t private_has_key(nbt_base_t *base, char *key) {
     for(int i = 0; i < array_list_length(base->tag_array); i++) {
-        nbt_base_t tag = *(nbt_base_t *)array_list_get(base->tag_array, i);
-        if(strcmp(tag.key, key) == 0) return 1;
+        nbt_base_t *tag = (nbt_base_t *)array_list_get(base->tag_array, i);
+        if(strcmp(tag->key, key) == 0) return 1;
     }
     return 0;
 }
 
 nbt_base_t private_get_tag(nbt_base_t *base, char *key) {
     for(int i = 0; i < array_list_length(base->tag_array); i++) {
-        nbt_base_t tag = *(nbt_base_t *)array_list_get(base->tag_array, i);
-        if(strcmp(tag.key, key) == 0) return tag;
+        nbt_base_t *tag = (nbt_base_t *)array_list_get(base->tag_array, i);
+        if(strcmp(tag->key, key) == 0) return *tag;
     }
     nbt_base_t null_tag = { .null = 1 };
     return null_tag;
@@ -127,7 +128,7 @@ int8_t *nbt_tag_compound_get_byte_array(nbt_base_t *base, char *key, uint32_t le
 }
 
 nbt_base_t nbt_tag_compound_get_compound_tag(nbt_base_t *base, char *key) {
-    if (!private_has_key(base, key)) return (nbt_base_t){ .null = 1 };
+    if(!private_has_key(base, key)) return (nbt_base_t){ .null = 1 };
 
     return private_get_tag(base, key);
 }
@@ -148,11 +149,11 @@ void nbt_tag_compound_read_contents(nbt_base_t *nbt, gzFile file) {
     nbt->tag_array = array_list_clear(nbt->tag_array);
 
     for(;;) {
-        nbt_base_t *tag = malloc(sizeof(nbt_base_t));
-        *tag = nbt_read_named_tag(file);
-        if(tag->null) return;
-        if(tag->type == 0) return; // end tag
-        nbt->tag_array = array_list_push(nbt->tag_array, tag);
+        nbt_base_t tag = nbt_read_named_tag(file);
+        if(tag.null) return;
+        if(tag.type == 0) return; // end tag
+        if(!nbt->tag_array) nbt->tag_array = array_list_create(sizeof(nbt_base_t));
+        nbt->tag_array = array_list_push(nbt->tag_array, &tag);
     }
 }
 
@@ -161,4 +162,6 @@ void nbt_tag_compound_write_contents(nbt_base_t *nbt, gzFile file) {
         nbt_base_t *tag = (nbt_base_t *)array_list_get(nbt->tag_array, i);
         nbt_write_named_tag(file, tag);
     }
+    int8_t end_tag = 0;
+    gzwrite(file, &end_tag, sizeof(end_tag));
 }

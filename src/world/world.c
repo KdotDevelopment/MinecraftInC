@@ -20,10 +20,13 @@
 
 #ifdef _WIN32
 #include <direct.h>
+#include <windows.h>
+#define PATH_SEPARATOR '\\'
 #define mkdir_recursive _mkdir
 #else
 #include <unistd.h>
 #include <libgen.h>
+#define PATH_SEPARATOR '/'
 #define mkdir_recursive mkdir
 #endif
 
@@ -43,10 +46,12 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->skylight_subtracted = 0;
     world->random = random_create(time(NULL));
     world->random_number = random_next_int(&world->random);
-    world->random_seed = 0;
+    world->random_seed = seed;
     world->size_on_disk = 0;
     world->is_new_world = 1;
-    world->save_file = saves_dir;
+    strncpy(world->save_file, saves_dir, sizeof(world->save_file));
+    strcat(world->save_file, "/");
+    strcat(world->save_file, world_name);
 
     for(int i = 0; i < 16; i++) {
         float value = 1.0 - (float)i / 15.0;
@@ -55,15 +60,17 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
 
     // checks if file exists already
     struct stat sb;
-    char folder[256];
-    snprintf(folder, sizeof(folder), "%s/saves/%s/level.dat", saves_dir, world_name);
+    char folder[290];
+    snprintf(folder, sizeof(folder), "%s/level.dat", world->save_file);
     if(stat(folder, &sb) == 0) {
         world->is_new_world = 0;
     }
 
     if(!world->is_new_world) {
-        // TODO: actually grab nbt data from LoadingScreenRenderer
-        nbt_base_t nbt = nbt_tag_compound_create();
+        FILE *file = fopen(folder, "rb");
+        printf("Opening existing world: %s\n", folder);
+        nbt_base_t nbt = progress_bar_read(file);
+        fclose(file);
         nbt = nbt_tag_compound_get_compound_tag(&nbt, "Data");
         world->random_seed = nbt_tag_compound_get_int(&nbt, "RandomSeed");
         world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
@@ -82,7 +89,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     }
 
     chunk_provider_generate_create(&world->chunk_provider_gen, world, world->random_seed);
-    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, &world->save_file);
+    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, (char **)&world->save_file);
     world_save(world, 0);
 }
 
@@ -105,42 +112,78 @@ void world_spawn_player(world_t *world) {
     
 }
 
-int private_create_directories(char *file_path) {
-    char path[512];
-    strncpy(path, file_path, sizeof(path));
-    path[sizeof(path) - 1] = '\0';
+char *private_dirname(char *path) {
+#ifdef _WIN32
+    static char buffer[1024];
+    strncpy(buffer, path, sizeof(buffer));
+    buffer[sizeof(buffer) - 1] = '\0';
 
-    char *dir_path = dirname(path);
+    char *last_separator = strrchr(buffer, PATH_SEPARATOR);
+    if (last_separator) {
+        *last_separator = '\0';
+    } else {
+        return ".";
+    }
+    return buffer;
+#else
+    return dirname(path);
+#endif
+}
 
-    char temp_path[512] = {0};
-    for (char *p = dir_path; *p; p++) {
-        if (*p == '/' || *p == '\\') {
-            *p = '\0';
+int private_create_directories_world(const char *path) {
+    char temp_path[1024];
+    strncpy(temp_path, path, sizeof(temp_path));
+    temp_path[sizeof(temp_path) - 1] = '\0';
 
-            if (mkdir_recursive(temp_path, 0755) != 0 && errno != EEXIST) {
-                fprintf(stderr, "Failed to create directory: %s\n", temp_path);
+    char *current = temp_path;
+    char *next = NULL;
+
+    char *dir_path = private_dirname(temp_path);
+
+    while ((next = strchr(current, '/')) != NULL) {
+        *next = '\0';
+
+        if (strlen(dir_path) > 0) {
+#ifdef _WIN32
+            if (!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+                fprintf(stderr, "Failed to create directory: %s\n", dir_path);
                 return -1;
             }
-
-            *p = '/';
+#else
+            if (mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+                perror("mkdir");
+                return -1;
+            }
+#endif
         }
+
+        *next = '/';
+        current = next + 1;
     }
 
-    if (mkdir_recursive(dir_path, 0755) != 0 && errno != EEXIST) {
+#ifdef _WIN32
+    if (!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
         fprintf(stderr, "Failed to create directory: %s\n", dir_path);
         return -1;
     }
+#else
+    if (mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+        perror("mkdir");
+        return -1;
+    }
+#endif
 
     return 0;
 }
 
 void world_save(world_t *world, uint8_t check_entities) {
-    char path[256];
+    char path[290];
     snprintf(path, sizeof(path), "%s/level.dat", world->save_file);
     printf("%s\n", path);
     FILE *file = fopen(path, "wb");
     if(!file) {
-        private_create_directories(path);
+        private_create_directories_world(path);
+        file = fopen(path, "wb");
     }
 
     nbt_base_t nbt = nbt_tag_compound_create();
@@ -1217,9 +1260,9 @@ void world_set_spawn_position(world_t *world, int x, int y, int z) {
 }
 
 void world_destroy(world_t *world) {
-    free(world->lighting_update_list);
-    free(world->loaded_entity_list);
-    free(world->next_tick_data_list);
-    free(world->loaded_tile_entity_list);
-    free(world->renderer_world_list);
+    array_list_free(world->lighting_update_list);
+    array_list_free(world->loaded_entity_list);
+    array_list_free(world->next_tick_data_list);
+    array_list_free(world->loaded_tile_entity_list);
+    array_list_free(world->renderer_world_list);
 }

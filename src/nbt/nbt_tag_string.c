@@ -16,6 +16,7 @@ char *strdup(const char *s) {
 
 nbt_base_t nbt_tag_string_create() {
     nbt_base_t tag = { 0 };
+    memset(&tag, 0, sizeof(nbt_base_t));
 
     tag.type = NBT_TYPE_STRING;
     tag.string_value = strdup("");
@@ -28,6 +29,7 @@ nbt_base_t nbt_tag_string_create() {
 
 nbt_base_t nbt_tag_string_create_from(char *value) {
     nbt_base_t tag = { 0 };
+    memset(&tag, 0, sizeof(nbt_base_t));
 
     tag.type = NBT_TYPE_STRING;
     tag.string_value = strdup(value);

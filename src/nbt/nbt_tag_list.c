@@ -7,6 +7,7 @@
 
 nbt_base_t nbt_tag_list_create() {
     nbt_base_t tag = { 0 };
+    memset(&tag, 0, sizeof(nbt_base_t));
 
     tag.type = NBT_TYPE_LIST;
     tag.tag_array = array_list_create(sizeof(nbt_base_t));

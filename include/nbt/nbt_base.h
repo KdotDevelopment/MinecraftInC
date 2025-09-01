@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <zlib.h>
 
-#define MAX_NBT_KEY_LENGTH 32
+#define MAX_NBT_KEY_LENGTH 64
 
 enum {
     NBT_TYPE_END,

@@ -11,6 +11,15 @@
 #include <stdio.h>
 #include <zlib.h>
 
+#ifdef _WIN32
+#include <io.h>
+#define fileno _fileno
+#else
+#include <unistd.h>
+#endif
+
+int fileno(FILE *stream);
+
 progress_bar_t progress_bar_create(struct minecraft_s *minecraft) {
     progress_bar_t bar = { 0 };
     bar.minecraft = minecraft;

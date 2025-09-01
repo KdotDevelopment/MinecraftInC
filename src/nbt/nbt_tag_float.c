@@ -2,6 +2,7 @@
 
 nbt_base_t nbt_tag_float_create(float value) {
     nbt_base_t tag = { 0 };
+    memset(&tag, 0, sizeof(nbt_base_t));
 
     tag.type = NBT_TYPE_FLOAT;
     tag.float_value = value;

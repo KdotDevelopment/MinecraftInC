@@ -19,7 +19,7 @@ WINDOWS_LDFLAGS = \
     -L./lib \
     -static -static-libgcc -static-libstdc++ \
     -lmingw32 -lSDL2main -lSDL2 \
-    -lopengl32 -lglu32 \
+    -lopengl32 -lglu32 -lz \
 	-lOpenAL32 -lwinmm \
     -lvorbisfile -lvorbis -logg -lkernel32 \
     -lsetupapi -limm32 -loleaut32 -lversion -luuid \

@@ -109,7 +109,7 @@ char *private_integer_to_string(int32_t value, int radix) {
     return ptr;
 }
 
-int private_create_directories(const char *path) {
+int private_create_directories_chunk(const char *path) {
     char temp_path[1024];
     strncpy(temp_path, path, sizeof(temp_path));
     temp_path[sizeof(temp_path) - 1] = '\0';
@@ -169,7 +169,7 @@ char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z)
 
     snprintf(full_path, sizeof(full_path), "%s/%s/%s", *save_directory, subdir_x, subdir_z);
 
-    if(private_create_directories(full_path) != 0) {
+    if(private_create_directories_chunk(full_path) != 0) {
         return NULL;
     }
 
@@ -187,9 +187,15 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
     if (!chunk_file) {
         return NULL;
     }
+    FILE *file = fopen(chunk_file, "rb");
+    if(!file) {
+        free(chunk_file);
+        return NULL;
+    }
 
-    nbt_base_t nbt = { 0 }; // loading_screen_renderer_read(&chunk_file);
+    nbt_base_t nbt = progress_bar_read(file);
     free(chunk_file);
+    fclose(file);
 
     chunk_t *chunk = malloc(sizeof(chunk_t));
     *chunk = (chunk_t){ 0 };
@@ -202,6 +208,14 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
 
 void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *chunk) {
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, chunk->x_pos, chunk->z_pos);
+    if (!chunk_file) {
+        return;
+    }
+    FILE *file = fopen(chunk_file, "rb");
+    if(!file) {
+        free(chunk_file);
+        return;
+    }
 
 #ifdef _WIN32
     WIN32_FILE_ATTRIBUTE_DATA file_info;
@@ -222,7 +236,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     nbt_base_t nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     chunk_write_nbt_data(chunk, &nbt);
-    // loading_screen_renderer_write(&nbt_base, chunk_file);
+    progress_bar_write(file, &nbt_base);
 
 #ifdef _WIN32
     if (GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {

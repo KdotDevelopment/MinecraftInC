@@ -3,6 +3,7 @@
 #include <nbt/nbt_base.h>
 
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct {
     struct minecraft_s *minecraft;

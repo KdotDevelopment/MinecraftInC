@@ -123,7 +123,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
 
-    world_create(&minecraft->world, minecraft, "./.minecraft", "World1", 1234);
+    world_create(&minecraft->world, minecraft, "./.minecraft/saves", "World1", 123456789);
     minecraft->gamemode.init_world(&minecraft->gamemode, &minecraft->world);
     player_create(&minecraft->player, (struct world_s *)&minecraft->world);
     minecraft->world.player = &minecraft->player;

@@ -57,7 +57,7 @@ typedef struct world_s {
     float light_brightness_table[16];
     uint8_t is_new_world;
     int64_t random_seed;
-    char *save_file; // includes world name
+    char save_file[260]; // includes world name
     chunk_provider_t chunk_provider;
     chunk_provider_t chunk_provider_gen;
     nbt_base_t player_nbt;

@@ -27,6 +27,7 @@ enum {
     SCREEN_TYPE_OPTIONS,
     SCREEN_TYPE_PAUSE,
     SCREEN_TYPE_SAVE_WORLD,
+    SCREEN_TYPE_TITLE,
 };
 
 typedef struct screen_s {
@@ -47,8 +48,9 @@ typedef struct screen_s {
     struct screen_s *parent;
     int id;
     int counter;
+    float counter_f;
 
-    void (*render)(struct screen_s *screen, int x, int y);
+    void (*render)(struct screen_s *screen, int x, int y, float partial_tick);
     void (*on_key_pressed)(struct screen_s *screen, char event_char, int event_key);
     void (*on_mouse_clicked)(struct screen_s *screen, int x, int y, int button);
     void (*on_button_clicked)(struct screen_s *screen, button_t *button);
@@ -59,7 +61,8 @@ typedef struct screen_s {
 } screen_t;
 
 screen_t screen_create();
-void screen_render(struct screen_s *screen, int mouse_x, int mouse_y);
+void screen_render(struct screen_s *screen, int mouse_x, int mouse_y, float partial_tick);
+void screen_render_background(screen_t *screen);
 void screen_on_key_pressed(struct screen_s *screen, char event_char, int event_key);
 void screen_on_mouse_clicked(struct screen_s *screen, int x, int y, int button);
 void screen_on_button_clicked(struct screen_s *screen, button_t *button);

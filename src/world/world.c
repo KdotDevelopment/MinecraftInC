@@ -21,7 +21,7 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <windows.h>
-#define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR '/'
 #define mkdir_recursive _mkdir
 #else
 #include <unistd.h>
@@ -89,7 +89,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     }
 
     chunk_provider_generate_create(&world->chunk_provider_gen, world, world->random_seed);
-    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, (char **)&world->save_file);
+    chunk_provider_load_create(&world->chunk_provider, &world->chunk_provider_gen, world, world->save_file);
     world_save(world, 0);
 }
 
@@ -119,7 +119,7 @@ char *private_dirname(char *path) {
     buffer[sizeof(buffer) - 1] = '\0';
 
     char *last_separator = strrchr(buffer, PATH_SEPARATOR);
-    if (last_separator) {
+    if(last_separator) {
         *last_separator = '\0';
     } else {
         return ".";
@@ -140,17 +140,17 @@ int private_create_directories_world(const char *path) {
 
     char *dir_path = private_dirname(temp_path);
 
-    while ((next = strchr(current, '/')) != NULL) {
+    while((next = strchr(current, '/')) != NULL) {
         *next = '\0';
 
-        if (strlen(dir_path) > 0) {
+        if(strlen(dir_path) > 0) {
 #ifdef _WIN32
-            if (!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+            if(!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
                 fprintf(stderr, "Failed to create directory: %s\n", dir_path);
                 return -1;
             }
 #else
-            if (mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+            if(mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
                 perror("mkdir");
                 return -1;
             }
@@ -162,12 +162,12 @@ int private_create_directories_world(const char *path) {
     }
 
 #ifdef _WIN32
-    if (!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+    if(!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
         fprintf(stderr, "Failed to create directory: %s\n", dir_path);
         return -1;
     }
 #else
-    if (mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+    if(mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
         perror("mkdir");
         return -1;
     }
@@ -320,7 +320,7 @@ void world_update_neighbors_at(world_t *world, int x, int y, int z, uint8_t bloc
 
 void world_update_block(world_t *world, int x, int y, int z, uint8_t block_id) {
     block_t *block = &block_list[world_get_block(world, x, y, z)];
-    if (block->id != blocks.air.id) { 
+    if(block->id != blocks.air.id) { 
         block->on_neighbor_changed(block, (struct world_s *)world, x, y, z, block_id);
     }
 }
@@ -492,9 +492,9 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
         }
         uint8_t block_id = world_get_block(world, i0x, i0y, i0z);
         block_t *block = &block_list[block_id];
-        if (block_id != blocks.air.id && block->is_collidable) {
+        if(block_id != blocks.air.id && block->is_collidable) {
             hit_result_t pos = block->clip(block, world, i0x, i0y, i0z, v0, v1);
-            if (!pos.null) return pos;
+            if(!pos.null) return pos;
         }
     }
     return (hit_result_t){ .null = 1 };
@@ -579,7 +579,7 @@ AABB_t *world_get_cubes(world_t *world, AABB_t box) {
                 AABB_t bb = { 0 };
                 
                 block_t *block = &block_list[world_get_block(world, i, j, k)];
-                if (block->id != blocks.air.id) {
+                if(block->id != blocks.air.id) {
                     bb = block->get_collision_aabb(block, i, j, k);
                     if(!bb.null && AABB_intersects_inner(box, bb)) {
                         list = array_list_push(list, &bb);
@@ -1214,7 +1214,7 @@ entity_t **world_get_entities_excluding(world_t *world, entity_t *entity, AABB_t
         for(int z = z0; z <= z1; z++) {
             if(world_chunk_exists(world, x, z)) {
                 chunk_t *chunk = world_get_chunk(world, x, z);
-                chunk_get_entities(chunk, entity, box, entity_list);
+                chunk_get_entities(chunk, entity, box, &entity_list);
             }
         }
     }

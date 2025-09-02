@@ -22,6 +22,7 @@ screen_t screen_load_world_create(screen_t *parent) {
 
 void screen_load_world_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
+    screen->buttons = array_list_clear(screen->buttons);
     for(int i = 0; i < 5; i++) {
         char *name = screen->names[i];
         if(name[0] == '\0') {
@@ -57,11 +58,11 @@ void screen_load_world_open_world_from_file(struct screen_s *proto_screen, char 
     //minecraft_grab_mouse(((screen_t *)proto_screen)->minecraft);
 }
 
-void screen_load_world_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
+void screen_load_world_render(struct screen_s *proto_screen, int mouse_x, int mouse_y, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 40, 0xFFFFFFFF);
     screen->type = SCREEN_TYPE_NONE;
-    screen_render(proto_screen, mouse_x, mouse_y);
+    screen_render(proto_screen, mouse_x, mouse_y, partial_tick);
     screen->type = SCREEN_TYPE_LOAD_WORLD;
 }

@@ -37,7 +37,7 @@ double random_uniform() {
 }
 
 double random_next_normal(random_t *random, double stddev) {
-    if (random->last_normal != 0x7ff0000000000000) {
+    if(random->last_normal != 0x7ff0000000000000) {
         double r = random->last_normal;
         random->last_normal = 0x7ff0000000000000;
         return r * stddev;

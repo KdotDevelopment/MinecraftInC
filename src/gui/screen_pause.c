@@ -19,6 +19,7 @@ screen_t screen_pause_create() {
 
 void screen_pause_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
+    screen->buttons = array_list_clear(screen->buttons);
     button_t button_options = button_create(0, screen->width / 2 - 100, screen->height / 4, "Options...");
     button_t button_generate = button_create(1, screen->width / 2 - 100, screen->height / 4 + 24, "Generate new world...");
     button_t button_save = button_create(2, screen->width / 2 - 100, screen->height / 4 + 48, "Save world...");
@@ -64,10 +65,10 @@ void screen_pause_on_button_clicked(struct screen_s *proto_screen, button_t *but
     }
 }
 
-void screen_pause_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
+void screen_pause_render(struct screen_s *proto_screen, int mouse_x, int mouse_y, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
     gui_draw_centered_string(screen->font, "Game menu", screen->width / 2, 20, 0xFFFFFFFF);
 
-    screen_render(proto_screen, mouse_x, mouse_y);
+    screen_render(proto_screen, mouse_x, mouse_y, partial_tick);
 }

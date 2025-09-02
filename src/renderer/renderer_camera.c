@@ -95,7 +95,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     float cc = c1 * c2;
     float reach = renderer->minecraft->gamemode.reach;
     vec3_t v2 = { v.x + sc * reach, v.y + s2 * reach, v.z + cc * reach };
-    renderer->minecraft->hit_result = world_clip(&renderer->minecraft->world, v, v2);
+    renderer->minecraft->hit_result = world_clip(renderer->minecraft->world, v, v2);
     v = renderer_camera_get_player_vector(renderer, delta);
     if(!renderer->minecraft->hit_result.null) {
         reach = sqrtf(vec3_distance_to_sqr(v, renderer->minecraft->hit_result.location));
@@ -111,9 +111,9 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     double a = 0.0;
 
     AABB_t box = AABB_expand(player->bb, sc * reach, s2 * reach, cc * reach);
-    entity_t **entities = world_get_entities_excluding(&renderer->minecraft->world, &player->entity, box);
+    entity_t **entities = world_get_entities_excluding(renderer->minecraft->world, &player->entity, box);
     for(int i = 0; i < array_list_length(entities); i++) {
-        entity_t *entity = *(entity_t **)array_list_get(entities, i);
+        /*entity_t *entity = *(entity_t **)array_list_get(entities, i);
         if(entity->can_be_hit(entity)) {
             float r = 0.1;
             float dist;
@@ -123,14 +123,16 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
                 renderer->entity = entity;
                 a = dist;
             }
-        }
+        }*/
     }
+
+    array_list_free(entities);
 
     if(renderer->entity != NULL && renderer->minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
         renderer->minecraft->hit_result = (hit_result_t){ .type = 1, .entity = renderer->entity };
     }
 
-    world_t *world = &renderer->minecraft->world;
+    world_t *world = renderer->minecraft->world;
     double dx = player->xo + (player->x - player->xo) * delta;
     double dy = player->yo + (player->y - player->yo) * delta;
     double dz = player->zo + (player->z - player->zo) * delta;
@@ -415,7 +417,7 @@ void renderer_camera_setup_gui(renderer_camera_t *renderer_camera) {
 }
 
 void renderer_camera_setup_fog(renderer_camera_t *renderer_camera) {
-    world_t *world = &renderer_camera->minecraft->world;
+    world_t *world = renderer_camera->minecraft->world;
     player_t *player = &renderer_camera->minecraft->player;
     glFogfv(GL_FOG_COLOR, (float []){ renderer_camera->fog_r, renderer_camera->fog_g, renderer_camera->fog_b, 1.0 });
     glNormal3f(0.0, -1.0, 0.0);

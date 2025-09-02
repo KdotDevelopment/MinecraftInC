@@ -59,5 +59,5 @@ void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *t
 void chunk_remove_tile_entity(chunk_t *chunk, int x, int y, int z);
 void chunk_load_entities(chunk_t *chunk);
 void chunk_unload_entities(chunk_t *chunk);
-void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list);
+void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t ***entity_list);
 uint8_t chunk_needs_saving(chunk_t *chunk, uint8_t check_entities);

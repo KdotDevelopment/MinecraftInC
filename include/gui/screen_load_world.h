@@ -7,4 +7,4 @@ void screen_load_world_on_open(struct screen_s *screen);
 void screen_load_world_on_button_clicked(struct screen_s *screen, button_t *button);
 void screen_load_world_open_world(struct screen_s *screen, int world);
 void screen_load_world_open_world_from_file(struct screen_s *screen, char *file);
-void screen_load_world_render(struct screen_s *screen, int mouse_x, int mouse_y);
+void screen_load_world_render(struct screen_s *screen, int mouse_x, int mouse_y, float partial_tick);

@@ -15,7 +15,7 @@ typedef struct chunk_provider_s {
         // chunk_provider_load
         struct {
             chunk_t *chunks[CHUNK_PROVIDER_ARRAY_SIZE];
-            char **save_directory;
+            char *save_directory;
             struct chunk_provider_s *chunk_provider_gen;
         };
 

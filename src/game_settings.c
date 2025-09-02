@@ -34,7 +34,7 @@ void game_settings_create(game_settings_t *settings, struct minecraft_s *minecra
     settings->bindings = array_list_create(sizeof(key_binding_t *));
 
     key_binding_t *bindings[] = { &settings->forward_key, &settings->left_key, &settings->back_key, &settings->right_key, &settings->jump_key, &settings->build_key, &settings->chat_key, &settings->toggle_fog_key, &settings->save_location_key, &settings->load_location_key };
-    for (int i = 0; i < sizeof(bindings) / sizeof(bindings[0]); i++) {
+    for(int i = 0; i < sizeof(bindings) / sizeof(bindings[0]); i++) {
         settings->bindings = array_list_push(settings->bindings, &bindings[i]);
     }
 }

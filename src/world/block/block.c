@@ -253,12 +253,12 @@ void block_on_destroyed(block_t *block, struct world_s *world, int x, int y, int
 void block_render_preview(block_t *block) {
     tesselator_begin_quads();
     for(int i = 0; i < 6; i++) {
-        if (i == 0) tesselator_normal(0.0, 1.0, 0.0);
-        if (i == 1) tesselator_normal(0.0, -1.0, 0.0);
-        if (i == 2) tesselator_normal(0.0, 0.0, 1.0);
-        if (i == 3) tesselator_normal(0.0, 0.0, -1.0);
-        if (i == 4) tesselator_normal(1.0, 0.0, 0.0);
-        if (i == 5) tesselator_normal(-1.0, 0.0, 0.0);
+        if(i == 0) tesselator_normal(0.0, 1.0, 0.0);
+        if(i == 1) tesselator_normal(0.0, -1.0, 0.0);
+        if(i == 2) tesselator_normal(0.0, 0.0, 1.0);
+        if(i == 3) tesselator_normal(0.0, 0.0, -1.0);
+        if(i == 4) tesselator_normal(1.0, 0.0, 0.0);
+        if(i == 5) tesselator_normal(-1.0, 0.0, 0.0);
         block->render_inside(block, 0, 0, 0, i);
     }
     tesselator_end();
@@ -266,7 +266,7 @@ void block_render_preview(block_t *block) {
 
 hit_result_t block_clip(block_t *block, world_t *world, int x, int y, int z, vec3_t v0, vec3_t v1) {
     hit_result_t pos = AABB_clip((AABB_t){ block->x0, block->y0, block->z0, block->x1, block->y1, block->z1 }, vec3_subtract(v0, (vec3_t){ x, y, z }), vec3_subtract(v1, (vec3_t){ x, y, z }));
-    if (!pos.null) {
+    if(!pos.null) {
         pos.x = x;
         pos.y = y;
         pos.z = z;

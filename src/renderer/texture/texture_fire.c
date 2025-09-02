@@ -53,7 +53,7 @@ void texture_fire_tick(texture_animated_t *texture) {
         // Makes pixel transparent if not intense enough
         if(pixel_intensity < 0.5) e = 0;
 
-        if (texture->anaglyph) {
+        if(texture->anaglyph) {
             int bb = (b * 30 + c * 59 + d * 11) / 100;
             int cc = (b * 30 + c * 70) / 100;
             int dd = (b * 30 + d * 70) / 100;

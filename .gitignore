@@ -6,3 +6,4 @@ minecraft
 bin/
 .vscode/
 TODO.txt
+.minecraft/

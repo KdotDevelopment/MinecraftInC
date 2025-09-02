@@ -15,5 +15,5 @@ typedef struct {
 } screen_hud_t;
 
 screen_hud_t screen_hud_create(struct minecraft_s *minecraft, int width, int height);
-void screen_hud_render(screen_hud_t *hud, float delta, float mx, float my);
+void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick);
 void screen_hud_destroy(screen_hud_t *hud);

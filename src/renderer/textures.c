@@ -13,6 +13,7 @@
 #include <assets/char.h>
 #include <assets/gui/gui.h>
 #include <assets/gui/icons.h>
+#include <assets/gui/logo.h>
 #include <assets/item/arrows.h>
 #include <assets/mob/creeper.h>
 #include <assets/mob/pig.h>
@@ -21,6 +22,8 @@
 #include <assets/mob/skeleton.h>
 #include <assets/mob/spider.h>
 #include <assets/mob/zombie.h>
+#include <assets/terrain/moon.h>
+#include <assets/terrain/sun.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -76,6 +79,9 @@ int textures_load(textures_t *textures, const char *resource) {
     if(strcmp(resource, "mob/spider.png") == 0) { p = (uint8_t *)asset_spider_rgba; width = asset_spider_width; height = asset_spider_height; }
     if(strcmp(resource, "mob/zombie.png") == 0) { p = (uint8_t *)asset_zombie_rgba; width = asset_zombie_width; height = asset_zombie_height; }
     if(strcmp(resource, "item/arrows.png") == 0) { p = (uint8_t *)asset_arrows_rgba; width = asset_arrows_width; height = asset_arrows_height; }
+    if(strcmp(resource, "gui/logo.png") == 0) { p = (uint8_t *)asset_logo_rgba; width = asset_logo_width; height = asset_logo_height; }
+    if(strcmp(resource, "terrain/sun.png") == 0) { p = (uint8_t *)asset_sun_rgba; width = asset_sun_width; height = asset_sun_height; }
+    if(strcmp(resource, "terrain/moon.png") == 0) { p = (uint8_t *)asset_moon_rgba; width = asset_moon_width; height = asset_moon_height; }
     //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
     //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
 
@@ -83,7 +89,7 @@ int textures_load(textures_t *textures, const char *resource) {
 
     uint8_t *pixels = malloc(width * height * sizeof(uint32_t)); //32 bit color
     if(textures->settings->anaglyph) {
-        for (int i = 0; i < 4 * width * height; i += 4) {
+        for(int i = 0; i < 4 * width * height; i += 4) {
             uint8_t color[] = { (p[i + 0] * 30 + p[i + 1] * 59 + p[i + 2] * 11) / 100, (p[i + 0] * 30 + p[i + 1] * 70) / 100, (p[i + 0] * 30 + p[i + 2] * 70) / 100, p[i + 3] };
             memcpy(pixels + i, color, sizeof(color));
         }

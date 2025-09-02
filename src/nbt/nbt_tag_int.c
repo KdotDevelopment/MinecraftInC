@@ -1,5 +1,7 @@
 #include <nbt/nbt_tag_int.h>
 
+#include <string.h>
+
 nbt_base_t nbt_tag_int_create(int32_t value) {
     nbt_base_t tag = { 0 };
     memset(&tag, 0, sizeof(nbt_base_t));

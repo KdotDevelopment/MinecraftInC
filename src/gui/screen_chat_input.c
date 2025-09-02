@@ -24,7 +24,7 @@ void screen_chat_input_tick(struct screen_s *proto_screen) {
     screen->counter++;
 }
 
-void screen_chat_input_render(struct screen_s *proto_screen, int mx, int my) {
+void screen_chat_input_render(struct screen_s *proto_screen, int mx, int my, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
     gui_fill(2, screen->height - 14, screen->width - 2, screen->height - 2, 0x00000080);
     char *message = string_create(screen->text);
@@ -33,7 +33,7 @@ void screen_chat_input_render(struct screen_s *proto_screen, int mx, int my) {
     gui_draw_string(screen->font, message, 4, screen->height - 12, 0xE0E0E0FF);
     string_free(message);
 
-    screen_render(proto_screen, mx, my);
+    screen_render(proto_screen, mx, my, partial_tick);
 }
 
 void screen_chat_input_on_key_pressed(struct screen_s *proto_screen, char event_char, int event_key) {

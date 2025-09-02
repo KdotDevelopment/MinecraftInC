@@ -15,7 +15,7 @@ typedef struct {
 size_t memory_read(void *ptr, size_t size, size_t nmemb, void *datasource) {
     memory_buffer_t *buffer = (memory_buffer_t *)datasource;
     size_t bytes_to_read = size * nmemb;
-    if (buffer->offset + bytes_to_read > buffer->size) {
+    if(buffer->offset + bytes_to_read > buffer->size) {
         bytes_to_read = buffer->size - buffer->offset;
     }
     memcpy(ptr, buffer->data + buffer->offset, bytes_to_read);
@@ -39,7 +39,7 @@ int memory_seek(void *datasource, ogg_int64_t offset, int whence) {
         default:
             return -1;
     }
-    if (new_offset > buffer->size) {
+    if(new_offset > buffer->size) {
         return -1;
     }
     buffer->offset = new_offset;
@@ -63,7 +63,7 @@ int decode_ogg_memory(const unsigned char *data, size_t size, short **output, AL
         .tell_func = memory_tell
     };
 
-    if (ov_open_callbacks(&buffer, &vf, NULL, 0, callbacks) < 0) {
+    if(ov_open_callbacks(&buffer, &vf, NULL, 0, callbacks) < 0) {
         fprintf(stderr, "Failed to open OGG data from memory.\n");
         return -1;
     }
@@ -73,9 +73,9 @@ int decode_ogg_memory(const unsigned char *data, size_t size, short **output, AL
     int channels = info->channels;
 
     // Determine OpenAL format
-    if (channels == 1) {
+    if(channels == 1) {
         *format = AL_FORMAT_MONO16;
-    } else if (channels == 2) {
+    } else if(channels == 2) {
         *format = AL_FORMAT_STEREO16;
     } else {
         fprintf(stderr, "Unsupported channel count: %d\n", channels);
@@ -89,7 +89,7 @@ int decode_ogg_memory(const unsigned char *data, size_t size, short **output, AL
 
     // Allocate memory for PCM data
     *output = (short *)malloc(*buffer_size);
-    if (!*output) {
+    if(!*output) {
         fprintf(stderr, "Failed to allocate memory for PCM data.\n");
         ov_clear(&vf);
         return -1;
@@ -98,9 +98,9 @@ int decode_ogg_memory(const unsigned char *data, size_t size, short **output, AL
     // Read PCM data
     long total_read = 0;
     int bitstream;
-    while (total_read < *buffer_size) {
+    while(total_read < *buffer_size) {
         long ret = ov_read(&vf, (char *)(*output) + total_read, *buffer_size - total_read, 0, 2, 1, &bitstream);
-        if (ret <= 0) break;
+        if(ret <= 0) break;
         total_read += ret;
     }
 

@@ -14,7 +14,8 @@
 #include <stdlib.h>
 #endif
 
-void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *gen, world_t *world, char **save_directory) {
+void chunk_provider_load_create(chunk_provider_t *chunk_provider_load, chunk_provider_t *gen, world_t *world, char *save_directory) {
+    memset(chunk_provider_load, 0, sizeof(chunk_provider_t));
     chunk_provider_load->world = world;
     chunk_provider_load->save_directory = save_directory;
     chunk_provider_load->chunk_provider_gen = gen;
@@ -85,11 +86,16 @@ chunk_t *chunk_provider_load_provide_chunk(chunk_provider_t *chunk_provider, int
 }
 
 char *private_integer_to_string(int32_t value, int radix) {
-    if (radix < 2 || radix > 36) {
+    if(radix < 2 || radix > 36) {
         return NULL;
     }
 
-    static char buffer[35]; 
+    char *buffer = malloc(35);
+    if(!buffer) {
+        fprintf(stderr, "Failed to allocate memory for string conversion\n");
+        return NULL;
+    }
+
     char *ptr = &buffer[34];
     *ptr = '\0';
 
@@ -98,15 +104,25 @@ char *private_integer_to_string(int32_t value, int radix) {
 
     do {
         int digit = abs_value % radix;
-        *ptr-- = (digit < 10) ? ('0' + digit) : ('a' + digit - 10);
+        *--ptr = (digit < 10) ? ('0' + digit) : ('a' + digit - 10);
         abs_value /= radix;
-    } while (abs_value > 0);
+    } while(abs_value > 0);
 
-    if (is_negative) {
-        *ptr-- = '-';
+    if(is_negative) {
+        *--ptr = '-';
     }
 
-    return ptr;
+    size_t length = &buffer[34] - ptr;
+    char *result = malloc(length + 1);
+    if(!result) {
+        fprintf(stderr, "Failed to allocate memory for result string\n");
+        free(buffer);
+        return NULL;
+    }
+    strncpy(result, ptr, length + 1);
+
+    free(buffer);
+    return result;
 }
 
 int private_create_directories_chunk(const char *path) {
@@ -117,17 +133,17 @@ int private_create_directories_chunk(const char *path) {
     char *current = temp_path;
     char *next = NULL;
 
-    while ((next = strchr(current, '/')) != NULL) {
+    while((next = strchr(current, '/')) != NULL) {
         *next = '\0';
 
-        if (strlen(temp_path) > 0) {
+        if(strlen(temp_path) > 0) {
 #ifdef _WIN32
-            if (!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+            if(!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
                 fprintf(stderr, "Failed to create directory: %s\n", temp_path);
                 return -1;
             }
 #else
-            if (mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
+            if(mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
                 perror("mkdir");
                 return -1;
             }
@@ -139,12 +155,12 @@ int private_create_directories_chunk(const char *path) {
     }
 
 #ifdef _WIN32
-    if (!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+    if(!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
         fprintf(stderr, "Failed to create directory: %s\n", temp_path);
         return -1;
     }
 #else
-    if (mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
+    if(mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
         perror("mkdir");
         return -1;
     }
@@ -154,9 +170,8 @@ int private_create_directories_chunk(const char *path) {
 }
 
 // Should be free'd after use
-char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z) {
-    return NULL;
-    char chunk_filename[256];
+char *chunk_provider_load_chunk_file_for_xz(char *save_directory, int x, int z) {
+    char chunk_filename[290];
     char subdir_x[3];
     char subdir_z[3];
     char full_path[1024];
@@ -167,7 +182,7 @@ char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z)
     snprintf(subdir_x, sizeof(subdir_x), "%s", private_integer_to_string(x & 63, 36));
     snprintf(subdir_z, sizeof(subdir_z), "%s", private_integer_to_string(z & 63, 36));
 
-    snprintf(full_path, sizeof(full_path), "%s/%s/%s", *save_directory, subdir_x, subdir_z);
+    snprintf(full_path, sizeof(full_path), "%s/%s/%s", save_directory, subdir_x, subdir_z);
 
     if(private_create_directories_chunk(full_path) != 0) {
         return NULL;
@@ -184,7 +199,7 @@ char *chunk_provider_load_chunk_file_for_xz(char **save_directory, int x, int z)
 
 chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x, int z) {
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, x, z);
-    if (!chunk_file) {
+    if(!chunk_file) {
         return NULL;
     }
     FILE *file = fopen(chunk_file, "rb");
@@ -201,17 +216,16 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
     *chunk = (chunk_t){ 0 };
     *chunk = chunk_read_nbt_data(chunk_provider->world, &nbt);
 
-    free(chunk_file);
-
     return chunk;
 }
 
 void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *chunk) {
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, chunk->x_pos, chunk->z_pos);
-    if (!chunk_file) {
+    if(!chunk_file) {
         return;
     }
-    FILE *file = fopen(chunk_file, "rb");
+    printf("Saving chunk: %s\n", chunk_file);
+    FILE *file = fopen(chunk_file, "wb");
     if(!file) {
         free(chunk_file);
         return;
@@ -219,7 +233,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
 
 #ifdef _WIN32
     WIN32_FILE_ATTRIBUTE_DATA file_info;
-    if (GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
+    if(GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
         LARGE_INTEGER file_size;
         file_size.LowPart = file_info.nFileSizeLow;
         file_size.HighPart = file_info.nFileSizeHigh;
@@ -227,26 +241,26 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     }
 #else
     struct stat sb;
-    if (stat(chunk_file, &sb) == 0) {
+    if(stat(chunk_file, &sb) == 0) {
         chunk_provider->world->size_on_disk -= sb.st_size;
     }
 #endif
 
     nbt_base_t nbt_base = nbt_tag_compound_create();
     nbt_base_t nbt = nbt_tag_compound_create();
-    nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     chunk_write_nbt_data(chunk, &nbt);
+    nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     progress_bar_write(file, &nbt_base);
 
 #ifdef _WIN32
-    if (GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
+    if(GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
         LARGE_INTEGER file_size;
         file_size.LowPart = file_info.nFileSizeLow;
         file_size.HighPart = file_info.nFileSizeHigh;
         chunk_provider->world->size_on_disk += file_size.QuadPart;
     }
 #else
-    if (stat(chunk_file, &sb) == 0) {
+    if(stat(chunk_file, &sb) == 0) {
         chunk_provider->world->size_on_disk += sb.st_size;
     }
 #endif
@@ -255,7 +269,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
 }
 
 void chunk_provider_load_populate(chunk_provider_t *chunk_provider, chunk_provider_t *gen, int x, int z) {
-    chunk_t *chunk = chunk_provider_provide_chunk(chunk_provider, x, z);
+    chunk_t *chunk = chunk_provider->chunk_provide(chunk_provider, x, z);
     if(!chunk->is_terrain_populated) {
         chunk->is_terrain_populated = 1;
         chunk_provider->chunk_provider_gen->populate(chunk_provider->chunk_provider_gen, gen, x, z);

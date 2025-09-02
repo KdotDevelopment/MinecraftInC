@@ -25,6 +25,7 @@ screen_t screen_world_name_create(screen_t *parent, char *name, int id) {
 
 void screen_world_name_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
+    screen->buttons = array_list_clear(screen->buttons);
     button_t button_save = button_create(0, screen->width / 2 - 100, screen->height / 4 + 120, "Save");
     button_t button_cancel = button_create(1, screen->width / 2 - 100, screen->height / 4 + 144, "Cancel");
     screen->buttons = array_list_push(screen->buttons, &button_save);
@@ -40,7 +41,7 @@ void screen_world_name_tick(struct screen_s *proto_screen) {
     screen_tick(proto_screen);
 }
 
-void screen_world_name_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
+void screen_world_name_render(struct screen_s *proto_screen, int mouse_x, int mouse_y, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 40, 0xFFFFFFFF);

@@ -28,12 +28,12 @@ float AABB_get_size(AABB_t a) {
 }
 
 float AABB_clip_x_collide(AABB_t a, AABB_t b, float x) {
-    if (b.y1 > a.y0 && b.y0 < a.y1) {
-        if (b.z1 > a.z0 && b.z0 < a.z1) {
+    if(b.y1 > a.y0 && b.y0 < a.y1) {
+        if(b.z1 > a.z0 && b.z0 < a.z1) {
             float max = a.x0 - b.x1 - epsilon;
-            if (x > 0.0 && b.x1 <= a.x0 && max < x) x = max;
+            if(x > 0.0 && b.x1 <= a.x0 && max < x) x = max;
             max = a.x1 - b.x0 + epsilon;
-            if (x < 0.0 && b.x0 >= a.x1 && max > x) x = max;
+            if(x < 0.0 && b.x0 >= a.x1 && max > x) x = max;
             return x;
         } else {
             return x;
@@ -44,12 +44,12 @@ float AABB_clip_x_collide(AABB_t a, AABB_t b, float x) {
 }
 
 float AABB_clip_y_collide(AABB_t a, AABB_t b, float y) {
-    if (b.x1 > a.x0 && b.x0 < a.x1) {
-        if (b.z1 > a.z0 && b.z0 < a.z1) {
+    if(b.x1 > a.x0 && b.x0 < a.x1) {
+        if(b.z1 > a.z0 && b.z0 < a.z1) {
             float max = a.y0 - b.y1 - epsilon;
-            if (y > 0.0 && b.y1 <= a.y0 && max < y) y = max;
+            if(y > 0.0 && b.y1 <= a.y0 && max < y) y = max;
             max = a.y1 - b.y0 + epsilon;
-            if (y < 0.0 && b.y0 >= a.y1 && max > y) y = max;
+            if(y < 0.0 && b.y0 >= a.y1 && max > y) y = max;
             return y;
         } else {
             return y;
@@ -60,12 +60,12 @@ float AABB_clip_y_collide(AABB_t a, AABB_t b, float y) {
 }
 
 float AABB_clip_z_collide(AABB_t a, AABB_t b, float z) {
-    if (b.x1 > a.x0 && b.x0 < a.x1) {
-        if (b.y1 > a.y0 && b.y0 < a.y1) {
+    if(b.x1 > a.x0 && b.x0 < a.x1) {
+        if(b.y1 > a.y0 && b.y0 < a.y1) {
             float max = a.z0 - b.z1 - epsilon;
-            if (z > 0.0 && b.z1 <= a.z0 && max < z) z = max;
+            if(z > 0.0 && b.z1 <= a.z0 && max < z) z = max;
             max = a.z1 - b.z0 + epsilon;
-            if (z < 0.0 && b.z0 >= a.z1 && max > z) z = max;
+            if(z < 0.0 && b.z0 >= a.z1 && max > z) z = max;
             return z;
         } else {
             return z;

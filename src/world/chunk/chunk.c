@@ -73,8 +73,8 @@ void chunk_update_skylight(chunk_t *chunk, int x, int z) {
 }
 
 void chunk_check_skylight_neighbor_height(chunk_t *chunk, int x, int z, int height) {
-    int neighbor_height = chunk_get_height_value(chunk, x, z);
-    if (neighbor_height > height) {
+    int neighbor_height = world_get_height_value(chunk->world, x, z);
+    if(neighbor_height > height) {
         world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, x, height, z, x, neighbor_height, z);
     }else if(neighbor_height < height) {
         world_schedule_light_update(chunk->world, LIGHT_TYPE_SKY, x, neighbor_height, z, x, height, z);
@@ -168,7 +168,7 @@ uint8_t chunk_set_block(chunk_t *chunk, int x, int y, int z, int block_id) {
         if(y >= height) {
             chunk_relight_block(chunk, x, y + 1, z);
         }
-    }else if (y == height - 1) {
+    }else if(y == height - 1) {
         chunk_relight_block(chunk, x, y, z);
     }
 
@@ -228,6 +228,7 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
     nbt_tag_compound_set_byte_array(nbt, "HeightMap", (uint8_t *)chunk->height_map, CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH);
     nbt_tag_compound_set_boolean(nbt, "TerrainPopulated", chunk->is_terrain_populated);
     chunk->has_entities = 0;
+    return;
 
     nbt_base_t entity_nbt_list = nbt_tag_list_create();
 
@@ -237,7 +238,7 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
         int size = array_list_length(chunk->entities[i]);
         for(int j = 0; j < size; j++) {
             entity_t *entity = *(entity_t **)array_list_get(chunk->entities[i], j);
-            // if (add entity id) (wrapper for entity_write_nbt but adds specific id name)
+            // if(add entity id) (wrapper for entity_write_nbt but adds specific id name)
             entity_nbt = nbt_tag_compound_create();
             nbt_tag_list_set_tag(&entity_nbt_list, &entity_nbt);
             chunk->has_entities = 1;
@@ -439,7 +440,7 @@ void chunk_unload_entities(chunk_t *chunk) {
     }
 }
 
-void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t **entity_list) {
+void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t ***entity_list) {
     int y0 = floor_double((box.y0 - 2) / CHUNK_SIZE_WIDTH);
     int y1 = floor_double((box.y1 + 2) / CHUNK_SIZE_WIDTH);
     
@@ -450,9 +451,9 @@ void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t *
 
     for(int i = y0; i <= y1; i++) {
         for(int j = 0; j < array_list_length(chunk->entities[i]); j++) {
-            entity_t *other = (entity_t *)array_list_get(chunk->entities[i], j);
+            entity_t *other = *(entity_t **)array_list_get(chunk->entities[i], j);
             if(other != entity && AABB_intersects_inner(box, other->bb)) {
-                entity_list = array_list_push(entity_list, other);
+                *entity_list = array_list_push(*entity_list, other);
             }
         }
     }

@@ -30,7 +30,7 @@ void nibble_array_set(uint8_t *nibble_array, int x, int y, int z, uint8_t data) 
     x = x << 11 | z << 7 | y;
     y = x / 2;
     x &= 1;
-    if (x == 0) {
+    if(x == 0) {
         nibble_array[y] = (nibble_array[y] & 0xF0) | (data & 0x0F);
     } else {
         nibble_array[y] = (nibble_array[y] & 0x0F) | ((data & 0x0F) << 4);

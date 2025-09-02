@@ -39,7 +39,7 @@ void screen_death_on_button_clicked(struct screen_s *screen, button_t *button) {
     }
 }
 
-void screen_death_render(struct screen_s *screen, int mx, int my) {
+void screen_death_render(struct screen_s *screen, int mx, int my, float partial_tick) {
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x50000060, 0x803030A0);
     glPushMatrix();
     glScalef(2, 2, 2);
@@ -47,5 +47,5 @@ void screen_death_render(struct screen_s *screen, int mx, int my) {
     glPopMatrix();
     gui_draw_centered_string(screen->font, "Score: &e", screen->width / 2, 100, 0xFFFFFFFF);
     gui_fill_gradient(0, 0, screen->width, screen->height, 0x60500000, 0xA0803030);
-    screen_render(screen, mx, my);
+    screen_render(screen, mx, my, partial_tick);
 }

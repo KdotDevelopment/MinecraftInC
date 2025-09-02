@@ -7,7 +7,7 @@
 
 void frustum_normalize(frustum_t *frustum, int plane) {
     float length = vec3_length((vec3_t){ frustum->planes[plane][0], frustum->planes[plane][1], frustum->planes[plane][2] });
-    for (int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++) {
         frustum->planes[plane][i] /= length;
     }
 }

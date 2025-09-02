@@ -64,7 +64,7 @@ void private_block_flower_render(block_t *block, float x, float y, float z) {
     float v1 = v0 / 256.0;
     float u2 = (u0 + 15.99) / 256.0;
     float v2 = (v0 + 15.99) / 256.0;
-    for (int i = 0; i < 2; i++) {
+    for(int i = 0; i < 2; i++) {
         float s = tsin(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
         float c = tcos(i * M_PI / 2.0 + M_PI / 4.0) * 0.5;
         float x1 = x + 0.5 - s;

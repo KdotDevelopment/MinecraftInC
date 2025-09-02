@@ -29,7 +29,7 @@ int get_block_on_screen(screen_t *screen, int mx, int my) {
     return -1;
 }
 
-void screen_block_select_render(struct screen_s *proto_screen, int mx, int my) {
+void screen_block_select_render(struct screen_s *proto_screen, int mx, int my, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
     int block_i = get_block_on_screen(screen, mx, my);
     gui_fill_gradient(screen->width / 2 - 120, 30, screen->width / 2 + 120, 180, 0x05050090, 0x303060C0);
@@ -60,7 +60,7 @@ void screen_block_select_render(struct screen_s *proto_screen, int mx, int my) {
         glPopMatrix();
     }
 
-    screen_render(proto_screen, mx, my);
+    screen_render(proto_screen, mx, my, partial_tick);
 }
 
 void screen_block_select_on_mouse_clicked(struct screen_s *proto_screen, int x, int y, int button) {

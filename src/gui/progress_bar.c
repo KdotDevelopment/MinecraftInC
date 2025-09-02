@@ -13,7 +13,6 @@
 
 #ifdef _WIN32
 #include <io.h>
-#define fileno _fileno
 #else
 #include <unistd.h>
 #endif

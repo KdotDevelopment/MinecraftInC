@@ -17,29 +17,29 @@
 #include <limits.h>
 #include <stdio.h>
 
-renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *world, textures_t *textures) {
-    renderer_world_t renderer = { 0 };
+void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minecraft, world_t *world, textures_t *textures) {
+    memset(renderer, 0, sizeof(renderer_world_t));
 
-    renderer.minecraft = minecraft;
-    renderer.ticks = 0;
-    renderer.last_load_x = -9999;
-    renderer.last_load_y = -9999;
-    renderer.last_load_z = -9999;
-    renderer.textures = textures;
-    renderer.list_id = glGenLists(2);
-    renderer.render_list_base = glGenLists(786432);
-    renderer.world = world;
-    renderer.renderer_chunks_to_update = array_list_create(sizeof(uint64_t));
-    renderer.render_lists = array_list_create(sizeof(int));
+    renderer->minecraft = minecraft;
+    renderer->ticks = 0;
+    renderer->last_load_x = -9999;
+    renderer->last_load_y = -9999;
+    renderer->last_load_z = -9999;
+    renderer->textures = textures;
+    renderer->list_id = glGenLists(2);
+    renderer->render_list_base = glGenLists(786432);
+    renderer->world = world;
+    renderer->renderer_chunks_to_update = array_list_create(sizeof(uint64_t));
+    renderer->render_lists = array_list_create(sizeof(int));
 
-    if(renderer.occlusion_enabled) {
-        memset(renderer.occlusion_query_base, 0, sizeof(renderer.occlusion_query_base));
-        glGenQueriesARB(262144, renderer.occlusion_query_base);
+    if(renderer->occlusion_enabled) {
+        memset(renderer->occlusion_query_base, 0, sizeof(renderer->occlusion_query_base));
+        glGenQueriesARB(262144, renderer->occlusion_query_base);
     }
 
     // Star renderer
-    renderer.star_render_list = glGenLists(1);
-    glNewList(renderer.star_render_list, GL_COMPILE);
+    renderer->star_render_list = glGenLists(1);
+    glNewList(renderer->star_render_list, GL_COMPILE);
     // fun fact: this seed dictates the star formation
     random_t random = random_create(10842);
 
@@ -61,8 +61,8 @@ renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *w
     glEndList();
 
     // Sky renderer
-    renderer.sky_render_list = glGenLists(1);
-    glNewList(renderer.sky_render_list, GL_COMPILE);
+    renderer->sky_render_list = glGenLists(1);
+    glNewList(renderer->sky_render_list, GL_COMPILE);
     tesselator_begin_quads();
 
     for(int x = 0; x <= 256; x += 32) {
@@ -76,8 +76,6 @@ renderer_world_t renderer_world_create(struct minecraft_s *minecraft, world_t *w
 
     tesselator_end();
     glEndList();
-
-    return renderer;
 }
 
 void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
@@ -176,7 +174,7 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
     renderer->entities_total = array_list_length(entities);
 
     for(int i = 0; i < renderer->entities_total; i++) {
-        entity_t *entity = array_list_get(entities, i);
+        entity_t *entity = *(entity_t **)array_list_get(entities, i);
         double dx = entity->x - pos.x;
         double dy = entity->y - pos.y;
         double dz = entity->z - pos.z;
@@ -661,15 +659,15 @@ void renderer_world_queue_chunks(renderer_world_t *renderer, int x0, int y0, int
     y1 /= CHUNK_SIZE_WIDTH;
     z1 /= CHUNK_SIZE_WIDTH;
     
-    for (int x = x0; x <= x1; x++) {
+    for(int x = x0; x <= x1; x++) {
         int wrapped_x = x % renderer->x_chunks;
         if(wrapped_x < 0) wrapped_x += renderer->x_chunks;
 
-        for (int y = y0; y <= y1; y++) {
+        for(int y = y0; y <= y1; y++) {
             int wrapped_y = y % renderer->y_chunks;
             if(wrapped_y < 0) wrapped_y += renderer->y_chunks;
 
-            for (int z = z0; z <= z1; z++) {
+            for(int z = z0; z <= z1; z++) {
                 int wrapped_z = z % renderer->z_chunks;
                 if(wrapped_z < 0) wrapped_z += renderer->z_chunks;
 

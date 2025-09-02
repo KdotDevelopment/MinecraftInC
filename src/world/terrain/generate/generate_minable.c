@@ -28,7 +28,7 @@ uint8_t generate_mineable_gen(world_t *world, random_t *random, int gen_x, int g
                     double norm_y = (y + 0.5 - current_y) / (radius_y / 2.0);
                     double norm_z = (z + 0.5 - current_z) / (radius_x / 2.0);
 
-                    if (norm_x * norm_x + norm_y * norm_y + norm_z * norm_z <= 1.0 && world_get_block(world, x, y, z) == blocks.stone.id) {
+                    if(norm_x * norm_x + norm_y * norm_y + norm_z * norm_z <= 1.0 && world_get_block(world, x, y, z) == blocks.stone.id) {
                         world_set_block_no_update(world, x, y, z, block_id);
                     }
                 }

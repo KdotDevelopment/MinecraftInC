@@ -33,8 +33,8 @@ void particles_tick(particles_t *particles) {
 }
 
 void particles_destroy(particles_t *particles) {
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < array_list_length(particles->particles[i]); j++) {
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < array_list_length(particles->particles[i]); j++) {
             particle_t *particle = particles->particles[i][j];
             free(particle);
         }

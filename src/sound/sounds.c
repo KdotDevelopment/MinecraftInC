@@ -163,7 +163,7 @@ sounds_t sounds_create() {
     sounds.music_volume = 1.0f;
     sounds.sound_volume = 1.0f;
 
-    for (int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++) {
         alSource3f(sounds.grass[i].source, AL_POSITION, 0, 0, 0);
         alSource3f(sounds.gravel[i].source, AL_POSITION, 0, 0, 0);
         alSource3f(sounds.stone[i].source, AL_POSITION, 0, 0, 0);
@@ -256,7 +256,7 @@ void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitc
 }
 
 void sounds_destroy(sounds_t *sounds) {
-    for (int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++) {
         sound_destroy(&sounds->grass[i]);
         sound_destroy(&sounds->gravel[i]);
         sound_destroy(&sounds->stone[i]);

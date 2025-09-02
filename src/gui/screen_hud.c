@@ -19,7 +19,7 @@ screen_hud_t screen_hud_create(struct minecraft_s *minecraft, int width, int hei
     return hud;
 }
 
-void screen_hud_render(screen_hud_t *hud, float delta, float mx, float my) {
+void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick) {
     renderer_camera_setup_gui(&hud->minecraft->renderer);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/gui.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -91,7 +91,7 @@ void screen_hud_render(screen_hud_t *hud, float delta, float mx, float my) {
             glPushMatrix();
             glTranslatef(x, y, -50.0);
             if(hud->minecraft->player.inventory.pop_times[i] > 0) {
-                float a = (hud->minecraft->player.inventory.pop_times[i] - delta) / 5.0;
+                float a = (hud->minecraft->player.inventory.pop_times[i] - partial_tick) / 5.0;
                 float b = -tsin(a * a * M_PI) * 8.0;
                 float c = tsin(a * a * M_PI) + 1.0;
                 float d = tsin(a * M_PI) + 1.0;

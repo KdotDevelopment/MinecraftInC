@@ -30,7 +30,7 @@ polygon_t polygon_create_float(vertex_t vertices[4], float u1, float v1, float u
 void polygon_flip(polygon_t *polygon) {
     vertex_t vertices[4];
 
-    for (uint8_t j = 0; j < 4; j++) {
+    for(uint8_t j = 0; j < 4; j++) {
         vertices[j] = polygon->vertices[3 - j];
     }
 

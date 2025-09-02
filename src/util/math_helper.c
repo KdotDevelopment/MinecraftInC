@@ -3,7 +3,7 @@
 static float math_helper[0x10000];
 
 void math_helper_initialize() {
-    for (int i = 0; i < sizeof(math_helper) / sizeof(float); i++) {
+    for(int i = 0; i < sizeof(math_helper) / sizeof(float); i++) {
         math_helper[i] = sin(i * 2.0 * M_PI / (float)0xFFFF);
     }
 }

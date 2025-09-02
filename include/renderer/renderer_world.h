@@ -50,7 +50,7 @@ typedef struct renderer_world_s {
     int renderers_rendered;
 } renderer_world_t;
 
-renderer_world_t renderer_world_create(struct minecraft_s *minecraft, struct world_s *world, textures_t *textures);
+void renderer_world_create(renderer_world_t *renderer,struct minecraft_s *minecraft, struct world_s *world, textures_t *textures);
 void renderer_world_change_world(renderer_world_t *renderer, struct world_s *world);
 void renderer_world_load_renderers(renderer_world_t *renderer);
 void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frustum_t *frustum, float partial_tick);

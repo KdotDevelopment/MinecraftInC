@@ -63,7 +63,7 @@ void tesselator_end() {
         }
 
         glEnableClientState(GL_VERTEX_ARRAY);
-        glDrawArrays(g_tesselator.draw_mode, GL_POINTS, g_tesselator.vertex_count);
+        glDrawArrays(g_tesselator.draw_mode, 0, g_tesselator.vertex_count);
         glDisableClientState(GL_VERTEX_ARRAY);
 
         if(g_tesselator.has_texture) {
@@ -117,28 +117,33 @@ void tesselator_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     g_tesselator.color = (a << 24) | (b << 16) | (g << 8) | r;
 }
 
-void tesselator_vertex_uv(float x, float y, float z, float u, float v) {
+void tesselator_vertex_uv(double x, double y, double z, double u, double v) {
     g_tesselator.has_texture = 1;
     g_tesselator.u = u;
     g_tesselator.v = v;
     tesselator_vertex(x, y, z);
 }
 
-void tesselator_vertex(float x, float y, float z) {
+void tesselator_vertex(double x, double y, double z) {
     g_tesselator.added_vertices++;
 
     if(g_tesselator.has_texture) {
-        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 3] = *(uint32_t *)&g_tesselator.u;
-        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 4] = *(uint32_t *)&g_tesselator.v;
+        float u = g_tesselator.u;
+        float v = g_tesselator.v;
+        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 3] = *(uint32_t *)&u;
+        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 4] = *(uint32_t *)&v;
     }
 
     if(g_tesselator.has_color) {
         g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 5] = g_tesselator.color;
     }
 
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index] = (int)(x + g_tesselator.x_offset);
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 1] = (int)(y + g_tesselator.y_offset);
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 2] = (int)(z + g_tesselator.z_offset);
+    float new_x = x + g_tesselator.x_offset;
+    float new_y = y + g_tesselator.y_offset;
+    float new_z = z + g_tesselator.z_offset;
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index] = *(uint32_t *)&new_x;
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 1] = *(uint32_t *)&new_y;
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 2] = *(uint32_t *)&new_z;
     g_tesselator.raw_buffer_index += 8;
     g_tesselator.vertex_count++;
 

@@ -7,6 +7,7 @@ typedef struct {
     int width_map[256];
     char *texture_name;
     int texture;
+    int render_list;
     game_settings_t *settings;
 } font_t;
 

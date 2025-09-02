@@ -24,6 +24,7 @@ screen_t screen_controls_create(screen_t *parent, game_settings_t *settings) {
 
 void screen_controls_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
+    screen->buttons = array_list_clear(screen->buttons);
     for(int i = 0; i < array_list_length(screen->settings->bindings); i++) {
         char *text = game_settings_get_binding(screen->settings, i);
         button_t button = button_create_size(i, screen->width / 2 - 155 + i % 2 * 160, screen->height / 6 + 24 * (i / 2 + 1) - 24, 150, 20, text);
@@ -36,12 +37,12 @@ void screen_controls_on_open(struct screen_s *proto_screen) {
     screen_on_open(proto_screen);
 }
 
-void screen_controls_render(struct screen_s *proto_screen, int mx, int my) {
+void screen_controls_render(struct screen_s *proto_screen, int mx, int my, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
-    gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
+    screen_render_background(screen);
     gui_draw_centered_string(screen->font, screen->title, screen->width / 2, 20, 0xFFFFFFFF);
 
-    screen_render(proto_screen, mx, my);
+    screen_render(proto_screen, mx, my, partial_tick);
 }
 
 void screen_controls_on_key_pressed(struct screen_s *proto_screen, char event_char, int event_key) {

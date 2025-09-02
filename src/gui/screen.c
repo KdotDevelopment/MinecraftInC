@@ -1,7 +1,8 @@
 #include <gui/screen.h>
+
 #include <gui/gui.h>
 #include <minecraft.h>
-
+#include <renderer/tesselator.h>
 #include <util/array_list.h>
 
 #include <GL/glew.h>
@@ -24,7 +25,7 @@ screen_t screen_create() {
     return screen;
 }
 
-void screen_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
+void screen_render(struct screen_s *proto_screen, int mouse_x, int mouse_y, float partial_tick) {
     screen_t *screen = (screen_t *)proto_screen;
 
     for(int i = 0; i < array_list_length(screen->buttons); i++) {
@@ -41,14 +42,32 @@ void screen_render(struct screen_s *proto_screen, int mouse_x, int mouse_y) {
             gui_blit(button->x, button->y, 0, 46 + state * 20, button->width / 2, button->height, 0.0);
             gui_blit(button->x + button->width / 2, button->y, 200 - button->width / 2, 46 + state * 20, button->width / 2, button->height, 0.0);
             if(!button->active) {
-                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xa0a0a0ff);
+                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xffa0a0a0);
             }else if(hovered) {
-                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xffffa0ff);
+                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xffffffa0);
             }else {
-                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xe0e0e0ff);
+                gui_draw_centered_string(screen->font, button->string, button->x + button->width / 2, button->y + (button->height - 8) / 2, 0xffe0e0e0);
             }
         }
     }
+}
+
+void screen_render_background(screen_t *screen) {
+    if(screen->minecraft->world == NULL) {
+        gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
+        return;
+    }
+    glDisable(GL_LIGHTING);
+    glDisable(GL_FOG);
+    glBindTexture(GL_TEXTURE_2D, textures_load(&((minecraft_t *)screen->minecraft)->textures, "dirt.png"));
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    tesselator_begin_quads();
+    tesselator_color_opaque_int(0x40404000);
+    tesselator_vertex_uv(0, screen->height, 0, 0, screen->height / 32);
+    tesselator_vertex_uv(screen->width, screen->height, 0, screen->width / 32, screen->height / 32);
+    tesselator_vertex_uv(screen->width, 0, 0, screen->width / 32, 0);
+    tesselator_vertex_uv(0, 0, 0, 0, 0);
+    tesselator_end();
 }
 
 void screen_on_key_pressed(struct screen_s *proto_screen, char event_char, int event_key) {

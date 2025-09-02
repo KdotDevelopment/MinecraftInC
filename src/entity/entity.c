@@ -91,11 +91,11 @@ void entity_turn(entity_t *entity, float y_rot, float x_rot) {
     float curr_y_rot = entity->y_rot;
     entity->y_rot = (float)((double)entity->y_rot + (double)x_rot * 0.15);
     entity->x_rot = (float)((double)entity->x_rot - (double)y_rot * 0.15);
-    if (entity->x_rot < -90.0F) {
+    if(entity->x_rot < -90.0F) {
         entity->x_rot = -90.0F;
     }
 
-    if (entity->x_rot > 90.0F) {
+    if(entity->x_rot > 90.0F) {
         entity->x_rot = 90.0F;
     }
 
@@ -106,11 +106,11 @@ void entity_turn(entity_t *entity, float y_rot, float x_rot) {
 void entity_interpolate_turn(entity_t *entity, float y_rot, float x_rot) {
     entity->y_rot = (float)((double)entity->y_rot + (double)y_rot * 0.15);
     entity->x_rot = (float)((double)entity->x_rot - (double)x_rot * 0.15);
-    if (entity->x_rot < -90.0F) {
+    if(entity->x_rot < -90.0F) {
         entity->x_rot = -90.0F;
     }
 
-    if (entity->x_rot > 90.0F) {
+    if(entity->x_rot > 90.0F) {
         entity->x_rot = 90.0F;
     }
 }

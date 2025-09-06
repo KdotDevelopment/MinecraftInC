@@ -34,6 +34,7 @@ void renderer_block_render_inside(renderer_block_t *renderer, block_t *block, in
 }
 
 uint8_t renderer_block_render_normal(renderer_block_t *renderer, block_t *block, int x, int y, int z) {
+    //printf("Rendering normal block %d at %d, %d, %d\n", block->id, x, y, z);
     float center_brightness = block->get_brightness(block, renderer->world, x, y, z);
     uint8_t is_rendered = 0;
     if(renderer->flip_texture || block->can_render_side(block, renderer->world, x, y - 1, z, 0)) {
@@ -737,9 +738,9 @@ void renderer_block_render_west(renderer_block_t *renderer, block_t *block, doub
     double z1 = z + block->z1;
 
     tesselator_vertex_uv(x0, y1, z1, u1, v0);
-    tesselator_vertex_uv(x0, y1, z1, u0, v0);
+    tesselator_vertex_uv(x0, y1, z0, u0, v0);
     tesselator_vertex_uv(x0, y0, z0, u0, v1);
-    tesselator_vertex_uv(x0, y0, z0, u1, v1);
+    tesselator_vertex_uv(x0, y0, z1, u1, v1);
 }
 
 void renderer_block_render_east(renderer_block_t *renderer, block_t *block, double x, double y, double z, int texture_id) {

@@ -51,6 +51,11 @@ void screen_title_on_button_clicked(screen_t *screen, button_t *button) {
         *options = screen_options_create(screen, &screen->minecraft->settings);
         minecraft_set_current_screen(screen->minecraft, (screen_t *)options);
     }
+    if(button->id == 1) {
+        screen_t *select_world = malloc(sizeof(screen_t));
+        *select_world = screen_select_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, (screen_t *)select_world);
+    }
 }
 
 void screen_title_render(screen_t *screen, int mouse_x, int mouse_y, float partial_tick) {
@@ -70,24 +75,24 @@ void screen_title_render(screen_t *screen, int mouse_x, int mouse_y, float parti
     char *copyright = "Copyright Mojang Specifications. Do not distribute.";
     gui_draw_string(screen->font, copyright, screen->width - font_get_width(screen->font, copyright) - 2, screen->height - 10, 0xFFFFFF);
 
-    /*long max_mem = stats_get_max_memory();
-    long total_mem = stats_get_total_memory();
-    long free_mem = stats_get_free_memory();
-    long avail_mem = max_mem - free_mem;
+    uint64_t max_mem = stats_get_max_memory();
+    uint64_t total_mem = stats_get_total_memory();
+    uint64_t free_mem = stats_get_free_memory();
+    uint64_t avail_mem = max_mem - free_mem;
     char string[128];
     snprintf(string, sizeof(string),
         "Free memory: %ld%% of %ldMB",
-        avail_mem * 100L / max_mem,
-        max_mem / 1024L / 1024L
+        avail_mem * 100LL / max_mem,
+        max_mem / 1024LL / 1024LL
     );
-    gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 2, 0xFFFFFF);
+    gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 2, 0x808080);
     memset(string, 0, sizeof(string));
     snprintf(string, sizeof(string),
         "Allocated memory: %ld%% (%ld MB)",
         total_mem * 100L / max_mem,
         total_mem / 1024L / 1024L
     );
-    gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 12, 0xFFFFFF);*/
+    gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 12, 0x808080);
 
     screen_render(screen, mouse_x, mouse_y, partial_tick);
 }

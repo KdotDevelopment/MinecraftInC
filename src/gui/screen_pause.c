@@ -1,8 +1,6 @@
 #include <gui/screen_pause.h>
 #include <gui/screen_options.h>
 #include <gui/screen_generate_world.h>
-#include <gui/screen_save_world.h>
-#include <gui/screen_load_world.h>
 #include <minecraft.h>
 
 screen_t screen_pause_create() {
@@ -21,19 +19,14 @@ void screen_pause_on_open(struct screen_s *proto_screen) {
     screen_t *screen = (screen_t *)proto_screen;
     screen->buttons = array_list_clear(screen->buttons);
     button_t button_options = button_create(0, screen->width / 2 - 100, screen->height / 4, "Options...");
-    button_t button_generate = button_create(1, screen->width / 2 - 100, screen->height / 4 + 24, "Generate new world...");
-    button_t button_save = button_create(2, screen->width / 2 - 100, screen->height / 4 + 48, "Save world...");
-    button_t button_load = button_create(3, screen->width / 2 - 100, screen->height / 4 + 72, "Load world...");
-    button_t button_quit = button_create(4, screen->width / 2 - 100, screen->height / 4 + 120, "Back to game");
-
-    button_save.active = 0;
-    button_load.active = 0;
+    button_t button_change = button_create(1, screen->width / 2 - 100, screen->height / 4 + 24, "Change world...");
+    button_t button_quit = button_create(2, screen->width / 2 - 100, screen->height / 4 + 48, "Quit game");
+    button_t button_back = button_create(3, screen->width / 2 - 100, screen->height / 4 + 120, "Back to game");
 
     screen->buttons = array_list_push(screen->buttons, &button_options);
-    screen->buttons = array_list_push(screen->buttons, &button_generate);
-    screen->buttons = array_list_push(screen->buttons, &button_save);
-    screen->buttons = array_list_push(screen->buttons, &button_load);
+    screen->buttons = array_list_push(screen->buttons, &button_change);
     screen->buttons = array_list_push(screen->buttons, &button_quit);
+    screen->buttons = array_list_push(screen->buttons, &button_back);
 }
 
 void screen_pause_on_button_clicked(struct screen_s *proto_screen, button_t *button) {
@@ -45,21 +38,14 @@ void screen_pause_on_button_clicked(struct screen_s *proto_screen, button_t *but
         minecraft_set_current_screen(screen->minecraft, (screen_t *)options);
     }
     if(button->id == 1) {
-        screen_t *generate_world = malloc(sizeof(screen_t));
-        *generate_world = screen_generate_world_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)generate_world);
+        //screen_t *generate_world = malloc(sizeof(screen_t));
+        //*generate_world = screen_generate_world_create(screen);
+        //minecraft_set_current_screen(screen->minecraft, (screen_t *)generate_world);
     }
     if(button->id == 2) {
-        screen_t *save_world = malloc(sizeof(screen_t));
-        *save_world = screen_save_world_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)save_world);
+        // close world
     }
     if(button->id == 3) {
-        screen_t *load_world = malloc(sizeof(screen_t));
-        *load_world = screen_load_world_create(screen);
-        minecraft_set_current_screen(screen->minecraft, (screen_t *)load_world);
-    }
-    if(button->id == 4) {
         minecraft_grab_mouse(screen->minecraft);
         minecraft_set_current_screen(screen->minecraft, NULL);
     }

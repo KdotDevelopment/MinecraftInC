@@ -224,7 +224,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     if(!chunk_file) {
         return;
     }
-    printf("Saving chunk: %s\n", chunk_file);
+    //printf("Saving chunk: %s\n", chunk_file);
     FILE *file = fopen(chunk_file, "wb");
     if(!file) {
         free(chunk_file);
@@ -292,7 +292,7 @@ void chunk_provider_load_save_chunks(chunk_provider_t *chunk_provider, uint8_t s
 }
 
 uint8_t chunk_provider_load_unload_oldest_chunks(chunk_provider_t *chunk_provider) {
-    chunk_provider->chunk_provider_gen->unload_oldest_chunks(chunk_provider->chunk_provider_gen);
+    //chunk_provider->chunk_provider_gen->unload_oldest_chunks(chunk_provider->chunk_provider_gen);
     // This does nothing
     // The original code has a list but it is never used
     

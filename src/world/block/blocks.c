@@ -35,7 +35,7 @@
 struct blocks_s blocks = { 0 };
 
 void blocks_init() {
-    blocks.air = block_create(BLOCK_AIR, -1, &block_sounds.none, 0, 0, 0);
+    blocks.air = block_create(BLOCK_AIR, -1, &block_sounds.none, 0, 0, &materials.air);
     blocks.stone = block_stone_create(BLOCK_STONE, TEXTURE_STONE, 1.5, 10);
     blocks.grass = block_grass_create();
     blocks.dirt = block_create(BLOCK_DIRT, TEXTURE_DIRT, &block_sounds.gravel, 0.6, 0, &materials.ground);
@@ -92,6 +92,7 @@ void blocks_init() {
     blocks.chest = block_chest_create();
     blocks.gears = block_gears_create();
     blocks.diamond_ore = block_ore_create(BLOCK_DIAMOND_ORE, TEXTURE_DIAMOND_ORE, 3, 5);
+    blocks.diamond = block_metal_create(BLOCK_DIAMOND, TEXTURE_DIAMOND_BLOCK, 5, 10);
     blocks.workbench = block_workbench_create();
     blocks.crops = block_crops_create();
     blocks.farmland = block_farmland_create();

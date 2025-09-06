@@ -44,15 +44,21 @@ static double grad(int i, double x, double y, double z) {
 }
 
 double noise_perlin_get(noise_t *noise, double x, double y, double z) {
-    double vx = x, vy = y, vz = z;
-    vx += noise->x_coord;
-    vy += noise->y_coord;
-    vz += noise->z_coord;
-    int ix = ((int)vx) & 255, iy = ((int)vy) & 255, iz = ((int)vz) & 255;
-    vx -= floor(vx);
-    vy -= floor(vy);
-    vz -= floor(vz);
-    double xd = F(vx), yd = F(vy), zd = F(vz);
+    double vx = x + noise->x_coord;
+    double vy = y + noise->y_coord;
+    double vz = z + noise->z_coord;
+    int ix = ((int)vx) & 255;
+    int iy = ((int)vy) & 255;
+    int iz = ((int)vz) & 255;
+    if(vx < ix) ix--;
+    if(vy < iy) iy--;
+    if(vz < iz) iz--;
+    vx -= ix;
+    vy -= iy;
+    vz -= iz;
+    double xd = F(vx);
+    double yd = F(vy);
+    double zd = F(vz);
     int aaa, aba, aab, abb, baa, bba, bab, bbb;
     aaa = noise->hash[noise->hash[noise->hash[ix] + iy] + iz];
     aba = noise->hash[noise->hash[noise->hash[ix] + iy + 1] + iz];

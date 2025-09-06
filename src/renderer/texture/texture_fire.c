@@ -18,7 +18,7 @@ void texture_fire_tick(texture_animated_t *texture) {
     for(int x = 0; x < 16; x++) {
         for(int y = 0; y < 20; y++) {
             int a = 18;
-            int b = texture->current_fire_frame[x + ((y + 1) % 20 << 4)] * 18.0;
+            float b = texture->current_fire_frame[x + ((y + 1) % 20 << 4)] * 18.0;
 
             for(int xx = x - 1; xx <= x + 1; xx++) {
                 for(int yy = y; yy <= y + 1; yy++) {
@@ -46,9 +46,9 @@ void texture_fire_tick(texture_animated_t *texture) {
         if(pixel_intensity > 1) pixel_intensity = 1;
         if(pixel_intensity < 0) pixel_intensity = 0;
 
-        int b = pixel_intensity * 155 + 100;
-        int c = pixel_intensity * pixel_intensity * 255;
-        int d = pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * 255;
+        int b = pixel_intensity * 155.0 + 100.0;
+        int c = pixel_intensity * pixel_intensity * 255.0;
+        int d = pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * pixel_intensity * 255.0;
         int e = 255;
         // Makes pixel transparent if not intense enough
         if(pixel_intensity < 0.5) e = 0;

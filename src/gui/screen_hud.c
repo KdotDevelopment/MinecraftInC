@@ -12,14 +12,23 @@ screen_hud_t screen_hud_create(struct minecraft_s *minecraft, int width, int hei
     screen_hud_t hud = { 0 };
 
     hud.minecraft = minecraft;
-    hud.width = width * 240 / height;
-    hud.height = height * 240 / height;
+    hud.width = width;
+    hud.height = height;
     hud.random = random_create(time(NULL));
 
     return hud;
 }
 
 void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick) {
+    int x = hud->minecraft->frame_width;
+    int y = hud->minecraft->frame_height;
+    int w = x;
+    int h = y;
+    for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
+    w /= x;
+    h /= x;
+    hud->width = w - 20;
+    hud->height = h - 20;
     renderer_camera_setup_gui(&hud->minecraft->renderer);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/gui.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -118,21 +127,9 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
         }
     }
 
-    font_render(&hud->minecraft->font, "0.30", 2, 2, 0xffffffff);
+    glDisable(GL_NORMALIZE);
+    font_render(&hud->minecraft->font, "Minecraft Infdev", 2, 2, 0xffffffff);
     if(hud->minecraft->settings.show_framerate) font_render(&hud->minecraft->font, hud->minecraft->debug, 2, 12, 0xffffffff);
-
-    if(hud->minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
-        char buffer[32];
-        char number[5];
-        sprintf(number, "%d", hud->minecraft->player.score);
-        strcpy(buffer, "Score: &e");
-        strcat(buffer, number);
-        font_render(&hud->minecraft->font, buffer, hud->width - font_get_width(&hud->minecraft->font, buffer) - 2, 2, 0xffffffff);
-        sprintf(number, "%d", hud->minecraft->player.arrows);
-        strcpy(buffer, "Arrows: ");
-        strcat(buffer, number);
-        font_render(&hud->minecraft->font, buffer, hud->width / 2 + 8, hud->height - 33, 0xffffffff);
-    }
         
     //chat screen
 

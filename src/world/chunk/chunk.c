@@ -148,6 +148,12 @@ void chunk_relight_block(chunk_t *chunk, int x, int y, int z) {
 }
 
 uint8_t chunk_get_block_id(chunk_t *chunk, int x, int y, int z) {
+    if(x < 0 || x >= CHUNK_SIZE_WIDTH
+        || y < 0 || y >= CHUNK_SIZE_HEIGHT
+        || z < 0 || z >= CHUNK_SIZE_WIDTH) {
+        return 0;
+    }
+    
     return chunk->blocks[x << 11 | z << 7 | y];
 }
 
@@ -162,7 +168,7 @@ uint8_t chunk_set_block(chunk_t *chunk, int x, int y, int z, int block_id) {
         block_list[old_block_id].on_removed(&block_list[old_block_id], chunk->world, xx, y, zz);
     }
 
-    chunk->blocks[x << 11 | z << 7 | y] = block_id;
+    chunk->blocks[x << 11 | z << 7 | y] = (uint8_t)block_id;
     nibble_array_set(chunk->data, x, y, z, 0);
     if(block_list[block_id].light_opacity != 0) {
         if(y >= height) {
@@ -344,7 +350,7 @@ void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
 void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index) {
     if(index < 0) index = 0;
     if(index >= CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH) index = CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH - 1;
-    if(!array_list_contains(chunk->entities[index], entity)) printf("There\'s no such entity to remove: %d\n", index);
+    if(!array_list_contains(chunk->entities[index], &entity)) printf("There\'s no such entity to remove: %d\n", index);
 
     int array_index = array_list_index_of(chunk->entities[index], entity);
     chunk->entities[index] = array_list_remove(chunk->entities[index], array_index);

@@ -53,6 +53,7 @@ typedef struct minecraft_s {
     screen_hud_t hud;
     SDL_Window *window;
     SDL_GLContext context;
+    char *game_dir;
 } minecraft_t;
 
 void minecraft_grab_mouse(minecraft_t *minecraft);

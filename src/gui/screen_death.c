@@ -1,6 +1,5 @@
 #include <gui/screen_death.h>
 #include <gui/screen_generate_world.h>
-#include <gui/screen_load_world.h>
 #include <minecraft.h>
 
 #include <SDL2/SDL.h>
@@ -33,9 +32,9 @@ void screen_death_on_button_clicked(struct screen_s *screen, button_t *button) {
         *gen_screen = screen_generate_world_create(screen);
         minecraft_set_current_screen(screen->minecraft, gen_screen);
     }else if(button->id == 1) {
-        screen_t *load_screen = malloc(sizeof(screen_t));
-        *load_screen = screen_load_world_create(screen);
-        minecraft_set_current_screen(screen->minecraft, load_screen);
+        //screen_t *load_screen = malloc(sizeof(screen_t));
+        //*load_screen = screen_load_world_create(screen);
+        //minecraft_set_current_screen(screen->minecraft, load_screen);
     }
 }
 

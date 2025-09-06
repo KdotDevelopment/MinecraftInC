@@ -2,6 +2,7 @@
 
 #include <util/array_list.h>
 #include <world/block/blocks.h>
+#include <world/chunk/chunk_provider_load.h>
 #include <world/terrain/generate/generate_big_tree.h>
 #include <world/terrain/generate/generate_mineable.h>
 #include <world/terrain/noise/noise.h>
@@ -30,6 +31,17 @@ void chunk_provider_generate_create(chunk_provider_t *chunk_provider, world_t *w
 
     chunk_provider->chunk_provide = chunk_provider_generate_provide_chunk;
     chunk_provider->populate = chunk_provider_generate_populate;
+    chunk_provider->unload_oldest_chunks = chunk_provider_load_unload_oldest_chunks;
+    chunk_provider->save_chunks = chunk_provider_generate_save_chunks;
+    chunk_provider->chunk_exists = chunk_provider_generate_chunk_exists;
+}
+
+uint8_t chunk_provider_generate_chunk_exists(chunk_provider_t *chunk_provider, int x, int z) {
+    return 1;
+}
+
+void chunk_provider_generate_save_chunks(chunk_provider_t *chunk_provider, uint8_t save_entities) {
+    return;
 }
 
 chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider, int chunk_x, int chunk_z) {
@@ -38,7 +50,6 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
     uint8_t chunk_data[32768];
     memset(chunk_data, 0, sizeof(chunk_data));
     chunk_t *chunk = malloc(sizeof(chunk_t));
-    chunk_create_from(chunk, chunk_provider->world, chunk_data, chunk_x, chunk_z);
 
     int noise_start_x = chunk_x * 4;
     int noise_start_z = chunk_z * 4;
@@ -99,12 +110,12 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                         double x_lerp = (double)xx / 4.0;
                         double noise_z0 = noise_x00 + (noise_x10 - noise_x00) * x_lerp;
                         double noise_z1 = noise_x01 + (noise_x11 - noise_x01) * x_lerp;
+                        int block_index = (((xx + (x << 2)) << 11) | ((z << 2) << 7) | ((y << 3) + yy));
 
                         for(int zz = 0; zz < 4; zz++) {
                             double z_lerp = (double)zz / 4.0;
                             double final_noise = noise_z0 + (noise_z1 - noise_z0) * z_lerp;
 
-                            int block_index = (xx + (x << 2)) << 11 | (zz + (z << 2)) << 7 | ((y << 3) + yy);
                             uint8_t block_id = 0;
 
                             if((y << 3) + yy < 64) {
@@ -116,6 +127,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                             }
 
                             chunk_data[block_index] = block_id;
+                            block_index += 128;
                         }
                     }
                 }
@@ -132,14 +144,15 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
             uint8_t gravel = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_z * (1.0 / 32.0), 109.0134, surface_x * (1.0 / 32.0)) + random_next_uniform(&chunk_provider->random) * 0.2 > 3.0;
             int surface_depth = (int)(chunk_provider->noise_5.get(&chunk_provider->noise_5, surface_x * (1.0 / 32.0) * 2.0, surface_z * (1.0 / 32.0) * 2.0, 0) / 3.0 + 3.0 + random_next_uniform(&chunk_provider->random) * 0.25);
             int block_index = x << 11 | z << 7 | (CHUNK_SIZE_HEIGHT - 1);
+            int depth_2 = -1;
             uint8_t top_block = blocks.grass.id;
             uint8_t filler_block = blocks.dirt.id;
 
             for(int y = CHUNK_SIZE_HEIGHT - 1; y >= 0; y--) {
                 if(chunk_data[block_index] == 0) {
-                    surface_depth = -1;
+                    depth_2 = -1;
                 }else if(chunk_data[block_index] == blocks.stone.id) {
-                    if(surface_depth == -1) {
+                    if(depth_2 == -1) {
                         if(surface_depth <= 0) {
                             top_block = 0;
                             filler_block = blocks.stone.id;
@@ -148,6 +161,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                             filler_block = blocks.dirt.id;
                             if(gravel) {
                                 top_block = 0;
+                                filler_block = blocks.gravel.id;
                             }
                             if(sand) {
                                 top_block = blocks.sand.id;
@@ -159,13 +173,14 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                             top_block = blocks.still_water.id;
                         }
 
+                        depth_2 = surface_depth;
                         if(y >= 63) {
                             chunk_data[block_index] = top_block;
                         }else {
                             chunk_data[block_index] = filler_block;
                         }
-                    }else if(surface_depth > 0) {
-                        surface_depth--;
+                    }else if(depth_2 > 0) {
+                        depth_2--;
                         chunk_data[block_index] = filler_block;
                     }
                 }
@@ -174,36 +189,39 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
             }
         }
     }
+    
+    chunk_create_from(chunk, chunk_provider->world, chunk_data, chunk_x, chunk_z);
 
     chunk_generate_height_map(chunk);
+    
     return chunk;
 }
 
 void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_provider_t *interface, int chunk_x, int chunk_z) {
     chunk_provider->random.seed = ((int64_t)chunk_x * 318279123 + (int64_t)chunk_z * 919871212);
 
-    int chunk_start_x = chunk_x / CHUNK_SIZE_WIDTH;
-    int chunk_start_z = chunk_z / CHUNK_SIZE_WIDTH;
+    int chunk_start_x = chunk_x * CHUNK_SIZE_WIDTH;
+    int chunk_start_z = chunk_z * CHUNK_SIZE_WIDTH;
 
     // Coal Ore
     for(int i = 0; i < 20; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         int y = random_next_int_range(&chunk_provider->random, 0, 127);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.coal_ore.id);
     }
 
     // Iron Ore
     for(int i = 0; i < 10; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         int y = random_next_int_range(&chunk_provider->random, 0, 63);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.iron_ore.id);
     }
 
     // Gold Ore
     if(random_next_int_range(&chunk_provider->random, 0, 1) == 0) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         int y = random_next_int_range(&chunk_provider->random, 0, 31);
         int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.gold_ore.id);
@@ -211,7 +229,7 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
 
     // Diamond Ore
     if(random_next_int_range(&chunk_provider->random, 0, 7) == 0) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
         int y = random_next_int_range(&chunk_provider->random, 0, 15);
         int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.diamond_ore.id);
@@ -226,9 +244,10 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
     }
 
     for(int i = 0; i < tree_count; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH) + 8;
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH) + 8;
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
         int y = world_get_height_value(chunk_provider->world, x, z);
-        generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
+        int tree_gen = generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
+        if(tree_gen == 1) printf("TREE\n");
     }
 }

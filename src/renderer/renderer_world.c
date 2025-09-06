@@ -29,8 +29,8 @@ void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minec
     renderer->list_id = glGenLists(2);
     renderer->render_list_base = glGenLists(786432);
     renderer->world = world;
-    renderer->renderer_chunks_to_update = array_list_create(sizeof(uint64_t));
-    renderer->render_lists = array_list_create(sizeof(int));
+    renderer->renderer_chunks_to_update = array_list_create(sizeof(renderer_chunk_t *));
+    renderer->render_lists = array_list_create(sizeof(renderer_chunk_t *));
 
     if(renderer->occlusion_enabled) {
         memset(renderer->occlusion_query_base, 0, sizeof(renderer->occlusion_query_base));
@@ -65,8 +65,8 @@ void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minec
     glNewList(renderer->sky_render_list, GL_COMPILE);
     tesselator_begin_quads();
 
-    for(int x = 0; x <= 256; x += 32) {
-        for(int y = 0; y <= 256; y += 32) {
+    for(int x = -256; x <= 256; x += 32) {
+        for(int y = -256; y <= 256; y += 32) {
             tesselator_vertex(x, 16.0, y);
             tesselator_vertex(x + 32.0, 16.0, y);
             tesselator_vertex(x + 32.0, 16.0, y + 32.0);
@@ -98,7 +98,7 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->render_distance = renderer->minecraft->settings.view_distance;
     if(renderer->renderer_chunks != NULL) {
         for(int i = 0; i < renderer->renderer_chunk_count; i++) {
-            renderer_chunk_t *renderer_chunk = *(renderer_chunk_t **)renderer->renderer_chunks[i];
+            renderer_chunk_t *renderer_chunk = (renderer_chunk_t *)renderer->renderer_chunks[i];
             renderer_chunk_stop_rendering(renderer_chunk);
             free(renderer_chunk);
         }
@@ -115,8 +115,8 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->x_chunks = distance;
     renderer->y_chunks = 8;
     renderer->z_chunks = distance;
-    renderer->renderer_chunks = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(uint64_t));
-    renderer->renderer_chunks_sorted = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(uint64_t));
+    renderer->renderer_chunks = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
+    renderer->renderer_chunks_sorted = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
     renderer->renderer_chunk_count = renderer->x_chunks * renderer->y_chunks * renderer->z_chunks;
     renderer->x0 = 0;
     renderer->y0 = 0;
@@ -125,10 +125,10 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->y1 = renderer->y_chunks;
     renderer->z1 = renderer->z_chunks;
 
-    for(int i = 0; i < array_list_length(renderer->renderer_chunks_to_update); i++) {
+    /*for(int i = 0; i < array_list_length(renderer->renderer_chunks_to_update); i++) {
         renderer_chunk_t *renderer_chunk = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, i);
         renderer_chunk->needs_update = 0;
-    }
+    }*/
 
     renderer->renderer_chunks_to_update = array_list_clear(renderer->renderer_chunks_to_update);
 
@@ -450,6 +450,7 @@ void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
     double dx = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick + (renderer->cloud_offset_x + partial_tick) * 0.03;
     double dy = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
     double dz = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
+    
     vec3_t sky_color = world_get_sky_color(renderer->world, partial_tick);
     float sky_r = sky_color.x;
     float sky_g = sky_color.y;
@@ -508,9 +509,9 @@ void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
     glBindTexture(GL_TEXTURE_2D, textures_load(renderer->textures, "clouds.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
     vec3_t cloud_color = world_get_cloud_color(renderer->world, partial_tick);
-    int cloud_r = cloud_color.x;
-    int cloud_g = cloud_color.y;
-    int cloud_b = cloud_color.z;
+    float cloud_r = cloud_color.x;
+    float cloud_g = cloud_color.y;
+    float cloud_b = cloud_color.z;
     if(renderer->minecraft->settings.anaglyph) {
         float r = (cloud_r * 30.0 + cloud_g * 59.0 + cloud_b * 11.0) / 100.0;
         float g = (cloud_r * 30.0 + cloud_g * 70.0) / 100.0;
@@ -527,6 +528,9 @@ void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
     float height = 120.0 - dy + 0.33;
     float texture_u = (dx * (0.5 / 1024.0));
     float texture_v = (dz * (0.5 / 1024.0));
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     tesselator_begin_quads();
     tesselator_color_float(cloud_r, cloud_g, cloud_b, 1.0);
@@ -555,13 +559,11 @@ void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *playe
     int total_renderers = last_index + 1;
 
     for(int i = 0; i < total_renderers; i++) {
-        renderer_chunk_t *chunk_renderer = array_list_get(renderer->renderer_chunks_to_update, i);
+        renderer_chunk_t *chunk_renderer = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, last_index - i);
         if(renderer_chunk_distance_to_entity_squared(chunk_renderer, player) > 2500.0 && i > 2) {
             return;
         }
-
-        int index = array_list_index_of(renderer->renderer_chunks_sorted, chunk_renderer);
-        renderer->renderer_chunks_sorted = array_list_remove(renderer->renderer_chunks_sorted, index);
+        array_list_remove(renderer->renderer_chunks_to_update, last_index - i);
         renderer_chunk_update(chunk_renderer);
         chunk_renderer->needs_update = 0;
     }

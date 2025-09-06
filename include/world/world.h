@@ -38,11 +38,11 @@ typedef struct chunk_metadata_s {
 } chunk_metadata_t;
 
 typedef struct world_s {
-    uint64_t *lighting_update_list; //chunk_metadata_t
-    uint64_t *loaded_entity_list; // entity_t *
+    chunk_metadata_t **lighting_update_list; //chunk_metadata_t
+    entity_t **loaded_entity_list; // entity_t *
     next_tick_data_t *next_tick_data_list; // next_tick_data_t
-    uint64_t *loaded_tile_entity_list; // tile_entity_t *
-    uint64_t *renderer_world_list; // renderer_world_t *
+    tile_entity_t **loaded_tile_entity_list; // tile_entity_t *
+    renderer_world_t **renderer_world_list; // renderer_world_t *
     int32_t spawn_x;
     int32_t spawn_y;
     int32_t spawn_z;
@@ -74,6 +74,7 @@ typedef struct world_s {
 void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir, char *world_name, int64_t seed);
 void world_spawn_player(world_t *world);
 void world_save(world_t *world, uint8_t check_entities);
+nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name);
 uint8_t world_get_block(world_t *world, int x, int y, int z);
 uint8_t world_block_exists(world_t *world, int x, int y, int z);
 uint8_t world_chunk_exists(world_t *world, int x, int z);

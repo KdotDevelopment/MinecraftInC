@@ -5,6 +5,7 @@
 #include <world/block/blocks.h>
 #include <world/chunk/chunk.h>
 #include <world/world.h>
+#include <minecraft.h>
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -107,11 +108,12 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
     int y1 = renderer->y + renderer->height;
     int z1 = renderer->z + renderer->depth;
 
-    chunk_is_lit = 0;
     for(int i = 0; i < 2; i++) {
         renderer->skip_render[i] = 1;
     }
-    renderer->is_lit = 0;
+
+    chunk_is_lit = 0;
+
     for(int i = 0; i < 2; i++) {
         uint8_t b0 = 0;
         uint8_t b1 = 0;
@@ -120,16 +122,19 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
         glPushMatrix();
         glTranslatef(renderer->x_clip, renderer->y_clip, renderer->z_clip);
         tesselator_begin_quads();
-        tesselator_set_translation(-renderer->x_clip, -renderer->y_clip, -renderer->z_clip);
-
-        for(int x = x0; x < x1; x++) {
-            for(int y = y0; y < y1; y++) {
-                for(int z = z0; z < z1; z++) {
+        tesselator_set_translation(-renderer->x, -renderer->y, -renderer->z);
+        
+        for(int y = y0; y < y1; y++) {
+            for(int z = z0; z < z1; z++) {
+                for(int x = x0; x < x1; x++) {
                     uint8_t block_id = world_get_block(renderer->world, x, y, z);
                     if(block_id > 0) {
                         block_t *block = &block_list[block_id];
-                        if(block->render_pass != i) b0 = 1;
-                        else b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
+                        if(block->render_pass != i) {
+                            b0 = 1;
+                        }else {
+                            b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
+                        }
                     }
                 }
             }
@@ -183,7 +188,7 @@ uint8_t renderer_chunk_skip_all_render_passes(renderer_chunk_t *renderer) {
 int renderer_chunk_entity_compare(const void *a, const void *b) {
     renderer_chunk_t *chunk_a = *(renderer_chunk_t **)a;
     renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
-    return renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? -1 : 1;
+    return renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? 1 : -1;
 }
 
 int renderer_chunk_player_compare(const void *a, const void *b) {
@@ -191,5 +196,5 @@ int renderer_chunk_player_compare(const void *a, const void *b) {
     renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
     uint8_t b1 = chunk_a->is_in_frustum;
     uint8_t b2 = chunk_b->is_in_frustum;
-    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? -1 : 1);
+    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? 1 : -1);
 }

@@ -159,6 +159,29 @@ sounds_t sounds_create() {
     sounds.wood[1] = sound_load(asset_wood2_ogg, sizeof(asset_wood2_ogg));
     sounds.wood[2] = sound_load(asset_wood3_ogg, sizeof(asset_wood3_ogg));
     sounds.wood[3] = sound_load(asset_wood4_ogg, sizeof(asset_wood4_ogg));
+    sounds.sheep[0] = sound_load(asset_sheep1_ogg, sizeof(asset_sheep1_ogg));
+    sounds.sheep[1] = sound_load(asset_sheep2_ogg, sizeof(asset_sheep2_ogg));
+    sounds.sheep[2] = sound_load(asset_sheep3_ogg, sizeof(asset_sheep3_ogg));
+    sounds.pig[0] = sound_load(asset_pig1_ogg, sizeof(asset_pig1_ogg));
+    sounds.pig[1] = sound_load(asset_pig2_ogg, sizeof(asset_pig2_ogg));
+    sounds.pig[2] = sound_load(asset_pig3_ogg, sizeof(asset_pig3_ogg));
+    sounds.pig_death = sound_load(asset_pigdeath_ogg, sizeof(asset_pigdeath_ogg));
+    sounds.bow = sound_load(asset_bow_ogg, sizeof(asset_bow_ogg));
+    sounds.click = sound_load(asset_click_ogg, sizeof(asset_click_ogg));
+    sounds.drr = sound_load(asset_drr_ogg, sizeof(asset_drr_ogg));
+    sounds.explode = sound_load(asset_explode_ogg, sizeof(asset_explode_ogg));
+    sounds.fizz = sound_load(asset_fizz_ogg, sizeof(asset_fizz_ogg));
+    sounds.fuse = sound_load(asset_fuse_ogg, sizeof(asset_fuse_ogg));
+    sounds.hurt = sound_load(asset_hurt_ogg, sizeof(asset_hurt_ogg));
+    sounds.pop = sound_load(asset_pop_ogg, sizeof(asset_pop_ogg));
+    sounds.splash = sound_load(asset_splash_ogg, sizeof(asset_splash_ogg));
+    sounds.lava = sound_load(asset_lava_ogg, sizeof(asset_lava_ogg));
+    sounds.water = sound_load(asset_water_ogg, sizeof(asset_water_ogg));
+    sounds.fire = sound_load(asset_fire_ogg, sizeof(asset_fire_ogg));
+    sounds.ignite = sound_load(asset_ignite_ogg, sizeof(asset_ignite_ogg));
+    sounds.glass[0] = sound_load(asset_glass1_ogg, sizeof(asset_glass1_ogg));
+    sounds.glass[1] = sound_load(asset_glass2_ogg, sizeof(asset_glass2_ogg));
+    sounds.glass[2] = sound_load(asset_glass3_ogg, sizeof(asset_glass3_ogg));
 
     sounds.music_volume = 1.0f;
     sounds.sound_volume = 1.0f;
@@ -169,6 +192,13 @@ sounds_t sounds_create() {
         alSource3f(sounds.stone[i].source, AL_POSITION, 0, 0, 0);
         alSource3f(sounds.wood[i].source, AL_POSITION, 0, 0, 0);
     }
+    for(int i = 0; i < 3; i++) {
+        alSource3f(sounds.sheep[i].source, AL_POSITION, 0, 0, 0);
+        alSource3f(sounds.pig[i].source, AL_POSITION, 0, 0, 0);
+        alSource3f(sounds.glass[i].source, AL_POSITION, 0, 0, 0);
+    }
+    alSource3f(sounds.click.source, AL_POSITION, 0, 0, 0);
+    alSource3f(sounds.bow.source, AL_POSITION, 0, 0, 0);
 
     return sounds;
 }
@@ -207,7 +237,7 @@ void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitc
             sound_play(&sounds->bow, volume * 0.2 * sounds->sound_volume, pitch);
             return;
         case SOUND_RANDOM_CLICK:
-            sound_play(&sounds->click, volume * 0.2 * sounds->sound_volume, pitch);
+            sound_play(&sounds->click, volume * 0.25 * sounds->sound_volume, pitch);
             return;
         case SOUND_RANDOM_DRR:
             sound_play(&sounds->drr, volume * 0.2 * sounds->sound_volume, pitch);

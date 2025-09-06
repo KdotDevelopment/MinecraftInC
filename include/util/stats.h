@@ -1,5 +1,7 @@
 #pragma once
 
-long stats_get_max_memory();
+#include <stdint.h>
+
+uint64_t stats_get_max_memory();
 long stats_get_total_memory();
-long stats_get_free_memory();
+uint64_t stats_get_free_memory();

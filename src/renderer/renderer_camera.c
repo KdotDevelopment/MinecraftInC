@@ -31,7 +31,14 @@ renderer_camera_t renderer_camera_create(minecraft_t *minecraft) {
 }
 
 void renderer_camera_update(renderer_camera_t *renderer) {
+    renderer->fog_fade_prev = renderer->fog_fade;
+    float brightness = world_get_brightness(renderer->minecraft->world, floor_double(renderer->minecraft->player.x), floor_double(renderer->minecraft->player.y), floor_double(renderer->minecraft->player.z));
+    float distance_factor = (3.0 - renderer->minecraft->settings.view_distance) / 3.0;
+    brightness = brightness * (1.0 - distance_factor) + distance_factor;
+    renderer->fog_fade += (brightness - renderer->fog_fade) * 0.1;
+    renderer->ticks++;
 
+    // TODO
 }
 
 vec3_t renderer_camera_get_player_vector(renderer_camera_t *renderer, float delta) {
@@ -77,6 +84,51 @@ void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
     }
 
     // TODO
+
+    int mx = 0, my = 0;
+    SDL_GetMouseState(&mx, &my);
+    int x = renderer->minecraft->width;
+    int y = renderer->minecraft->height;
+    int w = x;
+    int h = y;
+    for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
+    w /= x;
+    h /= x;
+    mx = mx * w / renderer->minecraft->width;
+    my = my * h / renderer->minecraft->height - 1;
+
+    if(renderer->minecraft->world != NULL) {
+        renderer_camera_update_camera(renderer, delta);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glColor4ub(255, 0, 255, 255);
+        glOrtho(0.0, w, h, 0.0, 0.0, 1);
+        renderer_camera_setup_gui(renderer);
+        screen_hud_render(&renderer->minecraft->hud, mx, my, delta);
+    }else {
+        glViewport(0, 0, renderer->minecraft->frame_width, renderer->minecraft->frame_height);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        renderer_camera_setup_gui(renderer);
+    }
+
+    if(renderer->minecraft->current_screen != NULL) {
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glColor4ub(255, 0, 255, 255);
+        glOrtho(0.0, w, h, 0.0, 0.0, 1);
+        renderer->minecraft->current_screen->render((struct screen_s *)renderer->minecraft->current_screen, mx, my, delta);
+    }
 
     SDL_Delay(0);
     SDL_GL_SwapWindow(renderer->minecraft->window);
@@ -187,7 +239,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
             renderer->fog_g = ag;
             renderer->fog_b = ab;
         }
-        
+
         glClearColor(renderer->fog_r, renderer->fog_g, renderer->fog_b, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_CULL_FACE);
@@ -212,7 +264,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glLoadIdentity();
         if(renderer->minecraft->settings.anaglyph) glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
 
-        renderer_camera_hurt_effect(renderer, delta);
+        //renderer_camera_hurt_effect(renderer, delta);
         if(renderer->minecraft->settings.show_bobbing) renderer_camera_apply_bobbing(renderer, delta);
 
         if(!renderer->minecraft->settings.third_person) {
@@ -251,12 +303,13 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
 
         renderer_camera_setup_fog(renderer);
         glEnable(GL_FOG);
+        //renderer_world_update_renderers(&renderer->minecraft->renderer_world, &player->mob.entity);
         renderer_world_draw_sky(&renderer->minecraft->renderer_world, delta);
-        renderer_world_update_renderers(&renderer->minecraft->renderer_world, &player->mob.entity);
 
         renderer_camera_setup_fog(renderer);
         frustum_set_position(&frustum, dx, dy, dz);
         renderer_world_update_frustum(&renderer->minecraft->renderer_world, &frustum);
+        glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
         renderer_world_update_renderers(&renderer->minecraft->renderer_world, &player->mob.entity);
 
         renderer_camera_setup_fog(renderer);
@@ -265,12 +318,16 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         // render_helper_disable_standard_item_lighting
         renderer_world_sort_and_render(&renderer->minecraft->renderer_world, &player->mob.entity, 0, delta);
 
-        if(world_is_solid(world, dx, dy, dz)) {
+        int player_x = floor_double(player->x);
+        int player_y = floor_double(player->y);
+        int player_z = floor_double(player->z);
+
+        if(world_is_solid(world, player_x, player_y, player_z)) {
             renderer_block_t block_renderer = renderer_block_create(world);
 
-            for(int x = dx - 1; x <= dx + 1; x++) {
-                for(int y = dy - 1; y <= dy + 1; y++) {
-                    for(int z = dz - 1; z <= dz + 1; z++) {
+            for(int x = player_x - 1; x <= player_x + 1; x++) {
+                for(int y = player_y - 1; y <= player_y + 1; y++) {
+                    for(int z = player_z - 1; z <= player_z + 1; z++) {
                         uint8_t block_id = world_get_block(world, x, y, z);
                         if(block_id > 0) {
                             renderer_block_render_inside(&block_renderer, &block_list[block_id], x, y, z);
@@ -291,7 +348,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
 
         if(!renderer->minecraft->hit_result.null /*&& entity_is_inside_block(player)*/) {
             glDisable(GL_ALPHA_TEST);
-            //renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, inventory_get_current_item(&player->inventory), delta);
+            renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, NULL, delta);
             renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, &player->mob.entity, &renderer->minecraft->hit_result, 0, delta);
             glEnable(GL_ALPHA_TEST);
         }

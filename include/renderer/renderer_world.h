@@ -17,14 +17,14 @@ typedef struct renderer_world_s {
     int list_id;
     renderer_chunk_t **renderer_chunks_sorted;
     renderer_chunk_t **renderer_chunks;
-    uint64_t *renderer_chunks_to_update; // array_list
+    renderer_chunk_t **renderer_chunks_to_update; // array_list
     int renderer_chunk_count;
     int chunk_cache_count;
     int x_chunks;
     int y_chunks;
     int z_chunks;
     int render_list_base;
-    int *render_lists; // array_list
+    renderer_chunk_t **render_lists; // array_list
     uint32_t occlusion_query_base[262144];
     uint32_t occlusion_result[64];
     int *chunk_data_cache;

@@ -7,7 +7,7 @@
 #include <malloc.h>
 #endif
 
-long stats_get_max_memory() {
+uint64_t stats_get_max_memory() {
 #ifdef _WIN32
     MEMORYSTATUSEX state;
     state.dwLength = sizeof(state);
@@ -22,14 +22,14 @@ long stats_get_max_memory() {
 
 long stats_get_total_memory() {
 #ifdef _WIN32
-    return -1;
+    return 1;
 #else
     struct mallinfo info = mallinfo();
     return info.uordblks;
 #endif
 }
 
-long stats_get_free_memory() {
+uint64_t stats_get_free_memory() {
 #ifdef _WIN32
     MEMORYSTATUSEX state;
     state.dwLength = sizeof(state);

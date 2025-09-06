@@ -193,6 +193,7 @@ extern struct blocks_s {
     block_t chest;
     block_t gears;
     block_t diamond_ore;
+    block_t diamond;
     block_t workbench;
     block_t crops;
     block_t farmland;

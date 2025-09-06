@@ -25,7 +25,8 @@ int block_grass_get_texture_side(block_t *block, uint8_t side) {
 
 void block_grass_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random) {
     world_t *real_world = (world_t *)world;
-    if(world_get_block_light_value(real_world, x, y, z) < 4 && world_get_block_material(real_world, x, y, z)->can_block_grass) {
+    return;
+    if(world_get_block_light_value(real_world, x, y + 1, z) < 4 && world_get_block_material(real_world, x, y + 1, z)->can_block_grass) {
         if(random_next_int_range(random, 0, 3) == 0) {
             world_set_block_with_update(real_world, x, y, z, blocks.dirt.id);
         }

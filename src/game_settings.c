@@ -14,7 +14,7 @@ void game_settings_create(game_settings_t *settings, struct minecraft_s *minecra
     settings->sound = 1;
     settings->invert_mouse = 0;
     settings->show_framerate = 0;
-    settings->view_distance = 0;
+    settings->view_distance = 1;
     settings->show_bobbing = 1;
     settings->anaglyph = 0;
     settings->limit_framerate = 0;
@@ -26,23 +26,34 @@ void game_settings_create(game_settings_t *settings, struct minecraft_s *minecra
     settings->back_key = (key_binding_t){ .name = "Back", .key = SDL_SCANCODE_S };
     settings->right_key = (key_binding_t){ .name = "Right", .key = SDL_SCANCODE_D };
     settings->jump_key = (key_binding_t){ .name = "Jump", .key = SDL_SCANCODE_SPACE };
-    settings->build_key = (key_binding_t){ .name = "Build", .key = SDL_SCANCODE_B };
+    settings->drop_key = (key_binding_t){ .name = "Drop", .key = SDL_SCANCODE_Q };
+    settings->inventory_key = (key_binding_t){ .name = "Inventory", .key = SDL_SCANCODE_I };
     settings->chat_key = (key_binding_t){ .name = "Chat", .key = SDL_SCANCODE_T };
     settings->toggle_fog_key = (key_binding_t){ .name = "Toggle Fog", .key = SDL_SCANCODE_F };
     settings->save_location_key = (key_binding_t){ .name = "Save Location", .key = SDL_SCANCODE_RETURN };
     settings->load_location_key = (key_binding_t){ .name = "Load Location", .key = SDL_SCANCODE_R };
     settings->bindings = array_list_create(sizeof(key_binding_t *));
 
-    key_binding_t *bindings[] = { &settings->forward_key, &settings->left_key, &settings->back_key, &settings->right_key, &settings->jump_key, &settings->build_key, &settings->chat_key, &settings->toggle_fog_key, &settings->save_location_key, &settings->load_location_key };
+    key_binding_t *bindings[] = { &settings->forward_key, &settings->left_key, &settings->back_key, &settings->right_key, &settings->jump_key, &settings->drop_key, &settings->inventory_key, &settings->chat_key, &settings->toggle_fog_key, &settings->save_location_key, &settings->load_location_key };
     for(int i = 0; i < sizeof(bindings) / sizeof(bindings[0]); i++) {
         settings->bindings = array_list_push(settings->bindings, &bindings[i]);
+    }
+}
+
+void private_upper_case(char *str) {
+    for(int i = 0; str[i] != '\0'; i++) {
+        str[i] = toupper((unsigned char)str[i]);
     }
 }
 
 char *game_settings_get_binding(game_settings_t *settings, int binding) {
     char *string = string_create(settings->bindings[binding]->name);
     string_concat(&string, ": ");
-    string_concat(&string, (char *)SDL_GetKeyName(SDL_SCANCODE_TO_KEYCODE(settings->bindings[binding]->key)));
+    const char *key_name = (char *)SDL_GetKeyName(SDL_SCANCODE_TO_KEYCODE(settings->bindings[binding]->key));
+    char *key_upper = string_create(key_name);
+    private_upper_case(key_upper);
+    string_concat(&string, key_upper);
+    free(key_upper);
     return string;
 }
 

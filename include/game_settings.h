@@ -24,7 +24,8 @@ typedef struct {
     key_binding_t back_key;
     key_binding_t right_key;
     key_binding_t jump_key;
-    key_binding_t build_key;
+    key_binding_t drop_key;
+    key_binding_t inventory_key;
     key_binding_t chat_key;
     key_binding_t toggle_fog_key;
     key_binding_t save_location_key;

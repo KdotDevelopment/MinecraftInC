@@ -50,7 +50,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
         exit(1);
     }
     SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-    minecraft->window = SDL_CreateWindow("Minecraft", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+    minecraft->window = SDL_CreateWindow("Minecraft Infdev", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
     if(!minecraft->window) {
         printf("Couldn't create window: %s\n", SDL_GetError());
         exit(1);
@@ -89,6 +89,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->timer = timer_create(20);
     minecraft->progress_bar = progress_bar_create(minecraft);
     minecraft->models = models_create();
+    minecraft->game_dir = string_create("./.minecraft");
     #ifdef SURVIVAL_MODE
     minecraft->gamemode = gamemode_survival_create(minecraft);
     #else
@@ -127,25 +128,36 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
 
     minecraft->world = malloc(sizeof(world_t));
-    world_create(minecraft->world, minecraft, "./.minecraft/saves", "World1", 123456789);
+    world_create(minecraft->world, minecraft, "./.minecraft/saves", "World1", time(NULL));
     world_get_chunk(minecraft->world, 0, 0);
-    world_get_chunk(minecraft->world, 0, 1);
-    world_get_chunk(minecraft->world, 1, 0);
-    world_get_chunk(minecraft->world, 1, 1);
+    //world_get_chunk(minecraft->world, 0, 1);
+    //world_get_chunk(minecraft->world, 1, 0);
+    //world_get_chunk(minecraft->world, 1, 1);
     player_create(&minecraft->player, (struct world_s *)minecraft->world);
+    minecraft->player.x = 1024;
+    minecraft->player.y = 100;
+    minecraft->player.z = 1024;
     world_save(minecraft->world, 1);
     minecraft->world->player = &minecraft->player;
     minecraft->player.inputs = inputs_create(&minecraft->settings);
-    minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
-    minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
+    //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
+    //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
+    renderer_world_change_world(&minecraft->renderer_world, minecraft->world);
     //minecraft->world->renderer = (struct renderer_world_s *)&minecraft->renderer_world;
     //renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
     minecraft->particles = particles_create(minecraft->world, &minecraft->textures);
     minecraft->world->particles = &minecraft->particles;
 
-    minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, width, height);
+    int x = minecraft->width;
+    int y = minecraft->height;
+    int w = x;
+    int h = y;
+    for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
+    w /= x;
+    h /= x;
+    minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, w, h);
     //minecraft_grab_mouse(minecraft);
     if(minecraft->world != NULL) {
         screen_t *main_menu = malloc(sizeof(screen_t));
@@ -415,7 +427,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         world_spawn_entity(minecraft->world, arrow);
                         minecraft->player.arrows--;
                     }
-                    if(events[i].key.keysym.scancode == minecraft->settings.build_key.key) {
+                    if(events[i].key.keysym.scancode == minecraft->settings.inventory_key.key) {
                         minecraft->gamemode.open_inventory((struct gamemode_s *)&minecraft->gamemode);
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.chat_key.key) {
@@ -526,22 +538,22 @@ void minecraft_run(minecraft_t *minecraft) {
             if(event.type == SDL_QUIT) {
                 minecraft->running = 0;
             }
+            int x = minecraft->width;
+            int y = minecraft->height;
+            int w = x;
+            int h = y;
+            for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
+            w /= x;
+            h /= x;
             if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
                 SDL_GetWindowSize(minecraft->window, &minecraft->width, &minecraft->height);
                 SDL_GL_GetDrawableSize(minecraft->window, &minecraft->frame_width, &minecraft->frame_height);
                 glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
                 screen_hud_destroy(&minecraft->hud);
-                minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, minecraft->width, minecraft->height);
+                minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, w, h);
                 glClear(GL_COLOR_BUFFER_BIT);
 
                 if(minecraft->current_screen != NULL) {
-                    int x = minecraft->width;
-                    int y = minecraft->height;
-                    int w = x;
-                    int h = y;
-                    for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
-                    w /= x;
-                    h /= x;
                     screen_open(minecraft->current_screen, minecraft, w, h);
                 }
             }
@@ -551,12 +563,12 @@ void minecraft_run(minecraft_t *minecraft) {
         }
         
         game_timer_t *timer = &minecraft->timer;
-        uint64_t time = time_millis();
-        uint64_t d = time - timer->last_system_clock;
-        uint64_t t2 = time_nano() / 1000000;
+        int64_t time = time_millis();
+        int64_t d = time - timer->last_system_clock;
+        int64_t t2 = time_nano() / 1000000;
         double b;
         if(d > 1000) {
-            uint64_t d2 = t2 - timer->last_hr_clock;
+            int64_t d2 = t2 - timer->last_hr_clock;
             b = (double)d / d2;
             timer->adjustment += (b - timer->adjustment) * 0.2;
             timer->last_system_clock = time;
@@ -573,16 +585,22 @@ void minecraft_run(minecraft_t *minecraft) {
         if(b > 1.0) b = 1.0;
         timer->elapsed_delta += b * timer->speed * timer->ticks_per_second;
         timer->elapsed_ticks = timer->elapsed_delta;
-        if(timer->elapsed_ticks > 100) timer->elapsed_ticks = 100;
         timer->elapsed_delta -= timer->elapsed_ticks;
+        if(timer->elapsed_ticks > 10) timer->elapsed_ticks = 10;
         timer->delta = timer->elapsed_delta;
         float delta = timer->delta;
 
-        renderer_camera_update_camera(&minecraft->renderer, delta);
+        renderer_camera_update_mouse(&minecraft->renderer, delta);
 
         for(int i = 0; i < timer->elapsed_ticks; i++) {
             minecraft->ticks++;
             minecraft_tick(minecraft, events);
+            if(minecraft->world != NULL) {
+                renderer_world_update_clouds(&minecraft->renderer_world);
+                world_update_entities(minecraft->world);
+                world_restart_time_of_day(minecraft->world);
+                world_visual_update(minecraft->world, floor_double(minecraft->player.x), floor_double(minecraft->player.y), floor_double(minecraft->player.z));
+            }
             events = array_list_clear(events);
         }
 
@@ -626,6 +644,9 @@ void minecraft_run(minecraft_t *minecraft) {
 
         if(minecraft->world != NULL) {
             //world_update_lighting(minecraft->world);
+            //if not paused
+            renderer_camera_update(renderer);
+            // update particles
         }
 
         glMatrixMode(GL_PROJECTION);
@@ -635,11 +656,11 @@ void minecraft_run(minecraft_t *minecraft) {
         glColor4ub(255, 0, 255, 255);
         glOrtho(0.0, w, h, 0.0, 0.0, 1);
         if(minecraft->current_screen != NULL) {
-            minecraft->current_screen->render((struct screen_s *)minecraft->current_screen, mx, my, delta);
+           // minecraft->current_screen->render((struct screen_s *)minecraft->current_screen, mx, my, delta);
         }
         
         frame++;
-        SDL_GL_SwapWindow(minecraft->window);
+        //SDL_GL_SwapWindow(minecraft->window);
 
         /*while(time_millis() >= start + 1000) {
             char *chunks = string_create_from_int(chunk_updates);

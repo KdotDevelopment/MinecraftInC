@@ -84,6 +84,7 @@ void screen_on_mouse_clicked(struct screen_s *proto_screen, int x, int y, int bu
         for(int i = 0; i < array_list_length(screen->buttons); i++) {
             button_t *button = &screen->buttons[i];
             if(button->active && x >= button->x && y >= button->y && x < button->x + button->width && y < button->y + button->height) {
+                sounds_play_sound(&screen->minecraft->sounds, SOUND_RANDOM_CLICK, 1.0, 1.0);
                 screen->on_button_clicked(proto_screen, button);
                 if(screen->removed) break;
             }

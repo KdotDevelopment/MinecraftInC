@@ -91,7 +91,7 @@ void progress_bar_set_progress(progress_bar_t *bar, int progress) {
 nbt_base_t progress_bar_read(FILE *chunk_file) {
     gzFile gz_input = gzdopen(fileno(chunk_file), "rb");
     if(!gz_input) {
-        printf("Could not open chunk file for reading.\n");
+        printf("Could not open dat file for reading.\n");
         return (nbt_base_t){ .null = 1 };
     }
 
@@ -105,7 +105,7 @@ nbt_base_t progress_bar_read(FILE *chunk_file) {
 void progress_bar_write(FILE *chunk_file, nbt_base_t *nbt) {
     gzFile gz_output = gzdopen(fileno(chunk_file), "wb");
     if(!gz_output) {
-        printf("Could not open chunk file for writing.\n");
+        printf("Could not open dat file for writing.\n");
         return;
     }
 

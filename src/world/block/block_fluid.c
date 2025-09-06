@@ -76,11 +76,9 @@ uint8_t can_flow(block_t *block, world_t *world, int x, int y, int z) {
 }
 
 uint8_t flow(block_t *block, world_t *world, int x, int y, int z) {
-    if(world_get_block(world, x, y, z) == blocks.air.id) {
-        if(!can_flow(block, world, x, y, z)) return 0;
-        if(world_set_block_with_update(world, x, y, z, block->liquid_moving_id)) {
-            world_schedule_block_update(world, x, y, z, block->liquid_moving_id);
-        }
+    if(!can_flow(block, world, x, y, z)) return 0;
+    if(world_set_block_with_update(world, x, y, z, block->liquid_moving_id)) {
+        world_schedule_block_update(world, x, y, z, block->liquid_moving_id);
     }
     return 0;
 }
@@ -95,11 +93,12 @@ uint8_t lava_spread_fire(world_t *world, int x, int y, int z) {
 }
 
 void block_fluid_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
+    return;
     uint8_t set = 0;
     uint8_t can_set = 0;
     do {
         y--;
-        if(world_get_block(world, x, y, z) != blocks.air.id || !can_flow(block, world, x, y, z)) {
+        if(!can_flow(block, world, x, y, z)) {
             break;
         }
         can_set = world_set_block_with_update(world, x, y, z, block->liquid_moving_id);

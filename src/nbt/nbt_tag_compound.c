@@ -165,3 +165,32 @@ void nbt_tag_compound_write_contents(nbt_base_t *nbt, gzFile file) {
     int8_t end_tag = 0;
     gzwrite(file, &end_tag, sizeof(end_tag));
 }
+
+void nbt_tag_compound_free(nbt_base_t *base) {
+    if(!base || base->type != NBT_TYPE_COMPOUND) {
+        return;
+    }
+
+    for(int i = 0; i < array_list_length(base->tag_array); i++) {
+        nbt_base_t *tag = (nbt_base_t *)array_list_get(base->tag_array, i);
+
+        if(tag->type == NBT_TYPE_COMPOUND) {
+            nbt_tag_compound_free(tag);
+        }else if (tag->type == NBT_TYPE_LIST) {
+            if (tag->byte_array) {
+                free(tag->byte_array);
+            }
+        }else if (tag->type == NBT_TYPE_STRING) {
+            if (tag->string_value) {
+                free(tag->string_value);
+            }
+        }else if (tag->type == NBT_TYPE_BYTE_ARRAY) {
+            if (tag->byte_array) {
+                free(tag->byte_array);
+            }
+        }
+    }
+    array_list_free(base->tag_array);
+
+    base->tag_array = NULL;
+}

@@ -34,7 +34,6 @@ void renderer_block_render_inside(renderer_block_t *renderer, block_t *block, in
 }
 
 uint8_t renderer_block_render_normal(renderer_block_t *renderer, block_t *block, int x, int y, int z) {
-    //printf("Rendering normal block %d at %d, %d, %d\n", block->id, x, y, z);
     float center_brightness = block->get_brightness(block, renderer->world, x, y, z);
     uint8_t is_rendered = 0;
     if(renderer->flip_texture || block->can_render_side(block, renderer->world, x, y - 1, z, 0)) {
@@ -50,7 +49,7 @@ uint8_t renderer_block_render_normal(renderer_block_t *renderer, block_t *block,
 
     if(renderer->flip_texture || block->can_render_side(block, renderer->world, x, y + 1, z, 1)) {
         float brightness = block->get_brightness(block, renderer->world, x, y + 1, z);
-        if(block->x0 != 1.0 && !block->material->is_liquid) {
+        if(block->y1 != 1.0 && !block->material->is_liquid) {
             brightness = center_brightness;
         }
 

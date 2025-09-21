@@ -30,6 +30,7 @@ typedef enum {
 typedef struct entity_s {
     struct world_s *world;
     float xo, yo, zo;
+    float last_tick_x, last_tick_y, last_tick_z;
     float x, y, z;
     float xd, yd, zd;
     float y_rot, x_rot;

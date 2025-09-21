@@ -167,9 +167,9 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
     renderer->entities_rendered = 0;
     renderer->entities_hidden = 0;
     entity_t *player = &renderer->world->player->mob.entity;
-    // render_manager.x = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick;
-    // render_manager.y = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
-    // render_manager.z = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
+    // render_manager.x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
+    // render_manager.y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
+    // render_manager.z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
     entity_t **entities = array_list_clone(renderer->world->loaded_entity_list);
     renderer->entities_total = array_list_length(entities);
 
@@ -262,10 +262,10 @@ int renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player,
         renderer->renderers_rendered = 0;
     }
 
-    double x = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick;
-    double y = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
-    double z = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
-    
+    double x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
+    double y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
+    double z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
+
     double dx = player->x - renderer->last_load_x;
     double dy = player->y - renderer->last_load_y;
     double dz = player->z - renderer->last_load_z;
@@ -409,9 +409,9 @@ int renderer_world_render_sorted_renderers(renderer_world_t *renderer, int start
 }
 
 void renderer_world_render_all_lists(renderer_world_t *renderer, int render_pass, double partial_tick) {
-    double x = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick;
-    double y = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
-    double z = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
+    double x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
+    double y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
+    double z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
     glPushMatrix();
 
     float acc_x = 0;
@@ -588,9 +588,9 @@ void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *pl
         glPolygonOffset(-1.0, -1.0);
         glEnable(GL_POLYGON_OFFSET_FILL);
         tesselator_begin_quads();
-        double x = player->xo + (player->x - player->xo) * partial_tick;
-        double y = player->yo + (player->y - player->yo) * partial_tick;
-        double z = player->zo + (player->z - player->zo) * partial_tick;
+        double x = player->last_tick_x + (player->x - player->last_tick_x) * partial_tick;
+        double y = player->last_tick_y + (player->y - player->last_tick_y) * partial_tick;
+        double z = player->last_tick_z + (player->z - player->last_tick_z) * partial_tick;
         tesselator_set_translation(-x, -y, -z);
         tesselator_disable_color();
         if(block == NULL) block = &block_list[blocks.stone.id];
@@ -618,9 +618,9 @@ void renderer_world_draw_selection_box(renderer_world_t *renderer, entity_t *pla
     block_id = world_get_block(renderer->world, hit_result->x, hit_result->y, hit_result->z);
     block_t *block = &block_list[block_id];
     if(block_id > 0) {
-        double x = player->xo + (player->x - player->xo) * partial_tick;
-        double y = player->yo + (player->y - player->yo) * partial_tick;
-        double z = player->zo + (player->z - player->zo) * partial_tick;
+        double x = player->last_tick_x + (player->x - player->last_tick_x) * partial_tick;
+        double y = player->last_tick_y + (player->y - player->last_tick_y) * partial_tick;
+        double z = player->last_tick_z + (player->z - player->last_tick_z) * partial_tick;
         AABB_t bb = AABB_grow(block->get_selection_aabb(block, hit_result->x, hit_result->y, hit_result->z), 0.002, 0.002, 0.002);
         bb = AABB_move(bb, -x, -y, -z);
         tesselator_begin(GL_LINE_STRIP);
@@ -692,7 +692,7 @@ void renderer_world_update_blocks(renderer_world_t *renderer, int x0, int y0, in
 }
 
 void renderer_world_update_frustum(renderer_world_t *renderer, frustum_t *frustum) {
-    for(int i = 0; i < renderer->chunk_cache_count; i++) {
+    for(int i = 0; i < renderer->renderer_chunk_count; i++) {
         renderer_chunk_t *renderer_chunk = renderer->renderer_chunks[i];
         renderer_chunk_update_frustum(renderer_chunk, frustum);
     }

@@ -29,6 +29,7 @@ void renderer_chunk_create(renderer_chunk_t *renderer, world_t *world, int x, in
 
 void renderer_chunk_set_position(renderer_chunk_t *renderer, int x, int y, int z) {
     if(x == renderer->x && y == renderer->y && z == renderer->z) return;
+    if(renderer->render_list > 0) glDeleteLists(renderer->render_list + 2, 1);
     renderer_chunk_dont_draw(renderer);
     renderer->x = x;
     renderer->y = y;
@@ -118,6 +119,7 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
         uint8_t b0 = 0;
         uint8_t b1 = 0;
 
+        glDeleteLists(renderer->render_list + i, 1);
         glNewList(renderer->render_list + i, GL_COMPILE);
         glPushMatrix();
         glTranslatef(renderer->x_clip, renderer->y_clip, renderer->z_clip);
@@ -166,6 +168,11 @@ void renderer_chunk_dont_draw(renderer_chunk_t *renderer) {
 
 void renderer_chunk_stop_rendering(renderer_chunk_t *renderer) {
     renderer_chunk_dont_draw(renderer);
+    for(int i = 0; i < 2; i++) {
+        if(renderer->render_list + i > 0) {
+            glDeleteLists(renderer->render_list + i, 1);
+        }
+    }
     renderer->world = NULL;
 }
 
@@ -196,5 +203,5 @@ int renderer_chunk_player_compare(const void *a, const void *b) {
     renderer_chunk_t *chunk_b = *(renderer_chunk_t **)b;
     uint8_t b1 = chunk_a->is_in_frustum;
     uint8_t b2 = chunk_b->is_in_frustum;
-    return b1 && !b2 ? 1 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? 1 : -1);
+    return b1 && !b2 ? 0 : ((!b2 || b1) && renderer_chunk_distance_to_entity_squared(chunk_a, &chunk_a->world->player->mob.entity) < renderer_chunk_distance_to_entity_squared(chunk_b, &chunk_b->world->player->mob.entity) ? 1 : -1);
 }

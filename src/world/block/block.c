@@ -19,6 +19,7 @@ block_t block_create(uint8_t id, int texture_id, block_sound_t *sound, float har
     block.particle_gravity = 1.0;
     block.material = material;
     block.tick_rate = 5;
+    block.light_opacity = id == 0 ? 0 : 255;
 
     block.is_opaque = texture_id == -1 ? 0 : 1;
     block.is_cube = texture_id == -1 ? 0 : 1;

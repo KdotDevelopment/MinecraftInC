@@ -129,16 +129,22 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     minecraft->world = malloc(sizeof(world_t));
     world_create(minecraft->world, minecraft, "./.minecraft/saves", "World1", time(NULL));
-    world_get_chunk(minecraft->world, 0, 0);
-    //world_get_chunk(minecraft->world, 0, 1);
-    //world_get_chunk(minecraft->world, 1, 0);
-    //world_get_chunk(minecraft->world, 1, 1);
-    player_create(&minecraft->player, (struct world_s *)minecraft->world);
-    minecraft->player.x = 1024;
-    minecraft->player.y = 100;
-    minecraft->player.z = 1024;
+    for(int i = -196; i <= 196; i += 16) {
+        for(int j = -196; j <= 196; j += 16) {
+            //world_get_block(minecraft->world, i + minecraft->world->spawn_x, 64, j + minecraft->world->spawn_z);
+        }
+    }
     world_save(minecraft->world, 1);
+    player_create(&minecraft->player, (struct world_s *)minecraft->world);
+    printf("Player created at %f, %f, %f\n", minecraft->player.x, minecraft->player.y, minecraft->player.z);
+    minecraft->player.x = 512;
+    minecraft->player.y = 64;
+    minecraft->player.z = 512;
     minecraft->world->player = &minecraft->player;
+    printf("Preparing lights\n");
+    while(array_list_length(minecraft->world->lighting_update_list) > 0) {
+        world_update_lighting(minecraft->world);
+    }
     minecraft->player.inputs = inputs_create(&minecraft->settings);
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
@@ -164,56 +170,6 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
         *main_menu = screen_title_create();
         minecraft_set_current_screen(minecraft, main_menu);
     }
-
-    //glViewport(0, 0, minecraft->width, minecraft->height);
-    /*glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glColor4ub(255, 0, 255, 255);
-    int x = minecraft->width;
-    int y = minecraft->height;
-    int w = x;
-    int h = y;
-    for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
-    w /= x;
-    h /= x;
-    glOrtho(0.0, w, h, 0.0, 0.0, 1);
-    char *splash = "TESTING!!!";
-    while(1) {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDisable(GL_LIGHTING);
-        glDisable(GL_FOG);
-        glBindTexture(GL_TEXTURE_2D, textures_load(&((minecraft_t *)minecraft)->textures, "dirt.png"));
-        glColor4f(1.0, 1.0, 1.0, 1.0);
-        tesselator_begin_quads();
-        tesselator_color_opaque_int(0x40404000);
-        tesselator_vertex_uv(0, h, 0, 0, h / 32);
-        tesselator_vertex_uv(w, h, 0, w / 32, h / 32);
-        tesselator_vertex_uv(w, 0, 0, w / 32, 0);
-        tesselator_vertex_uv(0, 0, 0, 0, 0);
-        tesselator_end();
-
-        glBindTexture(GL_TEXTURE_2D, textures_load(&((minecraft_t *)minecraft)->textures, "gui/logo.png"));
-        glEnable(GL_TEXTURE_2D);
-        glColor4f(1.0, 1.0, 1.0, 1.0);
-        tesselator_color(255, 255, 255, 255);
-        gui_blit((w - 256) / 2, 30, 0, 0, 256, 49, 0);
-        glPushMatrix();
-        glTranslatef((w / 2) + 90, 70, 0);
-        glRotatef(-20.0, 0.0, 0.0, 1.0);
-        float splash_scale = 1.8 - fabs(tsin((time_millis() % 1000) / 1000.0 * M_PI * 2) * 0.1);
-        splash_scale *= 100.0 / (font_get_width(&minecraft->font, splash) + 32);
-        glScalef(splash_scale, splash_scale, splash_scale);
-        glEnable(GL_TEXTURE_2D);
-        gui_draw_centered_string(&minecraft->font, splash, 0, -8, 0xFFFF00);
-        glPopMatrix();
-        char *copyright = "Copyright Mojang Specifications. Do not distribute.";
-        gui_draw_string(&minecraft->font, copyright, w - font_get_width(&minecraft->font, copyright) - 2, h - 10, 0xFFFFFFFF);
-
-
-        SDL_GL_SwapWindow(minecraft->window);
-    }*/
 }
 
 void minecraft_grab_mouse(minecraft_t *minecraft) {
@@ -459,9 +415,9 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
 
     if(!minecraft->gamemode.instant_break && minecraft->miss_time <= 0) {
         if(minecraft->current_screen == NULL && SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK && !minecraft->hit_result.null && minecraft->hit_result.type == 0) { // and mouse was down
-            minecraft->gamemode.continue_destroy_block(&minecraft->gamemode, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z, minecraft->hit_result.face);
+            //minecraft->gamemode.continue_destroy_block(&minecraft->gamemode, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z, minecraft->hit_result.face);
         }else {
-            minecraft->gamemode.stop_destroy_block(&minecraft->gamemode);
+            //minecraft->gamemode.stop_destroy_block(&minecraft->gamemode);
         }
     }
 
@@ -649,7 +605,7 @@ void minecraft_run(minecraft_t *minecraft) {
             // update particles
         }
 
-        glMatrixMode(GL_PROJECTION);
+        /*glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -657,7 +613,7 @@ void minecraft_run(minecraft_t *minecraft) {
         glOrtho(0.0, w, h, 0.0, 0.0, 1);
         if(minecraft->current_screen != NULL) {
            // minecraft->current_screen->render((struct screen_s *)minecraft->current_screen, mx, my, delta);
-        }
+        }*/
         
         frame++;
         //SDL_GL_SwapWindow(minecraft->window);

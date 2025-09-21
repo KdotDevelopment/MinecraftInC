@@ -176,11 +176,19 @@ char *chunk_provider_load_chunk_file_for_xz(char *save_directory, int x, int z) 
     char subdir_z[3];
     char full_path[1024];
 
+    char *x_str = private_integer_to_string(x, 36);
+    char *z_str = private_integer_to_string(z, 36);
     snprintf(chunk_filename, sizeof(chunk_filename), "c.%s.%s.dat",
-             private_integer_to_string(x, 36), private_integer_to_string(z, 36));
+             x_str, z_str);
 
-    snprintf(subdir_x, sizeof(subdir_x), "%s", private_integer_to_string(x & 63, 36));
-    snprintf(subdir_z, sizeof(subdir_z), "%s", private_integer_to_string(z & 63, 36));
+    char *x_str2 = private_integer_to_string(x & 63, 36);
+    char *z_str2 = private_integer_to_string(z & 63, 36);
+    snprintf(subdir_x, sizeof(subdir_x), "%s", x_str2);
+    snprintf(subdir_z, sizeof(subdir_z), "%s", z_str2);
+    free(x_str);
+    free(z_str);
+    free(x_str2);
+    free(z_str2);
 
     snprintf(full_path, sizeof(full_path), "%s/%s/%s", save_directory, subdir_x, subdir_z);
 
@@ -198,6 +206,7 @@ char *chunk_provider_load_chunk_file_for_xz(char *save_directory, int x, int z) 
 }
 
 chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x, int z) {
+    return NULL;
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, x, z);
     if(!chunk_file) {
         return NULL;
@@ -251,6 +260,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     chunk_write_nbt_data(chunk, &nbt);
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     progress_bar_write(file, &nbt_base);
+    nbt_tag_compound_free(&nbt);
 
 #ifdef _WIN32
     if(GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {

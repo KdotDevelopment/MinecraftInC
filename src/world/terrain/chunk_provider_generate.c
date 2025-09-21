@@ -51,12 +51,13 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
     memset(chunk_data, 0, sizeof(chunk_data));
     chunk_t *chunk = malloc(sizeof(chunk_t));
 
-    int noise_start_x = chunk_x * 4;
-    int noise_start_z = chunk_z * 4;
+    int noise_start_x = chunk_x << 2;
+    int noise_start_z = chunk_z << 2;
 
     if(chunk_provider->noise_array == NULL) {
         chunk_provider->noise_array = malloc(sizeof(double) * 425);
     }
+    memset(chunk_provider->noise_array, 0, sizeof(double) * 425);
 
     chunk_provider->noise_array_1 = noise_octave_generate_octaves(&chunk_provider->noise_1, chunk_provider->noise_array_1, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
     chunk_provider->noise_array_2 = noise_octave_generate_octaves(&chunk_provider->noise_2, chunk_provider->noise_array_2, noise_start_x, 0, noise_start_z, 5, 17, 5, 684.412, 684.412, 684.412);
@@ -110,7 +111,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
                         double x_lerp = (double)xx / 4.0;
                         double noise_z0 = noise_x00 + (noise_x10 - noise_x00) * x_lerp;
                         double noise_z1 = noise_x01 + (noise_x11 - noise_x01) * x_lerp;
-                        int block_index = (((xx + (x << 2)) << 11) | ((z << 2) << 7) | ((y << 3) + yy));
+                        uint64_t block_index = (((xx + (x << 2)) << 11) | ((z << 2) << 7) | ((y << 3) + yy));
 
                         for(int zz = 0; zz < 4; zz++) {
                             double z_lerp = (double)zz / 4.0;
@@ -143,7 +144,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
             uint8_t sand = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_x * (1.0 / 32.0), surface_z * (1.0 / 32.0), 0) + random_next_uniform(&chunk_provider->random) * 0.2 > 0.0;
             uint8_t gravel = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_z * (1.0 / 32.0), 109.0134, surface_x * (1.0 / 32.0)) + random_next_uniform(&chunk_provider->random) * 0.2 > 3.0;
             int surface_depth = (int)(chunk_provider->noise_5.get(&chunk_provider->noise_5, surface_x * (1.0 / 32.0) * 2.0, surface_z * (1.0 / 32.0) * 2.0, 0) / 3.0 + 3.0 + random_next_uniform(&chunk_provider->random) * 0.25);
-            int block_index = x << 11 | z << 7 | (CHUNK_SIZE_HEIGHT - 1);
+            uint64_t block_index = x << 11 | z << 7 | (CHUNK_SIZE_HEIGHT - 1);
             int depth_2 = -1;
             uint8_t top_block = blocks.grass.id;
             uint8_t filler_block = blocks.dirt.id;
@@ -239,7 +240,7 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
     int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) - random_next_uniform(&chunk_provider->random));
     if(tree_count < 0) tree_count = 0;
 
-    if(random_next_int_range(&chunk_provider->random, 0, 99) == 0) {
+    if(random_next_int_range(&chunk_provider->random, 0, 9) == 0) {
         tree_count++;
     }
 
@@ -248,6 +249,7 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
         int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
         int y = world_get_height_value(chunk_provider->world, x, z);
         int tree_gen = generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
+        world_set_block_no_update(chunk_provider->world, x, y + 2, z, blocks.diamond.id);
         if(tree_gen == 1) printf("TREE\n");
     }
 }

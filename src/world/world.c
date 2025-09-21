@@ -52,8 +52,11 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     strncpy(world->save_file, saves_dir, sizeof(world->save_file));
     strcat(world->save_file, "/");
     strcat(world->save_file, world_name);
+    world->spawn_x = 512;
+    world->spawn_y = 64;
+    world->spawn_z = 512;
 
-    for(int i = 0; i < 16; i++) {
+    for(int i = 0; i <= 15; i++) {
         float value = 1.0 - (float)i / 15.0;
         world->light_brightness_table[i] = (1.0 - value) / (value * 3.0 + 1.0) * 0.95 + 0.05;
     }
@@ -73,9 +76,9 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
         fclose(file);
         nbt = nbt_tag_compound_get_compound_tag(&nbt, "Data");
         world->random_seed = nbt_tag_compound_get_int(&nbt, "RandomSeed");
-        world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
-        world->spawn_y = nbt_tag_compound_get_int(&nbt, "SpawnY");
-        world->spawn_z = nbt_tag_compound_get_int(&nbt, "SpawnZ");
+        //world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
+        //world->spawn_y = nbt_tag_compound_get_int(&nbt, "SpawnY");
+        //world->spawn_z = nbt_tag_compound_get_int(&nbt, "SpawnZ");
         world->world_time = nbt_tag_compound_get_long(&nbt, "Time");
         world->size_on_disk = nbt_tag_compound_get_long(&nbt, "SizeOnDisk");
         world->player_nbt = nbt_tag_compound_get_compound_tag(&nbt, "Player");
@@ -207,6 +210,7 @@ void world_save(world_t *world, uint8_t check_entities) {
     fclose(file);
 
     chunk_provider_load_save_chunks(&world->chunk_provider, check_entities);
+    nbt_tag_compound_free(&base_nbt);
 }
 
 uint8_t world_get_block(world_t *world, int x, int y, int z) {
@@ -331,7 +335,6 @@ uint8_t world_can_block_see_sky(world_t *world, int x, int y, int z) {
 
 uint8_t private_world_get_block_light_value(world_t *world, int x, int y, int z, uint8_t check_neighbors) {
     if(x < -WORLD_MAX_SIZE || x >= WORLD_MAX_SIZE
-        || y < 0 || y >= CHUNK_SIZE_HEIGHT
         || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 15;
     }
@@ -356,7 +359,7 @@ uint8_t private_world_get_block_light_value(world_t *world, int x, int y, int z,
     }
 
     if(y < 0) return 0;
-    if(y > CHUNK_SIZE_HEIGHT) {
+    if(y >= CHUNK_SIZE_HEIGHT) {
         int16_t light = 15 - world->skylight_subtracted;
         if(light < 0) light = 0;
         return light;
@@ -422,7 +425,7 @@ int world_get_saved_light_value(world_t *world, uint8_t light_type, int x, int y
     if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
 
     chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
-    return chunk_get_saved_light_value(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), world->skylight_subtracted);
+    return chunk_get_saved_light_value(chunk, light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
 float world_get_brightness(world_t *world, int x, int y, int z) {
@@ -537,6 +540,7 @@ void world_spawn_particle(world_t *world, uint8_t particle_type, double x, doubl
 void world_spawn_entity(world_t *world, entity_t *entity) {
     int x = floor_double(entity->x / CHUNK_SIZE_WIDTH);
     int z = floor_double(entity->z / CHUNK_SIZE_WIDTH);
+    printf("Spawning entity in chunk %d, %d\n", x, z);
     if(!world_chunk_exists(world, x, z)) {
         printf("Failed to add entity\n");
         return;
@@ -684,12 +688,12 @@ void world_update_entities(world_t *world) {
             int cy = floor_double(entity->y / CHUNK_SIZE_WIDTH);
             int cz = floor_double(entity->z / CHUNK_SIZE_WIDTH);
 
-            entity->xo = entity->x;
-            entity->yo = entity->y;
-            entity->zo = entity->z;
+            entity->last_tick_x = entity->x;
+            entity->last_tick_y = entity->y;
+            entity->last_tick_z = entity->z;
             entity->x_roto = entity->x_rot;
             entity->y_roto = entity->y_rot;
-            //entity->tick(entity);
+            if(world_chunk_exists(world, cx, cz)) entity->tick(entity);
 
             int cx2 = floor_double(entity->x / CHUNK_SIZE_WIDTH);
             int cy2 = floor_double(entity->y / CHUNK_SIZE_WIDTH);
@@ -1001,11 +1005,13 @@ uint8_t world_update_lighting(world_t *world) {
     int iterations = 100000;
 
     while(array_list_length(world->lighting_update_list) > 0) {
+        int length = array_list_length(world->lighting_update_list);
         iterations--;
         if(iterations <= 0) return 1;
 
-        chunk_metadata_t *metadata = *(chunk_metadata_t **)array_list_get(world->lighting_update_list, array_list_length(world->lighting_update_list) - 1);
-        world->lighting_update_list = array_list_pop(world->lighting_update_list);
+        chunk_metadata_t *metadata = *(chunk_metadata_t **)array_list_get(world->lighting_update_list, length - 1);
+        world->lighting_update_list = array_list_remove(world->lighting_update_list, length - 1);
+        /*if(length % 1000 == 0)*/ printf("LENGTH %d %d %d %d\n", length, metadata->x, metadata->y, metadata->z);
 
         for(int x = metadata->x; x <= metadata->max_x; x++) {
             for(int z = metadata->z; z <= metadata->max_z; z++) {
@@ -1028,9 +1034,9 @@ uint8_t world_update_lighting(world_t *world) {
 
                             int max_light = 0;
 
-                            if(opacity >= 15 || new_light_value == 0) {
+                            if(opacity >= 15 && new_light_value == 0) {
                                 max_light = 0;
-                            }else {
+                            }/*else {
                                 int light_west = world_get_saved_light_value(world, metadata->light_type, x - 1, y, z);
                                 int light_east = world_get_saved_light_value(world, metadata->light_type, x + 1, y, z);
                                 int light_north = world_get_saved_light_value(world, metadata->light_type, x, y, z - 1);
@@ -1051,11 +1057,9 @@ uint8_t world_update_lighting(world_t *world) {
                                 if(new_light_value > max_light) {
                                     max_light = new_light_value;
                                 }
-                            }
+                            }*/
 
-                            new_light_value = max_light;
-
-                            if(current_light_value != new_light_value) {
+                            if(current_light_value != max_light) {
                                 if(x >= -WORLD_MAX_SIZE && x < WORLD_MAX_SIZE
                                 && y >= 0 && y < CHUNK_SIZE_HEIGHT
                                 && z >= -WORLD_MAX_SIZE && z <= WORLD_MAX_SIZE
@@ -1069,15 +1073,15 @@ uint8_t world_update_lighting(world_t *world) {
                                     }
                                 }
 
-                                new_light_value--;
-                                if(new_light_value < 0) new_light_value = 0;
-
-                                world_light_changed(world, metadata->light_type, x - 1, y, z, new_light_value);
-                                world_light_changed(world, metadata->light_type, x, y - 1, z, new_light_value);
-                                world_light_changed(world, metadata->light_type, x, y, z - 1, new_light_value);
-                                if(x + 1 >= metadata->max_x) world_light_changed(world, metadata->light_type, x + 1, y, z, new_light_value);
-                                if(y + 1 >= metadata->max_y) world_light_changed(world, metadata->light_type, x, y + 1, z, new_light_value);
-                                if(z + 1 >= metadata->max_z) world_light_changed(world, metadata->light_type, x, y, z + 1, new_light_value);
+                                max_light--;
+                                if(max_light < 0) max_light = 0;
+                                
+                                world_light_changed(world, metadata->light_type, x - 1, y, z, max_light);
+                                world_light_changed(world, metadata->light_type, x, y - 1, z, max_light);
+                                world_light_changed(world, metadata->light_type, x, y, z - 1, max_light);
+                                if(x + 1 >= metadata->max_x) world_light_changed(world, metadata->light_type, x + 1, y, z, max_light);
+                                if(y + 1 >= metadata->max_y) world_light_changed(world, metadata->light_type, x, y + 1, z, max_light);
+                                if(z + 1 >= metadata->max_z) world_light_changed(world, metadata->light_type, x, y, z + 1, max_light);
                             }
                         }
                     }
@@ -1189,7 +1193,7 @@ void world_restart_time_of_day(world_t *world) {
         if(!world_chunk_exists(world, xx / CHUNK_SIZE_WIDTH, zz / CHUNK_SIZE_WIDTH)) continue;
         uint8_t block_id = world_get_block(world, xx, yy, zz);
         if(block_list[block_id].should_tick) {
-            //block_list[block_id].update(&block_list[block_id], world, xx, yy, zz, &world->random);
+            block_list[block_id].update(&block_list[block_id], world, xx, yy, zz, &world->random);
         }
     }
 }

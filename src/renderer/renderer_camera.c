@@ -130,7 +130,7 @@ void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
         renderer->minecraft->current_screen->render((struct screen_s *)renderer->minecraft->current_screen, mx, my, delta);
     }
 
-    SDL_Delay(0);
+    //SDL_Delay(0);
     SDL_GL_SwapWindow(renderer->minecraft->window);
 }
 
@@ -185,9 +185,9 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     }
 
     world_t *world = renderer->minecraft->world;
-    double dx = player->xo + (player->x - player->xo) * delta;
-    double dy = player->yo + (player->y - player->yo) * delta;
-    double dz = player->zo + (player->z - player->zo) * delta;
+    double dx = player->last_tick_x + (player->x - player->last_tick_x) * delta;
+    double dy = player->last_tick_y + (player->y - player->last_tick_y) * delta;
+    double dz = player->last_tick_z + (player->z - player->last_tick_z) * delta;
 
     for(int i = 0; i < 2; i++) {
         if(renderer->minecraft->settings.anaglyph) {
@@ -436,7 +436,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glPushMatrix();
         renderer_camera_hurt_effect(renderer, delta);
         if(renderer->minecraft->settings.show_bobbing) {
-            renderer_camera_apply_bobbing(renderer, delta);
+            //renderer_camera_apply_bobbing(renderer, delta);
         }
 
         if(!renderer->minecraft->settings.third_person) {
@@ -446,11 +446,11 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glPopMatrix();
         if(!renderer->minecraft->settings.third_person) {
             // item renderer render overlays
-            renderer_camera_hurt_effect(renderer, delta);
+            //renderer_camera_hurt_effect(renderer, delta);
         }
 
         if(renderer->minecraft->settings.show_bobbing) {
-            renderer_camera_apply_bobbing(renderer, delta);
+            //renderer_camera_apply_bobbing(renderer, delta);
         }
 
         if(!renderer->minecraft->settings.anaglyph) {

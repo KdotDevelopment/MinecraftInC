@@ -357,11 +357,11 @@ uint8_t entity_is_underwater(entity_t *entity) {
 }
 
 uint8_t entity_is_in_water(entity_t *entity) {
-    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.water);
+    return 0;//world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.water);
 }
 
 uint8_t entity_is_in_lava(entity_t *entity) {
-    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.lava);
+    return 0;//world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.lava);
 }
 
 uint8_t entity_on_ground(entity_t *entity) {

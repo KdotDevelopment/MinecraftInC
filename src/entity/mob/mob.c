@@ -59,7 +59,7 @@ void mob_create(mob_t *mob, struct world_s *world) {
 void mob_tick(entity_t *entity) {
     mob_t *mob = (mob_t *)entity;
     entity_tick(entity);
-    mob->o_tilt = mob->tilt;
+    /*mob->o_tilt = mob->tilt;
     if(mob->attack_time > 0) {
         mob->attack_time--;
     }
@@ -100,9 +100,9 @@ void mob_tick(entity_t *entity) {
     mob->y_body_roto = mob->y_body_rot;
     mob->y_roto = mob->y_rot;
     mob->x_roto = mob->x_rot;
-    mob->tick_count++;
+    mob->tick_count++;*/
     mob->ai_step(mob);
-    float x_diff = mob->x - mob->xo;
+    /*float x_diff = mob->x - mob->xo;
     float z_diff = mob->z - mob->zo;
     float dist = sqrt(x_diff * x_diff + z_diff * z_diff);
     float y_body_rot = mob->y_body_rot;
@@ -182,7 +182,7 @@ void mob_tick(entity_t *entity) {
         mob->x_roto += 360;
     }
 
-    mob->anim_step += accumulator;
+    mob->anim_step += accumulator;*/
 }
 
 void mob_ai_step(struct mob_s *mob) {

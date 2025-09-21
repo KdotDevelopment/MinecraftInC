@@ -30,3 +30,5 @@ char *nbt_tag_compound_to_string(nbt_base_t *base);
 
 void nbt_tag_compound_read_contents(nbt_base_t *nbt, gzFile file);
 void nbt_tag_compound_write_contents(nbt_base_t *nbt, gzFile file);
+
+void nbt_tag_compound_free(nbt_base_t *base);

@@ -207,82 +207,71 @@ void sounds_play_music(sounds_t *sounds, char *music) {
 
 }
 
-void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitch) {
+sound_t *sounds_get_sound_source(sounds_t *sounds, uint8_t sound) {
     switch(sound) {
         case SOUND_FIRE_FIRE:
-            sound_play(&sounds->fire, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->fire;
         case SOUND_FIRE_IGNITE:
-            sound_play(&sounds->ignite, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
-
+            return &sounds->ignite;
         case SOUND_LIQUID_LAVA:
-            sound_play(&sounds->lava, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->lava;
         case SOUND_LIQUID_WATER:
-            sound_play(&sounds->water, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->water;
 
         case SOUND_MOB_PIG:
-            sound_play(&sounds->pig[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->pig[random_next_int_range(&sounds->random, 0, 2)];
         case SOUND_MOB_PIG_DEATH:
-            sound_play(&sounds->pig_death, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->pig_death;
         case SOUND_MOB_SHEEP:
-            sound_play(&sounds->sheep[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->sheep[random_next_int_range(&sounds->random, 0, 2)];
 
         case SOUND_RANDOM_BOW:
-            sound_play(&sounds->bow, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->bow;
         case SOUND_RANDOM_CLICK:
-            sound_play(&sounds->click, volume * 0.25 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->click;
         case SOUND_RANDOM_DRR:
-            sound_play(&sounds->drr, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->drr;
         case SOUND_RANDOM_EXPLODE:
-            sound_play(&sounds->explode, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->explode;
         case SOUND_RANDOM_FIZZ:
-            sound_play(&sounds->fizz, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->fizz;
         case SOUND_RANDOM_FUSE:
-            sound_play(&sounds->fuse, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->fuse;
         case SOUND_RANDOM_GLASS:
-            sound_play(&sounds->glass[random_next_int_range(&sounds->random, 0, 2)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->glass[random_next_int_range(&sounds->random, 0, 2)];
         case SOUND_RANDOM_HURT:
-            sound_play(&sounds->hurt, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->hurt;
         case SOUND_RANDOM_POP:
-            sound_play(&sounds->pop, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->pop;
         case SOUND_RANDOM_SPLASH:
-            sound_play(&sounds->splash, volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->splash;
 
         case SOUND_STEP_CLOTH:
-            sound_play(&sounds->wool[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->wool[random_next_int_range(&sounds->random, 0, 3)];
         case SOUND_STEP_GRASS:
-            sound_play(&sounds->grass[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->grass[random_next_int_range(&sounds->random, 0, 3)];
         case SOUND_STEP_GRAVEL:
-            sound_play(&sounds->gravel[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->gravel[random_next_int_range(&sounds->random, 0, 3)];
         case SOUND_STEP_SAND:
-            sound_play(&sounds->sand[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->sand[random_next_int_range(&sounds->random, 0, 3)];
         case SOUND_STEP_STONE:
-            sound_play(&sounds->stone[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->stone[random_next_int_range(&sounds->random, 0, 3)];
         case SOUND_STEP_WOOD:
-            sound_play(&sounds->wood[random_next_int_range(&sounds->random, 0, 3)], volume * 0.2 * sounds->sound_volume, pitch);
-            return;
+            return &sounds->wood[random_next_int_range(&sounds->random, 0, 3)];
     }
+    return NULL;
+}
+
+void sounds_play_sound_at(sounds_t *sounds, uint8_t sound, float x, float y, float z, float volume, float pitch) {
+    sound_t *sound_src = sounds_get_sound_source(sounds, sound);
+    alSource3f(sound_src->source, AL_POSITION, x, y, z);
+    sound_play(sound_src, volume * 0.2 * sounds->sound_volume, pitch);
+    alSource3f(sound_src->source, AL_POSITION, 0, 0, 0);
+}
+
+void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitch) {
+    sound_t *sound_src = sounds_get_sound_source(sounds, sound);
+    sound_play(sound_src, volume * 0.2 * sounds->sound_volume, pitch);
 }
 
 void sounds_destroy(sounds_t *sounds) {

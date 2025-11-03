@@ -416,9 +416,9 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
 
     if(!minecraft->gamemode.instant_break && minecraft->miss_time <= 0) {
         if(minecraft->current_screen == NULL && SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK && !minecraft->hit_result.null && minecraft->hit_result.type == 0) { // and mouse was down
-            //minecraft->gamemode.continue_destroy_block(&minecraft->gamemode, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z, minecraft->hit_result.face);
+            minecraft->gamemode.continue_destroy_block(&minecraft->gamemode, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z, minecraft->hit_result.face);
         }else {
-            //minecraft->gamemode.stop_destroy_block(&minecraft->gamemode);
+            minecraft->gamemode.stop_destroy_block(&minecraft->gamemode);
         }
     }
 
@@ -564,6 +564,7 @@ void minecraft_run(minecraft_t *minecraft) {
 
         glEnable(GL_TEXTURE_2D);
 
+        gamemode_set_partial_time(&minecraft->gamemode, delta);
         renderer_camera_update_mouse(&minecraft->renderer, delta);
 
         minecraft->gamemode.render(&minecraft->gamemode, delta);

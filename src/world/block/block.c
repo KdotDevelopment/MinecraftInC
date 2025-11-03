@@ -345,6 +345,17 @@ void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int 
     }
 }
 
+float block_get_strength(block_t *block, entity_t *player) {
+    if(block->hardness < 0) {
+        return 0;
+    }else if(!player_can_harvest_block(player, block)) {
+        return 1.0 / block->hardness / 100.0;
+    }else {
+        // inventory item strength
+        return 1.0 / block->hardness / 30.0;
+    }
+}
+
 uint8_t block_get_drop_count(block_t *block, random_t *random) {
     return 1;
 }

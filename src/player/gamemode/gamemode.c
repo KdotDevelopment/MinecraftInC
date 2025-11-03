@@ -30,15 +30,25 @@ void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world) {
 }
 
 void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
-    world_t *world = (world_t *)&gamemode->minecraft->world;
+    world_t *world = gamemode->minecraft->world;
     block_t *block = &block_list[world_get_block(world, x, y, z)];
     if(block != NULL) {
-        if(block->sound->type != BLOCK_SOUND_NONE) {
-            world_play_sound(world, block->sound->base_type, x, y, z, block->sound->volume, block->sound->pitch);
+        if(block->sound->base_type != BLOCK_SOUND_NONE) {
+            world_play_sound(world, x, y, z, block->sound->base_type, block->sound->volume, block->sound->pitch);
         }
         block->on_destroyed(block, world, x, y, z, world_get_block_metadata(world, x, y, z));
     }
     world_set_block_with_update(world, x, y, z, blocks.air.id);
+}
+
+// sets damage time for breaking blocks
+void gamemode_set_partial_time(struct gamemode_s *gamemode, float partial_tick) {
+    if(gamemode->destroy_progress <= 0) {
+        gamemode->minecraft->renderer_world.destroy_progress = 0;
+    }else {
+        partial_tick = gamemode->destroy_progress_old + (gamemode->destroy_progress - gamemode->destroy_progress_old) * partial_tick;
+        gamemode->minecraft->renderer_world.destroy_progress = partial_tick;
+    }
 }
 
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item) {

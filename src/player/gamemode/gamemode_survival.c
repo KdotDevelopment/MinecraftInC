@@ -29,7 +29,7 @@ void gamemode_survival_init_player(struct gamemode_s *gamemode, entity_t *player
 
 void gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
-    block_spawn_items(&block_list[block_id], gamemode->minecraft->world, x, y, z, world_get_block_metadata(gamemode->minecraft->world, x, y, z));
+    //block_spawn_items(&block_list[block_id], gamemode->minecraft->world, x, y, z, world_get_block_metadata(gamemode->minecraft->world, x, y, z));
     gamemode_destroy_block(gamemode, x, y, z);
 }
 
@@ -38,33 +38,47 @@ uint8_t gamemode_survival_remove_item(struct gamemode_s *gamemode, int item) {
 }
 
 void gamemode_survival_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
-    /*int block_id = world_get_block(&gamemode->minecraft->world, x, y, z);
-    if(block_id != blocks.air.id && block_list[block_id].destroy_speed == 0) {
+    int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
+    if(block_id != blocks.air.id && block_list[block_id].hardness == 0) {
         gamemode->destroy_block(gamemode, x, y, z);
-    }*/
+    }
 }
 
 void gamemode_survival_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face) {
     if(gamemode->destroy_delay > 0) {
         gamemode->destroy_delay--;
-    }else if(x == gamemode->x_destroy_block && y == gamemode->y_destroy_block && z == gamemode->z_destroy_block) {
-        int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
-        if(block_id != blocks.air.id) {
-            block_t *block = &block_list[block_id];
-            //gamemode->destroy_progress_old = block->destroy_speed;
-            block_breaking(block, gamemode->minecraft->world, x, y, z, face, &gamemode->minecraft->particles);
-            gamemode->destroy_progress++;
-            if(gamemode->destroy_progress == gamemode->destroy_progress_old + 1) {
-                gamemode->destroy_block(gamemode, x, y, z);
-                gamemode->destroy_progress = 0;
-                gamemode->destroy_delay = 5;
-            }
-        }
     }else {
-        gamemode->destroy_progress = 0;
-        gamemode->x_destroy_block = x;
-        gamemode->y_destroy_block = y;
-        gamemode->z_destroy_block = z;
+        if(x == gamemode->x_destroy_block && y == gamemode->y_destroy_block && z == gamemode->z_destroy_block) {
+            int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
+            if(block_id != blocks.air.id) {
+                block_t *block = &block_list[block_id];
+                gamemode->destroy_progress += block_get_strength(block, &gamemode->minecraft->player);
+                if(gamemode->destroy_sound_counter % 4 == 0 && block != NULL) {
+                    block_sound_t *sound = block->sound;
+                    float sound_x = x + 0.5;
+                    float sound_y = y + 0.5;
+                    float sound_z = z + 0.5;
+                    block_sound_type_t sound_id = sound->base_type;
+                    float volume = (sound->volume + 1) / 8.0;
+                    world_play_sound(gamemode->minecraft->world, sound_x, sound_y, sound_z, sound_id, volume, sound->pitch * 0.5);
+                }
+                gamemode->destroy_sound_counter++;
+                if(gamemode->destroy_progress >= 1) {
+                    gamemode->destroy_block(gamemode, x, y, z);
+                    gamemode->destroy_progress = 0;
+                    gamemode->destroy_progress_old = 0;
+                    gamemode->destroy_sound_counter = 0;
+                    gamemode->destroy_delay = 5;
+                }
+            }
+        }else {
+            gamemode->destroy_progress = 0;
+            gamemode->destroy_progress_old = 0;
+            gamemode->destroy_sound_counter = 0;
+            gamemode->x_destroy_block = x;
+            gamemode->y_destroy_block = y;
+            gamemode->z_destroy_block = z;
+        }
     }
 }
 
@@ -74,11 +88,12 @@ void gamemode_survival_stop_destroy_block(struct gamemode_s *gamemode) {
 }
 
 void gamemode_survival_render(struct gamemode_s *gamemode, float delta) {
-    if(gamemode->destroy_progress <= 0) {
+    /*if(gamemode->destroy_progress <= 0) {
         gamemode->minecraft->renderer_world.destroy_progress = 0;
     }else {
         gamemode->minecraft->renderer_world.destroy_progress = ((float)gamemode->destroy_progress + delta - 1.0) / (float)gamemode->destroy_progress_old;
-    }
+    }*/
+    gamemode->destroy_progress_old = gamemode->destroy_progress;
 }
 
 uint8_t gamemode_survival_use_item(struct gamemode_s *gamemode, entity_t *player, int item) {

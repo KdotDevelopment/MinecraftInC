@@ -22,8 +22,9 @@ typedef struct gamemode_s {
     int x_destroy_block;
     int y_destroy_block;
     int z_destroy_block;
-    int destroy_progress;
-    int destroy_progress_old;
+    float destroy_progress;
+    float destroy_progress_old;
+    int destroy_sound_counter;
     int destroy_delay;
     mob_spawner_t mob_spawner;
     uint8_t gamemode_type;
@@ -46,6 +47,7 @@ typedef struct gamemode_s {
 gamemode_t gamemode_create(struct minecraft_s *minecraft);
 void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world);
 void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
+void gamemode_set_partial_time(struct gamemode_s *gamemode, float partial_tick);
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item);
 void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
 void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);

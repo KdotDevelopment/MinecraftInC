@@ -71,6 +71,7 @@ typedef struct sounds_s {
 
 sounds_t sounds_create();
 void sounds_play_music(sounds_t *sounds, char *music);
+void sounds_play_sound_at(sounds_t *sounds, uint8_t sound, float x, float y, float z, float volume, float pitch);
 void sounds_play_sound(sounds_t *sounds, uint8_t sound, float volume, float pitch);
 void sounds_stop_all(sounds_t *sounds);
 void sounds_set_music_volume(sounds_t *sounds, float volume);

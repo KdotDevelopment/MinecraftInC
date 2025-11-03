@@ -307,7 +307,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
             entity->next_step++;
             block_sound_t *sound = block_list[block_id].sound;
             if(sound->type != BLOCK_SOUND_NONE) {
-                world_play_sound_at_entity(entity->world, entity, sound->type, sound->volume * 0.15, sound->pitch);
+                world_play_sound_at_entity(entity->world, entity, sound->base_type, sound->volume * 0.15, sound->pitch);
             }
 
             block_list[block_id].on_walked_upon(&block_list[block_id], entity->world, floor_double(entity->x), floor_double(entity->y - 0.2 - entity->height_offset), floor_double(entity->z));

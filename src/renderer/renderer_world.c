@@ -701,7 +701,7 @@ void renderer_world_update_frustum(renderer_world_t *renderer, frustum_t *frustu
 }
 
 void renderer_world_play_sound(renderer_world_t *renderer, uint8_t sound, double x, double y, double z, float volume, float pitch) {
-
+    sounds_play_sound_at(&renderer->minecraft->sounds, sound, x, y, z, volume, pitch);
 }
 
 void renderer_world_spawn_particle(renderer_world_t *renderer, uint8_t particle_type, double x, double y, double z, double x_vel, double y_vel, double z_vel) {

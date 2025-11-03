@@ -36,7 +36,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->minecraft = minecraft;
     world->lighting_update_list = array_list_create(sizeof(uint64_t));
     world->loaded_entity_list = array_list_create(sizeof(uint64_t));
-    world->next_tick_data_list = array_list_create(sizeof(uint64_t));
+    world->next_tick_data_list = array_list_create(sizeof(next_tick_data_t));
     world->loaded_tile_entity_list = array_list_create(sizeof(uint64_t));
     world->renderer_world_list = array_list_create(sizeof(uint64_t));
     world->world_time = 0;
@@ -1159,7 +1159,7 @@ void world_restart_time_of_day(world_t *world) {
 
     world->world_time++;
     if(world->world_time % 100 == 0) {
-        //world_save(world, 0);
+        world_save(world, 0);
     }
 
     int next_tick_size = array_list_length(world->next_tick_data_list);
@@ -1180,6 +1180,7 @@ void world_restart_time_of_day(world_t *world) {
                 block->update(block, world, next_tick.x, next_tick.y, next_tick.z, &world->random);
             }
         }
+        next_tick_size = array_list_length(world->next_tick_data_list);
     }
 
     int x = floor_double(world->player->x);

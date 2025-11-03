@@ -134,6 +134,7 @@ AABB_t block_get_collision_aabb(block_t *block, int x, int y, int z);
 int16_t block_get_item_dropped(block_t *block, uint8_t metadata, random_t *random);
 void block_spawn_items(block_t *block, struct world_s *world, int x, int y, int z, uint8_t metadata);
 void block_spawn_items_chance(block_t *block, struct world_s *world, int x, int y, int z, uint8_t metadata, float chance);
+float block_get_strength(block_t *block, entity_t *player);
 uint8_t block_get_drop_count(block_t *block, random_t *random);
 uint8_t block_can_place_at(block_t *block, struct world_s *world, int x, int y, int z);
 void block_on_exploded(block_t *block, struct world_s *world, int x, int y, int z);

@@ -49,3 +49,8 @@ void player_create(entity_t *entity, struct world_s *world) {
 void player_set_key(player_t *player, uint8_t key, uint8_t state) {
     inputs_set_key_state(&player->inputs, key, state);
 }
+
+uint8_t player_can_harvest_block(entity_t *player, block_t *block) {
+    // TODO inventory logic
+    return 1;
+}

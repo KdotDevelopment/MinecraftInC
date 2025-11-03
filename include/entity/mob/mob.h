@@ -11,11 +11,10 @@
 #define AIR_SUPPLY 300
 #define INVULNERABLE_DURATION 20
 
+struct player_s;
+
 typedef struct mob_s {
-    union {
-        entity_t;
-        entity_t entity;
-    };
+    entity_t *entity; // parent
     //Models modelCache;
     int invulnerable_duration; // = 20;
     float rot;
@@ -61,9 +60,11 @@ typedef struct mob_s {
     void (*render_model)(struct mob_s *mob, float time, float r, float bob, float y_rot, float x_rot, float scale);
     void (*die)(struct mob_s *mob, struct mob_s *causer);
     void (*ai_step)(struct mob_s *mob);
+
+    struct player_s *player;
 } mob_t;
 
-void mob_create(mob_t *mob, struct world_s *world);
+void mob_create(entity_t *entity, struct world_s *world);
 void mob_tick(entity_t *entity);
 void mob_ai_step(struct mob_s *mob);
 void mob_render(entity_t *entity, textures_t *textures, float delta);

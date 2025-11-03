@@ -70,9 +70,9 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
     glColor4f(brightness, brightness, brightness, 1.0);
     float rotation = tsin(rot_delta / 10.0);
     float hover_height = rotation * 0.1 + 0.1;
-    glTranslatef(entity->xo + (entity->x - entity->xo) * delta, 
-                 entity->yo + (entity->y - entity->yo) * delta + hover_height, 
-                 entity->zo + (entity->z - entity->zo) * delta);
+    glTranslatef(entity->last_tick_x + (entity->x - entity->last_tick_x) * delta,
+                 entity->last_tick_y + (entity->y - entity->last_tick_y) * delta + hover_height,
+                 entity->last_tick_z + (entity->z - entity->last_tick_z) * delta);
     glRotatef(rot_delta, 0, 1, 0);
     model_item_render(&item_models[entity->item_stack.item_id - 256]);
 

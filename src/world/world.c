@@ -508,7 +508,7 @@ void world_play_sound_at_entity(world_t *world, entity_t *entity, uint8_t sound,
         float attenuation = 16;
         if(volume > 1) attenuation *= volume;
 
-        if(entity_distance_to_sqr(&world->player->mob.entity, entity) < attenuation * attenuation) {
+        if(entity_distance_to_sqr(world->player->mob->entity, entity) < attenuation * attenuation) {
             renderer_world_t *renderer = *(renderer_world_t **)array_list_get(world->renderer_world_list, i);
             renderer_world_play_sound(renderer, sound, entity->x, entity->y - entity->y_slide_offset, entity->z, volume, pitch);
         }
@@ -1011,7 +1011,6 @@ uint8_t world_update_lighting(world_t *world) {
 
         chunk_metadata_t *metadata = *(chunk_metadata_t **)array_list_get(world->lighting_update_list, length - 1);
         world->lighting_update_list = array_list_remove(world->lighting_update_list, length - 1);
-        /*if(length % 1000 == 0)*/ printf("LENGTH %d %d %d %d\n", length, metadata->x, metadata->y, metadata->z);
 
         for(int x = metadata->x; x <= metadata->max_x; x++) {
             for(int z = metadata->z; z <= metadata->max_z; z++) {
@@ -1036,14 +1035,14 @@ uint8_t world_update_lighting(world_t *world) {
 
                             if(opacity >= 15 && new_light_value == 0) {
                                 max_light = 0;
-                            }/*else {
+                            }else {
                                 int light_west = world_get_saved_light_value(world, metadata->light_type, x - 1, y, z);
                                 int light_east = world_get_saved_light_value(world, metadata->light_type, x + 1, y, z);
                                 int light_north = world_get_saved_light_value(world, metadata->light_type, x, y, z - 1);
                                 int light_south = world_get_saved_light_value(world, metadata->light_type, x, y, z + 1);
                                 int light_up = world_get_saved_light_value(world, metadata->light_type, x, y + 1, z);
                                 int light_down = world_get_saved_light_value(world, metadata->light_type, x, y - 1, z);
-
+                                
                                 max_light = light_west;
                                 if(light_east > max_light) max_light = light_east;
                                 if(light_north > max_light) max_light = light_north;
@@ -1057,7 +1056,7 @@ uint8_t world_update_lighting(world_t *world) {
                                 if(new_light_value > max_light) {
                                     max_light = new_light_value;
                                 }
-                            }*/
+                            }
 
                             if(current_light_value != max_light) {
                                 if(x >= -WORLD_MAX_SIZE && x < WORLD_MAX_SIZE
@@ -1065,11 +1064,11 @@ uint8_t world_update_lighting(world_t *world) {
                                 && z >= -WORLD_MAX_SIZE && z <= WORLD_MAX_SIZE
                                 && world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) {
                                     chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
-                                    chunk_set_light_value(chunk, metadata->light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), new_light_value);
+                                    chunk_set_light_value(chunk, metadata->light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), max_light);
 
                                     for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
                                         renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
-                                        renderer_world_update_block(renderer, x, y, z);
+                                        //renderer_world_update_block(renderer, x, y, z);
                                     }
                                 }
 
@@ -1138,7 +1137,7 @@ void world_schedule_light_update(world_t *world, uint8_t light_type, int x0, int
 void world_restart_time_of_day(world_t *world) {
     world->chunk_provider.unload_oldest_chunks(&world->chunk_provider);
     if(!array_list_contains(world->loaded_entity_list, &world->player)) {
-        world_spawn_entity(world, &world->player->mob.entity);
+        world_spawn_entity(world, world->player->mob->entity);
     }
 
     float angle = world_get_celestial_angle(world, 1.0);
@@ -1156,7 +1155,7 @@ void world_restart_time_of_day(world_t *world) {
         }
     }
 
-    world->world_time+=5;
+    world->world_time++;
     if(world->world_time % 100 == 0) {
         //world_save(world, 0);
     }

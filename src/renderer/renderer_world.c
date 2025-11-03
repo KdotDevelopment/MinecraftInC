@@ -116,7 +116,9 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->y_chunks = 8;
     renderer->z_chunks = distance;
     renderer->renderer_chunks = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
+    memset(renderer->renderer_chunks, 0, renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
     renderer->renderer_chunks_sorted = malloc(renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
+    memset(renderer->renderer_chunks_sorted, 0, renderer->x_chunks * renderer->y_chunks * renderer->z_chunks * sizeof(renderer_chunk_t *));
     renderer->renderer_chunk_count = renderer->x_chunks * renderer->y_chunks * renderer->z_chunks;
     renderer->x0 = 0;
     renderer->y0 = 0;
@@ -156,7 +158,7 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
         }
     }
 
-    entity_t *player = &renderer->minecraft->player.mob.entity;
+    entity_t *player = &renderer->minecraft->player;
     renderer_world_new_position(renderer, floor_double(player->x), floor_double(player->y), floor_double(player->z));
     qsort(renderer->renderer_chunks_sorted, renderer->renderer_chunk_count, sizeof(renderer_chunk_t *), renderer_chunk_entity_compare);
 }
@@ -166,7 +168,7 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
     renderer->entities_total = 0;
     renderer->entities_rendered = 0;
     renderer->entities_hidden = 0;
-    entity_t *player = &renderer->world->player->mob.entity;
+    entity_t *player = renderer->world->player;
     // render_manager.x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
     // render_manager.y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
     // render_manager.z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
@@ -243,7 +245,7 @@ void renderer_world_new_position(renderer_world_t *renderer, int x, int y, int z
                 renderer_chunk_set_position(chunk_renderer, chunk_x_pos, chunk_y_pos, chunk_z_pos);
 
                 if(!updated && chunk_renderer->needs_update) {
-                    renderer->renderer_chunks_to_update = array_list_push(renderer->renderer_chunks_to_update, chunk_renderer);
+                    renderer->renderer_chunks_to_update = array_list_push(renderer->renderer_chunks_to_update, &chunk_renderer);
                 }
             }
         }
@@ -447,9 +449,9 @@ void renderer_world_update_clouds(renderer_world_t *renderer) {
 
 void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
     glDisable(GL_TEXTURE_2D);
-    double dx = renderer->minecraft->player.xo + (renderer->minecraft->player.x - renderer->minecraft->player.xo) * partial_tick + (renderer->cloud_offset_x + partial_tick) * 0.03;
-    double dy = renderer->minecraft->player.yo + (renderer->minecraft->player.y - renderer->minecraft->player.yo) * partial_tick;
-    double dz = renderer->minecraft->player.zo + (renderer->minecraft->player.z - renderer->minecraft->player.zo) * partial_tick;
+    double dx = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick + (renderer->cloud_offset_x + partial_tick) * 0.03;
+    double dy = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
+    double dz = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
     
     vec3_t sky_color = world_get_sky_color(renderer->world, partial_tick);
     float sky_r = sky_color.x;
@@ -553,7 +555,7 @@ void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
 }
 
 void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *player) {
-    qsort(renderer->renderer_chunks_to_update, array_list_length(renderer->renderer_chunks_to_update), sizeof(renderer_chunk_t *), renderer_chunk_player_compare);
+    qsort(array_list_get(renderer->renderer_chunks_to_update, 0), array_list_length(renderer->renderer_chunks_to_update), sizeof(renderer_chunk_t *), renderer_chunk_player_compare);
 
     int last_index = array_list_length(renderer->renderer_chunks_to_update) - 1;
     int total_renderers = last_index + 1;
@@ -563,7 +565,7 @@ void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *playe
         if(renderer_chunk_distance_to_entity_squared(chunk_renderer, player) > 2500.0 && i > 2) {
             return;
         }
-        array_list_remove(renderer->renderer_chunks_to_update, last_index - i);
+        renderer->renderer_chunks_to_update = array_list_remove(renderer->renderer_chunks_to_update, last_index - i);
         renderer_chunk_update(chunk_renderer);
         chunk_renderer->needs_update = 0;
     }
@@ -618,9 +620,9 @@ void renderer_world_draw_selection_box(renderer_world_t *renderer, entity_t *pla
     block_id = world_get_block(renderer->world, hit_result->x, hit_result->y, hit_result->z);
     block_t *block = &block_list[block_id];
     if(block_id > 0) {
-        double x = player->last_tick_x + (player->x - player->last_tick_x) * partial_tick;
-        double y = player->last_tick_y + (player->y - player->last_tick_y) * partial_tick;
-        double z = player->last_tick_z + (player->z - player->last_tick_z) * partial_tick;
+    double x = player->last_tick_x + (player->x - player->last_tick_x) * partial_tick;
+    double y = player->last_tick_y + (player->y - player->last_tick_y) * partial_tick;
+    double z = player->last_tick_z + (player->z - player->last_tick_z) * partial_tick;
         AABB_t bb = AABB_grow(block->get_selection_aabb(block, hit_result->x, hit_result->y, hit_result->z), 0.002, 0.002, 0.002);
         bb = AABB_move(bb, -x, -y, -z);
         tesselator_begin(GL_LINE_STRIP);

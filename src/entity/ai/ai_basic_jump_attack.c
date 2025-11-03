@@ -17,8 +17,8 @@ void ai_basic_jump_attack_jump(struct ai_s *ai) {
         ai_jump(ai);
         return;
     }
-    ai->mob->xd = 0;
-    ai->mob->zd = 0;
-    entity_move_relative(&ai->mob->entity, 0, 1, 0);
-    ai->mob->yd = 0.5;
+    ai->mob->entity->xd = 0;
+    ai->mob->entity->zd = 0;
+    entity_move_relative(ai->mob->entity, 0, 1, 0);
+    ai->mob->entity->yd = 0.5;
 }

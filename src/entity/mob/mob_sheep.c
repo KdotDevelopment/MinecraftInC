@@ -12,33 +12,34 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-void mob_sheep_create(mob_t *mob, struct world_s *world, float x, float y, float z) {
-    mob_quadruped_create(mob, world, x, y, z);
-    mob->type = ENTITY_MOB_SHEEP;
+void mob_sheep_create(entity_t *entity, struct world_s *world, float x, float y, float z) {
+    mob_quadruped_create(entity, world, x, y, z);
+    mob_t *mob = entity->mob;
+    mob->entity->type = ENTITY_MOB_SHEEP;
     mob->model_type = MODEL_SHEEP;
-    mob->height_offset = 1.72;
+    mob->entity->height_offset = 1.72;
     mob->texture_name = "mob/sheep.png";
     mob->has_fur = 1;
     mob->is_grazing = 0;
     mob->graze = 0.0F;
     mob->graze_o = 0.0F;
     mob->ai = ai_sheep_create(mob);
-    mob->model = models_get(&world->minecraft->models, mob->model_type);
+    mob->entity->model = models_get(&world->minecraft->models, mob->model_type);
 
-    entity_set_pos(&mob->entity, x, y, z);
+    entity_set_pos(entity, x, y, z);
 
     mob->die = mob_sheep_die;
-    mob->hurt = mob_sheep_hurt;
+    mob->entity->hurt = mob_sheep_hurt;
     mob->render_model = mob_sheep_render_model;
     mob->ai_step = mob_sheep_ai_step;
 }
 
 void mob_sheep_die(mob_t *mob, mob_t *causer) {
     if(causer != NULL) {
-        mob->award_kill_score(&mob->entity, &causer->entity, 10);
+        mob->entity->award_kill_score(mob->entity, causer->entity, 10);
     }
 
-    int drop_count = random_next_uniform(&mob->world->random) + random_next_uniform(&mob->world->random) + 1;
+    int drop_count = random_next_uniform(&mob->entity->world->random) + random_next_uniform(&mob->entity->world->random) + 1;
 
     for(int i = 0; i < drop_count; i++) {
         //drop items brown mushroom
@@ -79,14 +80,14 @@ void mob_sheep_hurt(struct entity_s *mob, struct entity_s *causer, int damage) {
 }
 
 void mob_sheep_render_model(struct mob_s *mob, float time, float r, float bob, float y_rot, float x_rot, float scale) {
-    model_t *model = mob->model;
+    model_t *model = mob->entity->model;
     float head_y = model->head.y;
     float head_z = model->head.z;
     model->head.y = model->head.y + (mob->graze_o + (mob->graze - mob->graze_o) * r) * 8.0;
     model->head.z = model->head.z - (mob->graze_o + (mob->graze - mob->graze_o) * r);
-    model_quadruped_render(mob->model, time, bob, r + mob->tick_count, y_rot, x_rot, scale);
+    model_quadruped_render(mob->entity->model, time, bob, r + mob->entity->tick_count, y_rot, x_rot, scale);
     if(mob->has_fur) {
-        glBindTexture(GL_TEXTURE_2D, textures_load(&mob->world->minecraft->textures, "mob/sheep_fur.png"));
+        glBindTexture(GL_TEXTURE_2D, textures_load(&mob->entity->world->minecraft->textures, "mob/sheep_fur.png"));
         glDisable(GL_CULL_FACE);
         model_t fur_model = model_sheep_fur_create();
         fur_model.head.y_rot = model->head.y_rot;

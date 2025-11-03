@@ -21,7 +21,7 @@ particle_t particle_create(struct world_s *world, float x, float y, float z, flo
     particle.b = 1;
     particle.u = random_uniform() * 3.0;
     particle.v = random_uniform() * 3.0;
-    particle.size = random_uniform() * 0.5 + 0.5;
+    particle.size = (random_uniform() * 0.5 + 0.5) * 2.0;
     particle.lifetime = 4.0 / (random_uniform() * 0.9 + 0.1);
     particle.age = 0;
     float rnd = (random_uniform() + random_uniform() + 1) * 0.15;
@@ -62,9 +62,9 @@ void particle_render(struct particle_s *particle, float delta, float x, float y,
     float u1 = u0 + 0.0624375;
     float v1 = v0 + 0.0624375;
     float s = 0.1 * particle->size;
-    float vx = particle->entity.xo + (particle->entity.x - particle->entity.xo) * delta;
-    float vy = particle->entity.yo + (particle->entity.y - particle->entity.yo) * delta;
-    float vz = particle->entity.zo + (particle->entity.z - particle->entity.zo) * delta;
+    float vx = particle->entity.last_tick_x + (particle->entity.x - particle->entity.last_tick_x) * delta;
+    float vy = particle->entity.last_tick_y + (particle->entity.y - particle->entity.last_tick_y) * delta;
+    float vz = particle->entity.last_tick_z + (particle->entity.z - particle->entity.last_tick_z) * delta;
     float brightness = entity_get_brightness(&particle->entity, delta);
     tesselator_color_opaque(brightness * particle->r, brightness * particle->g, brightness * particle->b);
     tesselator_vertex_uv(vx - x * s - var6 * s, vy - y * s, vz - z * s - var7 * s, u0, v1);

@@ -26,7 +26,7 @@ typedef struct minecraft_s {
     renderer_camera_t renderer;
     world_t *world;
     textures_t textures;
-    player_t player;
+    entity_t player;
     game_settings_t settings;
     font_t font;
     renderer_world_t renderer_world;

@@ -137,9 +137,9 @@ void entity_arrow_render(struct entity_s *entity, textures_t *textures, float de
     float brightness = world_get_brightness((world_t *)entity->world, entity->x, entity->y, entity->z);
     glPushMatrix();
     glColor4f(brightness, brightness, brightness, 1);
-    glTranslatef(entity->xo + (entity->x - entity->xo) * delta, 
-                 entity->yo + (entity->y - entity->yo) * delta, 
-                 entity->zo + (entity->z - entity->zo) * delta);
+    glTranslatef(entity->last_tick_x + (entity->x - entity->last_tick_x) * delta,
+                 entity->last_tick_y + (entity->y - entity->last_tick_y) * delta,
+                 entity->last_tick_z + (entity->z - entity->last_tick_z) * delta);
     glRotatef(entity->y_roto + (entity->y_rot - entity->y_roto) * delta - 90.0, 0, 1, 0);
     glRotatef(entity->x_roto + (entity->x_rot - entity->x_roto) * delta, 0, 0, 1);
     glRotatef(45, 1, 0, 0);

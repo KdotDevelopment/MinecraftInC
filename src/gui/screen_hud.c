@@ -20,30 +20,30 @@ screen_hud_t screen_hud_create(struct minecraft_s *minecraft, int width, int hei
 }
 
 void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick) {
-    int x = hud->minecraft->frame_width;
-    int y = hud->minecraft->frame_height;
+    /*int x = hud->minecraft->width;
+    int y = hud->minecraft->height;
     int w = x;
     int h = y;
     for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
     w /= x;
     h /= x;
-    hud->width = w - 20;
-    hud->height = h - 20;
+    hud->width = w;
+    hud->height = h;*/
     renderer_camera_setup_gui(&hud->minecraft->renderer);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/gui.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_BLEND);
     gui_blit(hud->width / 2 - 91, hud->height - 22, 0, 0, 182, 22, -90.0);
-    gui_blit(hud->width / 2 - 92 + hud->minecraft->player.inventory.selected * 20, hud->height - 23, 0, 22, 24, 22, -90.0);
+    gui_blit(hud->width / 2 - 92 + hud->minecraft->player.mob->player->inventory.selected * 20, hud->height - 23, 0, 22, 24, 22, -90.0);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/icons.png"));
     gui_blit(hud->width / 2 - 7, hud->height / 2 - 7, 0, 0, 16, 15.99, -90.0);
-    int iframe = hud->minecraft->player.invulnerable_time / 3 % 2 == 1;
-    if(hud->minecraft->player.invulnerable_time < 10) {
+    int iframe = hud->minecraft->player.mob->invulnerable_time / 3 % 2 == 1;
+    if(hud->minecraft->player.mob->invulnerable_time < 10) {
         iframe = 0;
     }
 
-    int health = hud->minecraft->player.health;
-    int last_health = hud->minecraft->player.last_health;
+    int health = hud->minecraft->player.mob->health;
+    int last_health = hud->minecraft->player.mob->last_health;
     if(hud->minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
         for(int i = 0; i < 10; i++) {
             int8_t a = 0;
@@ -76,9 +76,9 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
             }
         }
 
-        if(entity_is_underwater(&hud->minecraft->player.entity)) {
-            int air1 = (int)ceil((hud->minecraft->player.air_supply - 2.0) * 10.0 / 300.0);
-            int air2 = (int)ceil(hud->minecraft->player.air_supply * 10.0 / 300.0) - air1;
+        if(entity_is_underwater(&hud->minecraft->player)) {
+            int air1 = (int)ceil((hud->minecraft->player.mob->air_supply - 2.0) * 10.0 / 300.0);
+            int air2 = (int)ceil(hud->minecraft->player.mob->air_supply * 10.0 / 300.0) - air1;
 
             for(int j = 0; j < air1 + air2; j++) {
                 if(j < air1) {
@@ -94,13 +94,13 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     for(int i = 0; i < 9; i++) {
         int x = hud->width / 2 - 90 + i * 20;
         int y = hud->height - 16;
-        uint8_t block_id = hud->minecraft->player.inventory.slots[i];
+        uint8_t block_id = hud->minecraft->player.mob->player->inventory.slots[i];
         block_t *block = &block_list[block_id];
         if(block_id != -1 && block_id != 0) {
             glPushMatrix();
             glTranslatef(x, y, -50.0);
-            if(hud->minecraft->player.inventory.pop_times[i] > 0) {
-                float a = (hud->minecraft->player.inventory.pop_times[i] - partial_tick) / 5.0;
+            if(hud->minecraft->player.mob->player->inventory.pop_times[i] > 0) {
+                float a = (hud->minecraft->player.mob->player->inventory.pop_times[i] - partial_tick) / 5.0;
                 float b = -tsin(a * a * M_PI) * 8.0;
                 float c = tsin(a * a * M_PI) + 1.0;
                 float d = tsin(a * M_PI) + 1.0;
@@ -119,9 +119,9 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
             block->render_full_brightness(&block_list[block_id]);
             tesselator_end();
             glPopMatrix();
-            if(hud->minecraft->player.inventory.counts[i] > 1) {
+            if(hud->minecraft->player.mob->player->inventory.counts[i] > 1) {
                 char number[4];
-                sprintf(number, "%d", hud->minecraft->player.inventory.counts[i]);
+                sprintf(number, "%d", hud->minecraft->player.mob->player->inventory.counts[i]);
                 font_render(&hud->minecraft->font, number, x + 19 - font_get_width(&hud->minecraft->font, number), y + 6, 0xffffffff);
             }
         }

@@ -145,7 +145,8 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     while(array_list_length(minecraft->world->lighting_update_list) > 0) {
         world_update_lighting(minecraft->world);
     }
-    minecraft->player.inputs = inputs_create(&minecraft->settings);
+    while(world_update_lighting(minecraft->world));
+    minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
 
@@ -191,14 +192,14 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
     if(screen == NULL && minecraft->world == NULL) {
         screen = malloc(sizeof(screen_t));
         *screen = screen_title_create();
-    }else if(screen == NULL && minecraft->player.health <= 0) {
+    }else if(screen == NULL && minecraft->player.mob->health <= 0) {
         screen = malloc(sizeof(screen_t));
         *screen = screen_death_create();
     }
     if(screen != NULL) {
         minecraft->current_screen = screen;
         if(minecraft->has_mouse) {
-            inputs_reset_keys(&minecraft->player.inputs);
+            inputs_reset_keys(&minecraft->player.mob->player->inputs);
             minecraft->has_mouse = 0;
             SDL_ShowCursor(1);
         }
@@ -221,10 +222,10 @@ void minecraft_regenerate_world(minecraft_t *minecraft, int size) {
     //world_regenerate(minecraft->world, size);
     minecraft->gamemode.init_world(&minecraft->gamemode, minecraft->world);
     player_create(&minecraft->player, (struct world_s *)minecraft->world);
-    entity_reset_pos(&minecraft->player.mob.entity);
+    entity_reset_pos(&minecraft->player);
     minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
-    minecraft->player.inputs = inputs_create(&minecraft->settings);
+    minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
     renderer_world_destroy(&minecraft->renderer_world);
     //minecraft->renderer_world = renderer_world_create(minecraft, minecraft->world, &minecraft->textures);
     //minecraft->world->renderer = (struct renderer_world_s *)&minecraft->renderer_world;
@@ -247,7 +248,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
             minecraft->renderer.held_block.offset = -1;
             minecraft->renderer.held_block.moving = 1;
         }
-        if(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK && minecraft->player.inventory.selected > 0 && minecraft->gamemode.use_item(&minecraft->gamemode, &minecraft->player, minecraft->player.inventory.selected)) {
+        if(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK && minecraft->player.mob->player->inventory.selected > 0 && minecraft->gamemode.use_item(&minecraft->gamemode, &minecraft->player, minecraft->player.mob->player->inventory.selected)) {
             minecraft->renderer.held_block.position = 0;
         }else if(minecraft->hit_result.null) {
             if(button == SDL_BUTTON_LEFT && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
@@ -258,7 +259,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                 if(button == SDL_BUTTON_LEFT) {
                     entity_t *entity = minecraft->hit_result.entity;
                     if(entity != NULL) {
-                        entity->hurt(entity, &minecraft->player.entity, 4);
+                        entity->hurt(entity, &minecraft->player, 4);
                         return;
                     }
                 }
@@ -281,13 +282,13 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                         return;
                     }
                 }else {
-                    int selected = inventory_get_selected(&minecraft->player.inventory);
+                    int selected = inventory_get_selected(&minecraft->player.mob->player->inventory);
                     if(selected <= 0) return;
     
                     block_t *block = &block_list[world_get_block(minecraft->world, vx, vy, vz)];
                     block_t *selected_block = &block_list[selected];
                     AABB_t aabb = block_list[selected].id == blocks.air.id ? (AABB_t){ .null = 1 } : selected_block->get_collision_aabb(selected_block, vx, vy, vz);
-                    if((block->id == blocks.air.id || block->id == blocks.water.id || block->id == blocks.still_water.id || block->id == blocks.lava.id || block->id == blocks.still_lava.id) && (aabb.null || !AABB_intersects(minecraft->player.mob.bb, aabb))) {
+                    if((block->id == blocks.air.id || block->id == blocks.water.id || block->id == blocks.still_water.id || block->id == blocks.lava.id || block->id == blocks.still_lava.id) && (aabb.null || !AABB_intersects(minecraft->player.bb, aabb))) {
                         if(!minecraft->gamemode.remove_item(&minecraft->gamemode, selected)) {
                             return;
                         }
@@ -320,14 +321,14 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         minecraft->miss_time--;
     }
 
-    if(minecraft->current_screen == NULL && minecraft->player.health <= 0) {
+    if(minecraft->current_screen == NULL && minecraft->player.mob->health <= 0) {
         minecraft_set_current_screen(minecraft, NULL);
     }
 
     if(minecraft->current_screen == NULL || minecraft->current_screen->grabs_mouse) {
         for(int i = 0; i < array_list_length(events); i++) {
             if(events[i].type == SDL_MOUSEWHEEL) {
-                inventory_swap_paint(&minecraft->player.inventory, events[i].wheel.y);
+                inventory_swap_paint(&minecraft->player.mob->player->inventory, events[i].wheel.y);
             }
             if(minecraft->current_screen == NULL) {
                 if(!minecraft->has_mouse && events[i].type == SDL_MOUSEBUTTONDOWN) {
@@ -346,7 +347,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         if(block_id == blocks.grass.id) block_id = blocks.dirt.id;
                         if(block_id == blocks.double_slab.id) block_id = blocks.slab.id;
                         if(block_id == blocks.bedrock.id) block_id = blocks.stone.id;
-                        inventory_grab_texture(&minecraft->player.inventory, block_id);
+                        inventory_grab_texture(&minecraft->player.mob->player->inventory, block_id);
                     }
                 }
             }else {
@@ -355,7 +356,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         }
         for(int i = 0; i < array_list_length(events); i++) {
             if(events[i].type == SDL_KEYDOWN || events[i].type == SDL_KEYUP) {
-                player_set_key(&minecraft->player, events[i].key.keysym.scancode, events[i].type == SDL_KEYDOWN);
+                player_set_key(minecraft->player.mob->player, events[i].key.keysym.scancode, events[i].type == SDL_KEYDOWN);
             }
             if(events[i].type == SDL_KEYDOWN) {
                 if(minecraft->current_screen != NULL) {
@@ -367,21 +368,21 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                     }
                     if(minecraft->gamemode.gamemode_type == GAMEMODE_CREATIVE) {
                         if(events[i].key.keysym.scancode == minecraft->settings.load_location_key.key) {
-                            entity_reset_pos(&minecraft->player.mob.entity);
+                            entity_reset_pos(&minecraft->player);
                         }
                         if(events[i].key.keysym.scancode == minecraft->settings.save_location_key.key) {
-                            world_set_spawn_position(minecraft->world, minecraft->player.mob.x, minecraft->player.mob.y, minecraft->player.mob.z);
-                            entity_reset_pos(&minecraft->player.mob.entity);
+                            world_set_spawn_position(minecraft->world, minecraft->player.x, minecraft->player.y, minecraft->player.z);
+                            entity_reset_pos(&minecraft->player);
                         }
                     }
                     if(events[i].key.keysym.scancode == SDL_SCANCODE_F5) {
                         minecraft->raining = !minecraft->raining;
                     }
-                    if(events[i].key.keysym.scancode == SDL_SCANCODE_TAB && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL && minecraft->player.arrows > 0) {
+                    if(events[i].key.keysym.scancode == SDL_SCANCODE_TAB && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL && minecraft->player.mob->player->arrows > 0) {
                         entity_t *arrow = malloc(sizeof(entity_t));
-                        entity_arrow_create(arrow, minecraft->world, &minecraft->player.mob.entity, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
+                        entity_arrow_create(arrow, minecraft->world, &minecraft->player, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
                         world_spawn_entity(minecraft->world, arrow);
-                        minecraft->player.arrows--;
+                        minecraft->player.mob->player->arrows--;
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.inventory_key.key) {
                         minecraft->gamemode.open_inventory((struct gamemode_s *)&minecraft->gamemode);
@@ -392,7 +393,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                 }
                 for(int j = 0; j < 9; j++) {
                     if(events[i].key.keysym.scancode == SDL_SCANCODE_1 + j) {
-                        minecraft->player.inventory.selected = j;
+                        minecraft->player.mob->player->inventory.selected = j;
                     }
                 }
                 if(events[i].key.keysym.scancode == minecraft->settings.toggle_fog_key.key) {
@@ -444,7 +445,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
             renderer->held_block.moving = 0;
         }
     }
-    int selected = inventory_get_selected(&minecraft->player.inventory);
+    int selected = inventory_get_selected(&minecraft->player.mob->player->inventory);
     block_t *block = &block_list[blocks.air.id];
     if(selected > 0) block = &block_list[selected];
     float s = (block == renderer->held_block.block ? 1.0 : 0.0) - renderer->held_block.position;
@@ -501,13 +502,16 @@ void minecraft_run(minecraft_t *minecraft) {
             for(x = 1; w / (x + 1) >= 320 && h / (x + 1) >= 240; x++);
             w /= x;
             h /= x;
-            if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                SDL_GetWindowSize(minecraft->window, &minecraft->width, &minecraft->height);
-                SDL_GL_GetDrawableSize(minecraft->window, &minecraft->frame_width, &minecraft->frame_height);
-                glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
-                screen_hud_destroy(&minecraft->hud);
-                minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, w, h);
-                glClear(GL_COLOR_BUFFER_BIT);
+            if(event.type == SDL_WINDOWEVENT) {
+                int ev = event.window.event;
+                if(ev == SDL_WINDOWEVENT_RESIZED || ev == SDL_WINDOWEVENT_SIZE_CHANGED || ev == SDL_WINDOWEVENT_MAXIMIZED || ev == SDL_WINDOWEVENT_RESTORED || ev == SDL_WINDOWEVENT_SHOWN || ev == SDL_WINDOWEVENT_ENTER) {
+                    SDL_GetWindowSize(minecraft->window, &minecraft->width, &minecraft->height);
+                    SDL_GL_GetDrawableSize(minecraft->window, &minecraft->frame_width, &minecraft->frame_height);
+                    glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
+                    screen_hud_destroy(&minecraft->hud);
+                    minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, w, h);
+                    glClear(GL_COLOR_BUFFER_BIT);
+                }
 
                 if(minecraft->current_screen != NULL) {
                     screen_open(minecraft->current_screen, minecraft, w, h);
@@ -581,7 +585,7 @@ void minecraft_run(minecraft_t *minecraft) {
             dy = -(dy - y);
             SDL_WarpMouseGlobal(x, y);
 
-            entity_turn(&minecraft->player.mob.entity, dy * (minecraft->settings.invert_mouse ? -1 : 1), dx);
+            entity_turn(&minecraft->player, dy * (minecraft->settings.invert_mouse ? -1 : 1), dx);
         }
 
         int x = minecraft->width;
@@ -599,7 +603,7 @@ void minecraft_run(minecraft_t *minecraft) {
         //screen_hud_render(&minecraft->hud, mx, my, delta);
 
         if(minecraft->world != NULL) {
-            //world_update_lighting(minecraft->world);
+            while(world_update_lighting(minecraft->world));
             //if not paused
             renderer_camera_update(renderer);
             // update particles

@@ -67,7 +67,7 @@ typedef struct world_s {
 
     int64_t random_number;
     particles_t *particles;
-    player_t *player;
+    entity_t *player;
     struct minecraft_s *minecraft;
 } world_t;
 

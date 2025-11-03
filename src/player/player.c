@@ -9,34 +9,38 @@
 #include <stdlib.h>
 
 // Extends mob/mob.h
-void player_create(player_t *player, struct world_s *world) {
+void player_create(entity_t *entity, struct world_s *world) {
     world_t *real_world = (world_t *)world;
-    mob_create(&player->mob, world);
+    mob_create(entity, world);
+    entity->mob->player = malloc(sizeof(player_t));
+    player_t *player = entity->mob->player;
+    player->mob = entity->mob;
+    player->entity = entity;
 
     player->bob = 0;
     player->obob = 0;
 
-    player->type = ENTITY_MOB_PLAYER;
+    player->entity->type = ENTITY_MOB_PLAYER;
 
-    player->height_offset = 1.62;
-    player->foot_size = 0.5;
-    player->health = 20;
-    player->model_type = MODEL_HUMANOID;
-    player->rot_offs = 100;
-    player->texture_id = 123;
-    player->bb_width = 0.6;
-    player->bb_height = 1.8;
+    player->entity->height_offset = 1.62;
+    player->entity->foot_size = 0.5;
+    player->mob->health = 20;
+    player->mob->model_type = MODEL_HUMANOID;
+    player->mob->rot_offs = 100;
+    player->entity->texture_id = 123;
+    player->entity->bb_width = 0.6;
+    player->entity->bb_height = 1.8;
     player->inventory = inventory_create();
-    player->ai = player_ai_create((struct player_s *)player);
-    player->allowed_in_creative_mode = 1;
+    player->mob->ai = player_ai_create((struct player_s *)player);
+    player->entity->allowed_in_creative_mode = 1;
     player->arrows = 20;
-    player->model = models_get(&world->minecraft->models, player->model_type);
+    player->entity->model = models_get(&world->minecraft->models, player->mob->model_type);
 
-    entity_reset_pos(&player->entity);
+    entity_reset_pos(player->entity);
 
     if(world) {
-        real_world->player = player;
-        world_spawn_entity(real_world, &player->entity);
+        real_world->player = player->mob->entity;
+        world_spawn_entity(real_world, player->entity);
     }
 
     //return player;

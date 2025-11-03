@@ -1,10 +1,14 @@
 #include <entity/entity.h>
 
-#include <world/world.h>
+#include <particle/particle_bubble.h>
+#include <particle/particle_splash.h>
 #include <physics/AABB.h>
+#include <sound/sounds.h>
 #include <util/array_list.h>
 #include <world/block/block.h>
 #include <world/block/blocks.h>
+#include <world/world.h>
+#include <minecraft.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -37,6 +41,8 @@ void entity_create(entity_t *entity, struct world_s *world) {
     entity->hovered = 0;
     entity->is_shootable = 0;
     entity->item = NULL;
+    entity->fire_resistance = 1;
+    entity->is_first_update = 1;
 
     entity->tick = entity_tick;
     entity->render = entity_render;
@@ -122,6 +128,48 @@ void entity_tick(entity_t *entity) {
     entity->zo = entity->z;
     entity->x_roto = entity->x_rot;
     entity->y_roto = entity->y_rot;
+    if(entity_is_in_water(entity)) {
+        if(!entity->in_water && !entity->is_first_update) {
+            float velocity = sqrtf(entity->xd * entity->xd * 0.2 + entity->yd * entity->yd + entity->zd * entity->zd * 0.2) * 0.2;
+            if(velocity > 1.0) {
+                velocity = 1.0;
+            }
+
+            world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_SPLASH, velocity, 1.0 + (random_next_uniform(&entity->world->random) - random_next_uniform(&entity->world->random)) * 0.4);
+            
+            for(int i = 0; i < 1.0 + entity->bb_width * 20.0; i++) {
+                float particle_x = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                float particle_z = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                world_spawn_particle(entity->world, PARTICLE_BUBBLE, entity->x + particle_x, floor_double(entity->bb.y0) + 1.0, entity->z + particle_z, entity->xd, entity->yd - random_next_uniform(&entity->world->random) * 0.2, entity->zd);
+            }
+
+            for(int i = 0; i < 1.0 + entity->bb_width * 20.0; i++) {
+                float particle_x = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                float particle_z = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                world_spawn_particle(entity->world, PARTICLE_SPLASH, entity->x + particle_x, floor_double(entity->bb.y0) + 1.0, entity->z + particle_z, entity->xd, entity->yd, entity->zd);
+            }
+        }
+
+        entity->fall_distance = 0;
+        entity->in_water = 1;
+        entity->fire = 0;
+    }else {
+        entity->in_water = 0;
+    }
+
+    if(entity->fire > 0) {
+        if(entity->fire % 20 == 0) {
+            entity_hurt(entity, NULL, 1);
+        }
+        entity->fire--;
+    }
+
+    if(entity_is_in_lava(entity)) {
+        entity_hurt(entity, NULL, 10);
+        entity->fire = 600;
+    }
+
+    entity->is_first_update = 0;
 }
 
 void entity_play_sound(entity_t *entity, uint8_t sound, float volume, float pitch) {
@@ -259,11 +307,30 @@ void entity_move(entity_t *entity, float x, float y, float z) {
             entity->next_step++;
             block_sound_t *sound = block_list[block_id].sound;
             if(sound->type != BLOCK_SOUND_NONE) {
-                entity_play_sound(entity, sound->type, sound->volume, sound->pitch);
+                world_play_sound_at_entity(entity->world, entity, sound->type, sound->volume * 0.15, sound->pitch);
             }
+
+            block_list[block_id].on_walked_upon(&block_list[block_id], entity->world, floor_double(entity->x), floor_double(entity->y - 0.2 - entity->height_offset), floor_double(entity->z));
         }
     }
     entity->y_slide_offset *= 0.4;
+    uint8_t is_in_water = entity_is_in_water(entity);
+    if(world_is_bounding_box_burning(entity->world, entity->bb)) {
+        entity_hurt(entity, NULL, 1);
+        if(!is_in_water) {
+            entity->fire++;
+            if(entity->fire == 0) {
+                entity->fire = 300;
+            }
+        }
+    }else if(entity->fire <= 0) {
+        entity->fire = -entity->fire_resistance;
+    }
+
+    if(is_in_water && entity->fire > 0) {
+        world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_FIZZ, 0.7, 1.6 + (random_next_uniform(&entity->world->random) - random_next_uniform(&entity->world->random)) * 0.4);
+        entity->fire = -entity->fire_resistance;
+    }
 }
 
 void entity_move_to(entity_t *entity, float x, float y, float z, float x_rot, float y_rot) {
@@ -282,8 +349,8 @@ void entity_move_relative(entity_t *entity, float x, float z, float speed) {
     distance = speed / distance;
     x *= distance;
     z *= distance;
-    speed = tsin(entity->y_rot * M_PI / 180);
-    distance = tcos(entity->y_rot * M_PI / 180);
+    speed = tsin(entity->y_rot * M_PI / 180.0);
+    distance = tcos(entity->y_rot * M_PI / 180.0);
     entity->xd += x * distance - z * speed;
     entity->zd += z * distance + x * speed;
 }
@@ -357,11 +424,11 @@ uint8_t entity_is_underwater(entity_t *entity) {
 }
 
 uint8_t entity_is_in_water(entity_t *entity) {
-    return 0;//world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.water);
+    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.water);
 }
 
 uint8_t entity_is_in_lava(entity_t *entity) {
-    return 0;//world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.lava);
+    return world_is_material_in_box((world_t *)entity->world, AABB_grow(entity->bb, 0, -0.4, 0), &materials.lava);
 }
 
 uint8_t entity_on_ground(entity_t *entity) {

@@ -11,6 +11,7 @@ typedef struct generate_big_tree_s {
     int coord_length;
 
     int height;
+    int height_limit;
     int trunk_height;
     double trunk_height_scale;
     double branch_density;

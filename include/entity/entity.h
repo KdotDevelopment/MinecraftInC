@@ -9,6 +9,7 @@
 #include <item/item_stack.h>
 
 struct player_s;
+struct mob_s;
 
 typedef enum {
     ENTITY_ARROW,
@@ -63,6 +64,10 @@ typedef struct entity_s {
     int time;
     uint8_t is_dead;
     uint8_t prevents_spawning;
+    int fire;
+    int fire_resistance; // = 1
+    uint8_t is_first_update; // = 1
+    uint8_t in_water;
 
     union {
         struct { // arrow
@@ -100,6 +105,8 @@ typedef struct entity_s {
     uint8_t (*can_be_hit)(struct entity_s *entity);
     void (*write_nbt)(struct entity_s *entity, nbt_base_t *nbt);
     void (*read_nbt)(struct entity_s *entity, nbt_base_t *nbt);
+
+    struct mob_s *mob;
 } entity_t;
 
 void entity_create(entity_t *entity, struct world_s *world);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <player/player.h>
+#include <entity/entity.h>
 #include <world/world.h>
 #include <world/mob_spawner.h>
 
@@ -34,12 +35,12 @@ typedef struct gamemode_s {
     void (*continue_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);
     void (*stop_destroy_block)(struct gamemode_s *gamemode);
     void (*render)(struct gamemode_s *gamemode, float delta);
-    uint8_t (*use_item)(struct gamemode_s *gamemode, player_t *player, int item);
-    void (*init_player)(struct gamemode_s *gamemode, player_t *player);
+    uint8_t (*use_item)(struct gamemode_s *gamemode, entity_t *player, int item);
+    void (*init_player)(struct gamemode_s *gamemode, entity_t *player);
     void (*tick)(struct gamemode_s *gamemode);
     void (*open_inventory)(struct gamemode_s *gamemode);
     void (*spawn_mobs)(struct gamemode_s *gamemode, world_t *world);
-    void (*adjust_player)(struct gamemode_s *gamemode, player_t *player);
+    void (*adjust_player)(struct gamemode_s *gamemode, entity_t *player);
 } gamemode_t;
 
 gamemode_t gamemode_create(struct minecraft_s *minecraft);
@@ -50,9 +51,9 @@ void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int
 void gamemode_continue_destroy_block(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);
 void gamemode_stop_destroy_block(struct gamemode_s *gamemode);
 void gamemode_render(struct gamemode_s *gamemode, float delta);
-uint8_t gamemode_use_item(struct gamemode_s *gamemode, player_t *player, int item);
-void gamemode_init_player(struct gamemode_s *gamemode, player_t *player);
+uint8_t gamemode_use_item(struct gamemode_s *gamemode, entity_t *player, int item);
+void gamemode_init_player(struct gamemode_s *gamemode, entity_t *player);
 void gamemode_tick(struct gamemode_s *gamemode);
 void gamemode_open_inventory(struct gamemode_s *gamemode);
 void gamemode_spawn_mobs(struct gamemode_s *gamemode, world_t *world);
-void gamemode_adjust_player(struct gamemode_s *gamemode, player_t *player);
+void gamemode_adjust_player(struct gamemode_s *gamemode, entity_t *player);

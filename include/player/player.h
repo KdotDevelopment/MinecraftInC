@@ -1,5 +1,6 @@
 #pragma once
 
+#include <entity/entity.h>
 #include <entity/mob/mob.h>
 #include <player/inputs.h>
 #include <player/inventory.h>
@@ -7,10 +8,8 @@
 struct world_s;
 
 typedef struct player_s {
-    union {
-        mob_t;
-        mob_t mob;
-    };
+    mob_t *mob;
+    entity_t *entity;
     inputs_t inputs;
     inventory_t inventory;
     float bob;
@@ -19,5 +18,5 @@ typedef struct player_s {
     int score;
 } player_t;
 
-void player_create(player_t *player, struct world_s *world);
+void player_create(entity_t *entity, struct world_s *world);
 void player_set_key(player_t *player, uint8_t key, uint8_t state);

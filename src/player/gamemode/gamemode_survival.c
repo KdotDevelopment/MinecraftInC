@@ -22,9 +22,9 @@ gamemode_t gamemode_survival_create(struct minecraft_s *minecraft) {
     return gamemode;
 }
 
-void gamemode_survival_init_player(struct gamemode_s *gamemode, player_t *player) {
-    player->inventory.slots[0] = blocks.tnt.id;
-    player->inventory.counts[0] = 10;
+void gamemode_survival_init_player(struct gamemode_s *gamemode, entity_t *player) {
+    player->mob->player->inventory.slots[0] = blocks.tnt.id;
+    player->mob->player->inventory.counts[0] = 10;
 }
 
 void gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
@@ -34,7 +34,7 @@ void gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, 
 }
 
 uint8_t gamemode_survival_remove_item(struct gamemode_s *gamemode, int item) {
-    return inventory_remove_item(&gamemode->minecraft->player.inventory, item);
+    return inventory_remove_item(&gamemode->minecraft->player.mob->player->inventory, item);
 }
 
 void gamemode_survival_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
@@ -81,13 +81,13 @@ void gamemode_survival_render(struct gamemode_s *gamemode, float delta) {
     }
 }
 
-uint8_t gamemode_survival_use_item(struct gamemode_s *gamemode, player_t *player, int item) {
-    if(item == blocks.red_mushroom.id && inventory_remove_item(&player->inventory, item)) {
-        player->hurt(&player->entity, NULL, 3);
+uint8_t gamemode_survival_use_item(struct gamemode_s *gamemode, entity_t *player, int item) {
+    if(item == blocks.red_mushroom.id && inventory_remove_item(&player->mob->player->inventory, item)) {
+        player->hurt(player, NULL, 3);
         return 1;
     }
-    if(item == blocks.brown_mushroom.id && inventory_remove_item(&player->inventory, item)) {
-        player->heal(&player->entity, 5);
+    if(item == blocks.brown_mushroom.id && inventory_remove_item(&player->mob->player->inventory, item)) {
+        player->heal(player, 5);
         return 1;
     }
     return 0;

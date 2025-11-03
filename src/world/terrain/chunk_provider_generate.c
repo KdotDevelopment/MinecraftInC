@@ -27,6 +27,9 @@ void chunk_provider_generate_create(chunk_provider_t *chunk_provider, world_t *w
     chunk_provider->noise_3 = noise_octave_create(&chunk_provider->random, 8);
     chunk_provider->noise_4 = noise_octave_create(&chunk_provider->random, 4);
     chunk_provider->noise_5 = noise_octave_create(&chunk_provider->random, 4);
+    // This is here because it is in the original code, just unused. It uses up random calls, so this keeps it authentic.
+    noise_t temp_noise = noise_octave_create(&chunk_provider->random, 5);
+    noise_destroy(&temp_noise);
     chunk_provider->tree_noise = noise_octave_create(&chunk_provider->random, 5);
 
     chunk_provider->chunk_provide = chunk_provider_generate_provide_chunk;
@@ -237,10 +240,10 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
     }
 
     // Trees
-    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) - random_next_uniform(&chunk_provider->random));
+    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) * 2.0 - 1.0 - random_next_uniform(&chunk_provider->random));
     if(tree_count < 0) tree_count = 0;
 
-    if(random_next_int_range(&chunk_provider->random, 0, 9) == 0) {
+    if(random_next_int_range(&chunk_provider->random, 0, 99) == 0) {
         tree_count++;
     }
 
@@ -248,8 +251,6 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
         int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
         int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
         int y = world_get_height_value(chunk_provider->world, x, z);
-        int tree_gen = generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
-        world_set_block_no_update(chunk_provider->world, x, y + 2, z, blocks.diamond.id);
-        if(tree_gen == 1) printf("TREE\n");
+        generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
     }
 }

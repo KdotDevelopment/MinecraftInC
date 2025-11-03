@@ -16,6 +16,7 @@ enum {
     PARTICLE_TERRAIN,
     PARTICLE_WATER_DROP,
     PARTICLE_LARGE_SMOKE,
+    PARTICLE_SPLASH,
 };
 
 typedef struct particle_s {

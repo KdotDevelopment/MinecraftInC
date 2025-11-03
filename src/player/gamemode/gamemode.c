@@ -61,11 +61,11 @@ void gamemode_render(struct gamemode_s *gamemode, float delta) {
     return;
 }
 
-uint8_t gamemode_use_item(struct gamemode_s *gamemode, player_t *player, int item) {
+uint8_t gamemode_use_item(struct gamemode_s *gamemode, entity_t *player, int item) {
     return 0;
 }
 
-void gamemode_init_player(struct gamemode_s *gamemode, player_t *player) {
+void gamemode_init_player(struct gamemode_s *gamemode, entity_t *player) {
     return;
 }
 
@@ -81,6 +81,6 @@ void gamemode_spawn_mobs(struct gamemode_s *gamemode, world_t *world) {
     return;
 }
 
-void gamemode_adjust_player(struct gamemode_s *gamemode, player_t *player) {
+void gamemode_adjust_player(struct gamemode_s *gamemode, entity_t *player) {
     return;
 }

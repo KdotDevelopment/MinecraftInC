@@ -29,7 +29,8 @@ uint64_t random_int_range(uint64_t min, uint64_t max) {
 }
 
 double random_next_uniform(random_t *random) {
-    return (double)random_next_int(random) / (double)UINT64_MAX;
+    uint64_t r = random_next_int(random) & ((1ULL << 53) - 1);
+    return (double)r / (double)(1ULL << 53);
 }
 
 double random_uniform() {

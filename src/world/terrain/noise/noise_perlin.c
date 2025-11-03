@@ -116,13 +116,13 @@ void noise_perlin_populate_array(noise_t *noise, double *output, int start_x, in
                 if(y == 0 || hash_y != last_hash_y) {
                     last_hash_y = hash_y;
 
-                    int hash_xy = noise->hash[hash_x] + hash_y;
-                    int hash_xy1 = noise->hash[hash_xy] + hash_z;
-                    int hash_xy2 = noise->hash[hash_xy + 1] + hash_z;
+                    int hash_xy = (noise->hash[hash_x] + hash_y) & 255;
+                    int hash_xy1 = (noise->hash[hash_xy] + hash_z) & 255;
+                    int hash_xy2 = (noise->hash[hash_xy + 1] + hash_z) & 255;
 
-                    int hash_x1y = noise->hash[hash_x + 1] + hash_y;
-                    int hash_x1y1 = noise->hash[hash_x1y] + hash_z;
-                    int hash_x1y2 = noise->hash[hash_x1y + 1] + hash_z;
+                    int hash_x1y = (noise->hash[hash_x + 1] + hash_y) & 255;
+                    int hash_x1y1 = (noise->hash[hash_x1y] + hash_z) & 255;
+                    int hash_x1y2 = (noise->hash[hash_x1y + 1] + hash_z) & 255;
 
                     lerp_x1 = lerp(fade_x, grad(noise->hash[hash_xy1], noise_x, noise_y, noise_z), grad(noise->hash[hash_x1y1], noise_x - 1.0, noise_y, noise_z));
                     lerp_x2 = lerp(fade_x, grad(noise->hash[hash_xy2], noise_x, noise_y - 1.0, noise_z), grad(noise->hash[hash_x1y2], noise_x - 1.0, noise_y - 1.0, noise_z));

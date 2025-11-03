@@ -550,8 +550,6 @@ void minecraft_run(minecraft_t *minecraft) {
         timer->delta = timer->elapsed_delta;
         float delta = timer->delta;
 
-        renderer_camera_update_mouse(&minecraft->renderer, delta);
-
         for(int i = 0; i < timer->elapsed_ticks; i++) {
             minecraft->ticks++;
             minecraft_tick(minecraft, events);
@@ -565,6 +563,8 @@ void minecraft_run(minecraft_t *minecraft) {
         }
 
         glEnable(GL_TEXTURE_2D);
+
+        renderer_camera_update_mouse(&minecraft->renderer, delta);
 
         minecraft->gamemode.render(&minecraft->gamemode, delta);
         renderer_camera_t *renderer = &minecraft->renderer;

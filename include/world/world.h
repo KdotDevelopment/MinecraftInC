@@ -69,6 +69,8 @@ typedef struct world_s {
     particles_t *particles;
     entity_t *player;
     struct minecraft_s *minecraft;
+    int chunks_generated_this_frame;
+    random_t visual_update_random;
 } world_t;
 
 void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir, char *world_name, int64_t seed);

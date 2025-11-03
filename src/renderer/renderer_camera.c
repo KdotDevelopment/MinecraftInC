@@ -142,7 +142,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     vec3_t v = renderer_camera_get_player_vector(renderer, delta);
     float c1 = tcos(-rot_y * M_PI / 180.0 - M_PI);
     float s1 = tsin(-rot_y * M_PI / 180.0 - M_PI);
-    float c2 = -tcos(-rot_x * M_PI / 180.0);
+    float c2 = tcos(-rot_x * M_PI / 180.0);
     float s2 = tsin(-rot_x * M_PI / 180.0);
     float sc = s1 * c2;
     float cc = c1 * c2;

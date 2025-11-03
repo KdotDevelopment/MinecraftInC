@@ -49,6 +49,8 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->random_seed = seed;
     world->size_on_disk = 0;
     world->is_new_world = 1;
+    world->chunks_generated_this_frame = 0;
+    world->visual_update_random = random_create(seed);
     strncpy(world->save_file, saves_dir, sizeof(world->save_file));
     strcat(world->save_file, "/");
     strcat(world->save_file, world_name);
@@ -809,7 +811,7 @@ uint8_t world_is_material_in_box(world_t *world, AABB_t box, material_t *materia
         for(int j = y0; j < y1; j++) {
             for(int k = z0; k < z1; k++) {
                 block_t *block = &block_list[world_get_block(world, i, j, k)];
-                if(block->id != blocks.air.id && block->material->id == material->id) return 1;
+                if(block->id != blocks.air.id && block->material == material) return 1;
             }
         }
     }

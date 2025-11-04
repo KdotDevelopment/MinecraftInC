@@ -656,12 +656,12 @@ void renderer_world_draw_selection_box(renderer_world_t *renderer, entity_t *pla
 }
 
 void renderer_world_queue_chunks(renderer_world_t *renderer, int x0, int y0, int z0, int x1, int y1, int z1) {
-    x0 /= CHUNK_SIZE_WIDTH;
-    y0 /= CHUNK_SIZE_WIDTH;
-    z0 /= CHUNK_SIZE_WIDTH;
-    x1 /= CHUNK_SIZE_WIDTH;
-    y1 /= CHUNK_SIZE_WIDTH;
-    z1 /= CHUNK_SIZE_WIDTH;
+    x0 = floor_double((double)x0 / CHUNK_SIZE_WIDTH);
+    y0 = floor_double((double)y0 / CHUNK_SIZE_WIDTH);
+    z0 = floor_double((double)z0 / CHUNK_SIZE_WIDTH);
+    x1 = floor_double((double)x1 / CHUNK_SIZE_WIDTH);
+    y1 = floor_double((double)y1 / CHUNK_SIZE_WIDTH);
+    z1 = floor_double((double)z1 / CHUNK_SIZE_WIDTH);
     
     for(int x = x0; x <= x1; x++) {
         int wrapped_x = x % renderer->x_chunks;

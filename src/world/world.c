@@ -54,9 +54,9 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     strncpy(world->save_file, saves_dir, sizeof(world->save_file));
     strcat(world->save_file, "/");
     strcat(world->save_file, world_name);
-    world->spawn_x = 512;
+    world->spawn_x = 0;
     world->spawn_y = 64;
-    world->spawn_z = 512;
+    world->spawn_z = 0;
 
     for(int i = 0; i <= 15; i++) {
         float value = 1.0 - (float)i / 15.0;
@@ -225,12 +225,12 @@ uint8_t world_get_block(world_t *world, int x, int y, int z) {
     // Lake of lava at bottom of world
     if(y <= 0) return BLOCK_LAVA;
 
-    return chunk_get_block_id(world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH), 
+    return chunk_get_block_id(world_get_chunk(world, x >> 4, z >> 4), 
                               x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
 uint8_t world_block_exists(world_t *world, int x, int y, int z) {
-    return y >= 0 && y < CHUNK_SIZE_HEIGHT ? world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH) : 0;
+    return y >= 0 && y < CHUNK_SIZE_HEIGHT ? world_chunk_exists(world, x >> 4, z >> 4) : 0;
 }
 
 uint8_t world_chunk_exists(world_t *world, int x, int z) {
@@ -247,7 +247,7 @@ uint8_t world_set_block_no_update(world_t *world, int x, int y, int z, uint8_t b
         || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 0;
     }
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_set_block(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), block_id);
 }
 
@@ -262,7 +262,7 @@ uint8_t world_get_block_metadata(world_t *world, int x, int y, int z) {
         || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 0;
     }
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_get_block_metadata(chunk,x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
@@ -272,7 +272,7 @@ uint8_t world_set_block_metadata(world_t *world, int x, int y, int z, uint8_t da
         || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 0;
     }
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     chunk_set_block_metadata(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), data);
     return 1;
 }
@@ -332,7 +332,7 @@ void world_update_block(world_t *world, int x, int y, int z, uint8_t block_id) {
 }
 
 uint8_t world_can_block_see_sky(world_t *world, int x, int y, int z) {
-    return chunk_can_block_see_sky(world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH), x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
+    return chunk_can_block_see_sky(world_get_chunk(world, x >> 4, z >> 4), x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
 uint8_t private_world_get_block_light_value(world_t *world, int x, int y, int z, uint8_t check_neighbors) {
@@ -366,7 +366,7 @@ uint8_t private_world_get_block_light_value(world_t *world, int x, int y, int z,
         if(light < 0) light = 0;
         return light;
     }
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_get_block_light_value(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), world->skylight_subtracted);
 }
 
@@ -381,9 +381,9 @@ uint8_t world_can_existing_block_see_sky(world_t *world, int x, int y, int z) {
         return 0;
     }
     if(y >= CHUNK_SIZE_HEIGHT) return 1;
-    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
+    if(!world_chunk_exists(world, x >> 4, z >> 4)) return 0;
 
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_can_block_see_sky(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
@@ -392,9 +392,9 @@ int world_get_height_value(world_t *world, int x, int z) {
         || z < -WORLD_MAX_SIZE || z > WORLD_MAX_SIZE) {
         return 0;
     }
-    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
+    if(!world_chunk_exists(world, x >> 4, z >> 4)) return 0;
 
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_get_height_value(chunk, x & (CHUNK_SIZE_WIDTH - 1), z & (CHUNK_SIZE_WIDTH - 1));
 }
 
@@ -424,9 +424,9 @@ int world_get_saved_light_value(world_t *world, uint8_t light_type, int x, int y
         return light_type;
     }
 
-    if(!world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) return 0;
+    if(!world_chunk_exists(world, x >> 4, z >> 4)) return 0;
 
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk_get_saved_light_value(chunk, light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
 }
 
@@ -440,14 +440,14 @@ uint8_t world_is_daytime(world_t *world) {
 }
 
 hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
-    if(v0.x == NAN || v0.y == NAN || v0.z == NAN) return (hit_result_t){ .null = 1 };
-    if(v1.x == NAN || v1.y == NAN || v1.z == NAN) return (hit_result_t){ .null = 1 };
-    int i0x = v0.x, i0y = v0.y, i0z = v0.z;
-    int i1x = v1.x, i1y = v1.y, i1z = v1.z;
+    if(isnan(v0.x) || isnan(v0.y) || isnan(v0.z)) return (hit_result_t){ .null = 1 };
+    if(isnan(v1.x) || isnan(v1.y) || isnan(v1.z)) return (hit_result_t){ .null = 1 };
+    int i0x = floor_double(v0.x), i0y = floor_double(v0.y), i0z = floor_double(v0.z);
+    int i1x = floor_double(v1.x), i1y = floor_double(v1.y), i1z = floor_double(v1.z);
     
     int i = 20;
     while(i-- >= 0) {
-        if(v0.x == NAN || v0.y == NAN || v0.z == NAN) return (hit_result_t){ .null = 1 };
+        if(isnan(v0.x) || isnan(v0.y) || isnan(v0.z)) return (hit_result_t){ .null = 1 };
         if(i0x == i1x && i0y == i1y && i0z == i1z) return (hit_result_t){ .null = 1 };
         vec3_t a = { 999.0, 999.0, 999.0 };
         if(i1x > i0x) a.x = i0x + 1.0;
@@ -479,7 +479,7 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
             v0.y += d.y * b.z;
         }
         
-        vec3_t v00 = { (int)v0.x, (int)v0.y, (int)v0.z };
+    vec3_t v00 = { floor_double(v0.x), floor_double(v0.y), floor_double(v0.z) };
         i0x = v00.x;
         i0y = v00.y;
         i0z = v00.z;
@@ -980,19 +980,19 @@ void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side) {
 }
 
 tile_entity_t *world_get_tile_entity(world_t *world, int x, int y, int z) {
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     return chunk != NULL ? chunk_get_tile_entity(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1)) : NULL;
 }
 
 void world_set_tile_entity(world_t *world, int x, int y, int z, tile_entity_t *tile_entity) {
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     if(chunk != NULL) {
         chunk_set_tile_entity(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), tile_entity);
     }
 }
 
 void world_remove_tile_entity(world_t *world, int x, int y, int z) {
-    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
     if(chunk != NULL) {
         chunk_remove_tile_entity(chunk, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1));
     }
@@ -1064,8 +1064,8 @@ uint8_t world_update_lighting(world_t *world) {
                                 if(x >= -WORLD_MAX_SIZE && x < WORLD_MAX_SIZE
                                 && y >= 0 && y < CHUNK_SIZE_HEIGHT
                                 && z >= -WORLD_MAX_SIZE && z <= WORLD_MAX_SIZE
-                                && world_chunk_exists(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH)) {
-                                    chunk_t *chunk = world_get_chunk(world, x / CHUNK_SIZE_WIDTH, z / CHUNK_SIZE_WIDTH);
+                                && world_chunk_exists(world, x >> 4, z >> 4)) {
+                                    chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
                                     chunk_set_light_value(chunk, metadata->light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), max_light);
 
                                     for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
@@ -1191,7 +1191,7 @@ void world_restart_time_of_day(world_t *world) {
         int xx = (yy & 0xFF) - 128 + x;
         int zz = (yy >> 8 & 0xFF) - 128 + z;
         yy = yy >> 16 & 127;
-        if(!world_chunk_exists(world, xx / CHUNK_SIZE_WIDTH, zz / CHUNK_SIZE_WIDTH)) continue;
+        if(!world_chunk_exists(world, xx >> 4, zz >> 4)) continue;
         uint8_t block_id = world_get_block(world, xx, yy, zz);
         if(block_list[block_id].should_tick) {
             block_list[block_id].update(&block_list[block_id], world, xx, yy, zz, &world->random);
@@ -1203,9 +1203,9 @@ void world_visual_update(world_t *world, int x, int y, int z) {
     random_t random = random_create(time(NULL));
 
     for(int i = 0; i < 1000; i++) {
-        int xx = x + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
-        int yy = y + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
-        int zz = z + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH);
+        int xx = x + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
+        int yy = y + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
+        int zz = z + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
         uint8_t block_id = world_get_block(world, xx, yy, zz);
         if(block_id > 0) {
             block_list[block_id].visual_update(&block_list[block_id], world, xx, yy, zz, &random);

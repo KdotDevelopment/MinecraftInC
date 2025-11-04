@@ -137,9 +137,9 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     world_save(minecraft->world, 1);
     player_create(&minecraft->player, (struct world_s *)minecraft->world);
     printf("Player created at %f, %f, %f\n", minecraft->player.x, minecraft->player.y, minecraft->player.z);
-    minecraft->player.x = 512;
+    minecraft->player.x = 0;
     minecraft->player.y = 64;
-    minecraft->player.z = 512;
+    minecraft->player.z = 0;
     minecraft->world->player = &minecraft->player;
     printf("Preparing lights\n");
     while(array_list_length(minecraft->world->lighting_update_list) > 0) {

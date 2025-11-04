@@ -21,7 +21,7 @@ void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z) {
     chunk->z_pos = z;
     chunk->tile_entity_map = array_list_create(sizeof(entity_index_pair_t));
 
-    chunk->entities = malloc(sizeof(entity_t **) * (CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH));
+    chunk->entities = malloc(sizeof(entity_t **) * (CHUNK_SIZE_HEIGHT >> 4));
     for(int i = 0; i < 8; i++) {
         chunk->entities[i] = array_list_create(sizeof(entity_t *));
     }
@@ -241,7 +241,7 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
 
     nbt_base_t entity_nbt = { 0 };
 
-    for(int i = 0; i < CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH; i++) {
+    for(int i = 0; i < CHUNK_SIZE_HEIGHT >> 4; i++) {
         int size = array_list_length(chunk->entities[i]);
         for(int j = 0; j < size; j++) {
             entity_t *entity = *(entity_t **)array_list_get(chunk->entities[i], j);
@@ -339,7 +339,7 @@ void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
     int y = floor_double(entity->y / CHUNK_SIZE_WIDTH);
     if(y < 0) y = 0;
 
-    if(y >= CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH) y = CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH - 1;
+    if(y >= CHUNK_SIZE_HEIGHT >> 4) y = CHUNK_SIZE_HEIGHT >> 4 - 1;
 
     chunk->entities[y] = array_list_push(chunk->entities[y], &entity);
     chunk->is_modified = 1;
@@ -347,7 +347,7 @@ void chunk_add_entity(chunk_t *chunk, entity_t *entity) {
 
 void chunk_remove_entity_index(chunk_t *chunk, entity_t *entity, int index) {
     if(index < 0) index = 0;
-    if(index >= CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH) index = CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH - 1;
+    if(index >= CHUNK_SIZE_HEIGHT >> 4) index = CHUNK_SIZE_HEIGHT >> 4 - 1;
     if(!array_list_contains(chunk->entities[index], &entity)) {
         printf("There\'s no such entity to remove: %d\n", index);
         return;
@@ -453,8 +453,8 @@ void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t *
     int y1 = floor_double((box.y1 + 2) / CHUNK_SIZE_WIDTH);
     
     if(y0 < 0) y0 = 0;
-    if(y1 >= CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH) {
-        y1 = CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH - 1;
+    if(y1 >= CHUNK_SIZE_HEIGHT >> 4) {
+        y1 = CHUNK_SIZE_HEIGHT >> 4 - 1;
     }
 
     for(int i = y0; i <= y1; i++) {
@@ -471,7 +471,7 @@ uint8_t chunk_needs_saving(chunk_t *chunk, uint8_t check_entities) {
     if(chunk->is_modified) return 1;
     if(check_entities) {
         if(chunk->has_entities) return 1;
-        for(int i = 0; i < CHUNK_SIZE_HEIGHT / CHUNK_SIZE_WIDTH; i++) {
+        for(int i = 0; i < CHUNK_SIZE_HEIGHT >> 4; i++) {
             if(array_list_length(chunk->entities[i]) > 0) return 1;
         }
     }

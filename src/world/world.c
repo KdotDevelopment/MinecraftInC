@@ -704,7 +704,7 @@ void world_update_entities(world_t *world) {
             if(cx2 != cx || cy2 != cy || cz2 != cz) {
                 if(world_chunk_exists(world, cx, cz)) {
                     chunk_t *old_chunk = world_get_chunk(world, cx, cz);
-                    chunk_remove_entity_index(old_chunk, entity, cy2);
+                    chunk_remove_entity_index(old_chunk, entity, cy);
                 }
                 if(world_chunk_exists(world, cx2, cz2)) {
                     chunk_t *new_chunk = world_get_chunk(world, cx2, cz2);

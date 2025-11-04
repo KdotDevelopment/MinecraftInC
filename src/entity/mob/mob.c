@@ -89,14 +89,14 @@ void mob_tick(entity_t *entity) {
         if(mob->air_supply > 0) {
             mob->air_supply--;
         }else {
-            //entity->hurt(entity, NULL, 2);
+            entity->hurt(entity, NULL, 2);
         }
     } else {
         mob->air_supply = AIR_SUPPLY;
     }
 
     if(entity_is_in_lava(entity)) {
-        //entity->hurt(entity, NULL, 10);
+        entity->hurt(entity, NULL, 10);
     }
 
     mob->anim_stepo = mob->anim_step;

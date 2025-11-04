@@ -34,11 +34,11 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     memset(world, 0, sizeof(world_t));
     
     world->minecraft = minecraft;
-    world->lighting_update_list = array_list_create(sizeof(uint64_t));
-    world->loaded_entity_list = array_list_create(sizeof(uint64_t));
+    world->lighting_update_list = array_list_create(sizeof(chunk_metadata_t *));
+    world->loaded_entity_list = array_list_create(sizeof(entity_t *));
     world->next_tick_data_list = array_list_create(sizeof(next_tick_data_t));
-    world->loaded_tile_entity_list = array_list_create(sizeof(uint64_t));
-    world->renderer_world_list = array_list_create(sizeof(uint64_t));
+    world->loaded_tile_entity_list = array_list_create(sizeof(tile_entity_t *));
+    world->renderer_world_list = array_list_create(sizeof(renderer_world_t *));
     world->world_time = 0;
     world->sky_color = 0xFF99CCFF;
     world->fog_color = 0xFFB0D0FF;
@@ -1069,8 +1069,8 @@ uint8_t world_update_lighting(world_t *world) {
                                     chunk_set_light_value(chunk, metadata->light_type, x & (CHUNK_SIZE_WIDTH - 1), y, z & (CHUNK_SIZE_WIDTH - 1), max_light);
 
                                     for(int i = 0; i < array_list_length(world->renderer_world_list); i++) {
-                                        renderer_world_t *renderer = array_list_get(world->renderer_world_list, i);
-                                        //renderer_world_update_block(renderer, x, y, z);
+                                        renderer_world_t *renderer = *(renderer_world_t **)array_list_get(world->renderer_world_list, i);
+                                        renderer_world_update_block(renderer, x, y, z);
                                     }
                                 }
 
@@ -1180,7 +1180,6 @@ void world_restart_time_of_day(world_t *world) {
                 block->update(block, world, next_tick.x, next_tick.y, next_tick.z, &world->random);
             }
         }
-        next_tick_size = array_list_length(world->next_tick_data_list);
     }
 
     int x = floor_double(world->player->x);

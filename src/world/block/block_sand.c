@@ -19,25 +19,39 @@ void fall(block_t *block, struct world_s *world, int x, int y, int z) {
     int vx = x;
     int vy = y;
     int vz = z;
+
     for(;;) {
+        if(vy - 1 < 0) {
+            world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
+            return;
+        }
+
         uint8_t block_id = world_get_block(real_world, vx, vy - 1, vz);
-        uint8_t liquid_type = block_id == blocks.air.id ? 0 : block_list[block_id].material == &materials.water ? 1 : block_list[block_id].material == &materials.lava ? 2 : 0;
-        if(!liquid_type && vy < 0) {
+        uint8_t liquid_type =
+            (block_id == blocks.air.id || block_id == blocks.fire.id ||
+             block_list[block_id].material == &materials.water ||
+             block_list[block_id].material == &materials.lava);
+
+        if(!liquid_type || vy < 0) {
             if(vy < 0) {
                 world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
             }
+
             if(y != vy) {
                 block_id = world_get_block(real_world, vx, vy, vz);
-                if(block_id != blocks.air.id && block_list[block_id].material != &materials.air) {
-                    world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
-                }
+                if(block_id != blocks.air.id &&
+                    block_list[block_id].material != &materials.air) {
+                        world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
+                    }
                 world_swap(real_world, x, y, z, vx, vy, vz);
             }
             return;
         }
+
         vy--;
-        if(world_get_block(world, x, vy, z) == blocks.fire.id) {
-            world_set_block_no_update(real_world, x, vy, z, blocks.air.id);
+
+        if(world_get_block(real_world, vx, vy, vz) == blocks.fire.id) {
+            world_set_block_no_update(real_world, vx, vy, vz, blocks.air.id);
         }
     }
 }

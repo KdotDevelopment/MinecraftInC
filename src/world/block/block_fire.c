@@ -18,8 +18,9 @@ block_t block_fire_create() {
     block.light_value = 15;
     block.should_tick = 1;
     block.is_opaque = 0;
+    block.light_opacity = 0;
     block.render_normal_block = 0;
-    block.render_type = 3;
+    block.render_type = BLOCK_RENDER_TYPE_FIRE;
     block.tick_rate = 20;
     block.is_collidable = 0;
 

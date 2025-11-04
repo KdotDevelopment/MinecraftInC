@@ -9,6 +9,7 @@ block_t block_gears_create() {
     block.render_normal_block = 0;
     block.render_type = BLOCK_RENDER_TYPE_GEARS;
     block.is_collidable = 0;
+    block.light_opacity = 0;
 
     block.get_collision_aabb = block_gears_get_collision_aabb;
     block.get_drop_count = block_gears_get_drop_count;

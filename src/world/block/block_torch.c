@@ -8,6 +8,7 @@ block_t block_torch_create() {
     block_t block = block_create(BLOCK_TORCH, TEXTURE_TORCH, &block_sounds.wood, 0, 0, &materials.wood);
 
     block.is_opaque = 0;
+    block.light_opacity = 0;
     block.is_solid = 0;
     block.render_normal_block = 0;
     block.render_type = BLOCK_RENDER_TYPE_TORCH;
@@ -131,7 +132,7 @@ hit_result_t block_torch_clip(block_t *block, world_t *world, int x, int y, int 
     }else if(metadata == 4) {
         block_set_bounds(block, 0.35, 0.2, 0.7, 0.65, 0.8, 1.0);
     }else {
-        block_set_bounds(block, 0.4, 0.0, 0.4, 0.6, 0.4, 0.6);
+        block_set_bounds(block, 0.4, 0.0, 0.4, 0.6, 0.6, 0.6);
     }
 
     return block_clip(block, world, x, y, z, v0, v1);

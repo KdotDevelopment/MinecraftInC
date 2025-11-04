@@ -1000,7 +1000,7 @@ void world_remove_tile_entity(world_t *world, int x, int y, int z) {
 
 uint8_t world_is_solid(world_t *world, int x, int y, int z) {
     uint8_t block_id = world_get_block(world, x, y, z);
-    return block_list[block_id].material->is_solid;
+    return block_list[block_id].is_opaque;
 }
 
 uint8_t world_update_lighting(world_t *world) {

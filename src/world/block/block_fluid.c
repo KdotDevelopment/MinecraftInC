@@ -18,6 +18,7 @@ block_t block_fluid_create(uint8_t block_id, material_t *material) {
     block.render_normal_block = 0;
     block.is_collidable = 0;
     block.is_opaque = 0;
+    block.light_opacity = 0;
     block.render_pass = block.material == &materials.water ? 1 : 0;
     block.light_value = block.material == &materials.lava ? 15 : 0;
     block.light_opacity = block.material == &materials.lava ? 255 : 3;

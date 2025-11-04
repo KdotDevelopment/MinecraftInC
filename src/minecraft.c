@@ -79,6 +79,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     glMatrixMode(GL_MODELVIEW);
 
     math_helper_initialize();
+    materials_init();
     items_init();
     blocks_init();
     session_data_initialize();
@@ -149,6 +150,12 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
+    minecraft->player.mob->player->inventory.slots[0] = blocks.torch.id;
+    minecraft->player.mob->player->inventory.counts[0] = 10;
+    minecraft->player.mob->player->inventory.slots[1] = blocks.gears.id;
+    minecraft->player.mob->player->inventory.counts[1] = 10;
+    minecraft->player.mob->player->inventory.slots[2] = blocks.fire.id;
+    minecraft->player.mob->player->inventory.counts[2] = 10;
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
     renderer_world_change_world(&minecraft->renderer_world, minecraft->world);

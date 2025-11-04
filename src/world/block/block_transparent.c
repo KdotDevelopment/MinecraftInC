@@ -7,6 +7,7 @@ block_t block_transparent_create(uint8_t id, int texture_id, block_sound_t *soun
 
     block.transparent_render_sides = render_sides;
     block.is_opaque = 0;
+    block.light_opacity = 0;
 
     block.can_render_side = block_transparent_can_render_side;
 

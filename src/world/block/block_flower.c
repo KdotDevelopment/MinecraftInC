@@ -12,6 +12,7 @@ block_t block_flower_create(uint8_t id, int texture_id) {
     block_t block = block_create(id, texture_id, &block_sounds.none, 0, 0, &materials.plants);
     block.is_cube = 0;
     block.is_opaque = 0;
+    block.light_opacity = 0;
     block.is_solid = 0;
     block.has_physics = 1;
     block.should_tick = 1;

@@ -272,21 +272,20 @@ void renderer_block_render_crops(renderer_block_t *renderer, block_t *block, int
 
 void renderer_block_render_torch(renderer_block_t *renderer, block_t *block, double x, double y, double z, float slope_x, float slope_z) {
     int texture_id = block->get_texture_side(block, 0);
-    if(renderer->fixed_texture_id >= 0) {
-        texture_id = renderer->fixed_texture_id;
-    }
+    if(renderer->fixed_texture_id >= 0) texture_id = renderer->fixed_texture_id;
 
     int texture_x = (texture_id & 15) << 4;
     int texture_y = texture_id & 240;
-    float texture_u0 = texture_x / 256.0;
-    float texture_u1 = (texture_x + 15.99) / 256.0;
-    float texture_v0 = texture_y / 256.0;
-    float texture_v1 = (texture_y + 15.99) / 256.0;
 
-    double u0 = texture_u0 + 1.75 / 64.0;
-    double v0 = texture_v0 + 6.0 / 256.0;
-    double u1 = texture_u1 + 9.0 / 256.0;
-    double v1 = texture_v1 + 1.0 / 32.0;
+    float u0_side = texture_x / 256.0f;
+    float u1_side = (texture_x + 15.99f) / 256.0f;
+    float v0_side = texture_y / 256.0f;
+    float v1_side = (texture_y + 15.99f) / 256.0f;
+
+    double u0_top = u0_side + 1.75 / 64.0;
+    double u1_top = u0_side + 9.0 / 256.0;
+    double v0_top = v0_side + 6.0 / 256.0;
+    double v1_top = v0_side + 1.0 / 32.0;
 
     x += 0.5;
     z += 0.5;
@@ -295,32 +294,32 @@ void renderer_block_render_torch(renderer_block_t *renderer, block_t *block, dou
     double z0 = z - 0.5;
     double z1 = z + 0.5;
 
-    // Torch top
-    tesselator_vertex_uv(x + slope_x * 0.375 - 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 - 1.0 / 16.0, u0, v0);
-    tesselator_vertex_uv(x + slope_x * 0.375 - 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 + 1.0 / 16.0, u0, v1);
-    tesselator_vertex_uv(x + slope_x * 0.375 + 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 + 1.0 / 16.0, u1, v1);
-    tesselator_vertex_uv(x + slope_x * 0.375 + 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 - 1.0 / 16.0, u1, v0);
+    // top
+    tesselator_vertex_uv(x + slope_x * 0.375 - 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 - 1.0 / 16.0, u0_top, v0_top);
+    tesselator_vertex_uv(x + slope_x * 0.375 - 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 + 1.0 / 16.0, u0_top, v1_top);
+    tesselator_vertex_uv(x + slope_x * 0.375 + 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 + 1.0 / 16.0, u1_top, v1_top);
+    tesselator_vertex_uv(x + slope_x * 0.375 + 1.0 / 16.0, y + 0.625, z + slope_z * 0.375 - 1.0 / 16.0, u1_top, v0_top);
 
-    // Torch sides
-    tesselator_vertex_uv(x - 1.0 / 16.0, y + 1.0, z0 - 1.0 / 16.0, u0, v0);
-    tesselator_vertex_uv(x - 1.0 / 16.0 + slope_x, y, z0 - 1.0 / 16.0 + slope_z, u0, v1);
-    tesselator_vertex_uv(x - 1.0 / 16.0 + slope_x, y, z1 + 1.0 / 16.0 + slope_z, u1, v1);
-    tesselator_vertex_uv(x - 1.0 / 16.0, y + 1.0, z1 + 1.0 / 16.0, u1, v0);
+    // sides
+    tesselator_vertex_uv(x - 1.0 / 16.0, y + 1.0, z0, u0_side, v0_side);
+    tesselator_vertex_uv(x - 1.0 / 16.0 + slope_x, y, z0 + slope_z, u0_side, v1_side);
+    tesselator_vertex_uv(x - 1.0 / 16.0 + slope_x, y, z1 + slope_z, u1_side, v1_side);
+    tesselator_vertex_uv(x - 1.0 / 16.0, y + 1.0, z1, u1_side, v0_side);
 
-    tesselator_vertex_uv(x + 1.0 / 16.0, y + 1.0, z1 + 1.0 / 16.0, u1, v0);
-    tesselator_vertex_uv(x + slope_x + 1.0 / 16.0, y, z1 + 1.0 / 16.0 + slope_z, u1, v1);
-    tesselator_vertex_uv(x + slope_x + 1.0 / 16.0, y, z0 - 1.0 / 16.0 + slope_z, u0, v1);
-    tesselator_vertex_uv(x + 1.0 / 16.0, y + 1.0, z0 - 1.0 / 16.0, u0, v0);
+    tesselator_vertex_uv(x + 1.0 / 16.0, y + 1.0, z1, u0_side, v0_side);
+    tesselator_vertex_uv(x + slope_x + 1.0 / 16.0, y, z1 + slope_z, u0_side, v1_side);
+    tesselator_vertex_uv(x + slope_x + 1.0 / 16.0, y, z0 + slope_z, u1_side, v1_side);
+    tesselator_vertex_uv(x + 1.0 / 16.0, y + 1.0, z0, u1_side, v0_side);
 
-    tesselator_vertex_uv(x0, y + 1.0, z + 1.0 / 16.0, u0, v0);
-    tesselator_vertex_uv(x0 + slope_x, y, z + 1.0 / 16.0 + slope_z, u0, v1);
-    tesselator_vertex_uv(x1 + slope_x, y, z + 1.0 / 16.0 + slope_z, u1, v1);
-    tesselator_vertex_uv(x1, y + 1.0, z + 1.0 / 16.0, u1, v0);
+    tesselator_vertex_uv(x0, y + 1.0, z + 1.0 / 16.0, u0_side, v0_side);
+    tesselator_vertex_uv(x0 + slope_x, y, z + 1.0 / 16.0 + slope_z, u0_side, v1_side);
+    tesselator_vertex_uv(x1 + slope_x, y, z + 1.0 / 16.0 + slope_z, u1_side, v1_side);
+    tesselator_vertex_uv(x1, y + 1.0, z + 1.0 / 16.0, u1_side, v0_side);
 
-    tesselator_vertex_uv(x1, y + 1.0, z - 1.0 / 16.0, u0, v0);
-    tesselator_vertex_uv(x1 + slope_x, y, z - 1.0 / 16.0 + slope_z, u0, v1);
-    tesselator_vertex_uv(x0 + slope_x, y, z - 1.0 / 16.0 + slope_z, u1, v1);
-    tesselator_vertex_uv(x0, y + 1.0, z - 1.0 / 16.0, u1, v0);
+    tesselator_vertex_uv(x1, y + 1.0, z - 1.0 / 16.0, u0_side, v0_side);
+    tesselator_vertex_uv(x1 + slope_x, y, z - 1.0 / 16.0 + slope_z, u0_side, v1_side);
+    tesselator_vertex_uv(x0 + slope_x, y, z - 1.0 / 16.0 + slope_z, u1_side, v1_side);
+    tesselator_vertex_uv(x0, y + 1.0, z - 1.0 / 16.0, u1_side, v0_side);
 }
 
 void renderer_block_render_fire(renderer_block_t *renderer, block_t *block, double x, double y, double z) {
@@ -422,7 +421,7 @@ void renderer_block_render_fire(renderer_block_t *renderer, block_t *block, doub
                 tesselator_vertex_uv(x0, y, z, u0, v1);
                 tesselator_vertex_uv(x1, y - 0.2, z, u0, v0);
             }else {
-                tesselator_vertex_uv(x, y - 0.2, z, z1, v0);
+                tesselator_vertex_uv(x, y - 0.2, z, u0, v0);
                 tesselator_vertex_uv(x, y, z0, u0, v1);
                 tesselator_vertex_uv(x + 1, y, z0, u1, v1);
                 tesselator_vertex_uv(x + 1, y - 0.2, z1, u1, v0);
@@ -529,31 +528,31 @@ void renderer_block_render_gears(renderer_block_t *renderer, block_t *block, dou
     double u1_alt = (double)(texture_x_alt + 15.99) / 256.0;
 
     if(world_is_solid(renderer->world, x - 1, y, z)) {
-        tesselator_vertex_uv(x + 0.05, y + 1.0 + 2.0 / 16.0, z + 1.0 + 2.0 / 16.0, u0, v0);
-        tesselator_vertex_uv(x + 0.05, y - 2.0 / 16.0, z + 1.0 + 2.0 / 16.0, u0, v1);
-        tesselator_vertex_uv(x + 0.05, y - 2.0 / 16.0, z - 2.0 / 16.0, u1, v1);
-        tesselator_vertex_uv(x + 0.05, y + 1.0 + 2.0 / 16.0, z - 2.0 / 16.0, u1, v0);
+        tesselator_vertex_uv(x + 0.05, y + 1.0 + 2.0/16.0, z + 1.0 + 2.0/16.0, u0, v0);
+        tesselator_vertex_uv(x + 0.05, y - 2.0/16.0, z + 1.0 + 2.0/16.0, u0, v1);
+        tesselator_vertex_uv(x + 0.05, y - 2.0/16.0, z - 2.0/16.0, u1, v1);
+        tesselator_vertex_uv(x + 0.05, y + 1.0 + 2.0/16.0, z - 2.0/16.0, u1, v0);
     }
 
     if(world_is_solid(renderer->world, x + 1, y, z)) {
-        tesselator_vertex_uv(x + 1.0 - 0.05, y - 2.0 / 16.0, z + 1.0 + 2.0 / 16.0, u1, v1);
-        tesselator_vertex_uv(x + 1.0 - 0.05, y + 1.0 + 2.0 / 16.0, z + 1.0 + 2.0 / 16.0, u1, v0);
-        tesselator_vertex_uv(x + 1.0 - 0.05, y + 1.0 + 2.0 / 16.0, z - 2.0 / 16.0, u0, v0);
-        tesselator_vertex_uv(x + 1.0 - 0.05, y - 2.0 / 16.0, z - 2.0 / 16.0, u0, v1);
+        tesselator_vertex_uv(x + 1.0 - 0.05, y - 2.0/16.0, z + 1.0 + 2.0/16.0, u1, v1);
+        tesselator_vertex_uv(x + 1.0 - 0.05, y + 1.0 + 2.0/16.0, z + 1.0 + 2.0/16.0, u1, v0);
+        tesselator_vertex_uv(x + 1.0 - 0.05, y + 1.0 + 2.0/16.0, z - 2.0/16.0, u0, v0);
+        tesselator_vertex_uv(x + 1.0 - 0.05, y - 2.0/16.0, z - 2.0/16.0, u0, v1);
     }
 
     if(world_is_solid(renderer->world, x, y, z - 1)) {
-        tesselator_vertex_uv(x + 1.0 + 2.0 / 16.0, y - 2.0 / 16.0, z + 0.05, u1_alt, v1);
-        tesselator_vertex_uv(x + 1.0 + 2.0 / 16.0, y + 1.0 + 2.0 / 16.0, z + 0.05, u1_alt, v0);
-        tesselator_vertex_uv(x - 2.0 / 16.0, y + 1.0 + 2.0 / 16.0, z + 0.05, u0_alt, v0);
-        tesselator_vertex_uv(x - 2.0 / 16.0, y - 2.0 / 16.0, z + 0.05, u0_alt, v1);
+        tesselator_vertex_uv(x + 1.0 + 2.0/16.0, y - 2.0/16.0, z + 0.05, u1_alt, v1);
+        tesselator_vertex_uv(x + 1.0 + 2.0/16.0, y + 1.0 + 2.0/16.0, z + 0.05, u1_alt, v0);
+        tesselator_vertex_uv(x - 2.0/16.0, y + 1.0 + 2.0/16.0, z + 0.05, u0_alt, v0);
+        tesselator_vertex_uv(x - 2.0/16.0, y - 2.0/16.0, z + 0.05, u0_alt, v1);
     }
 
     if(world_is_solid(renderer->world, x, y, z + 1)) {
-        tesselator_vertex_uv(x + 1.0 + 2.0 / 16.0, y + 1.0 + 2.0 / 16.0, z + 1.0 - 0.05, u0_alt, v0);
-        tesselator_vertex_uv(x + 1.0 + 2.0 / 16.0, y - 2.0 / 16.0, z + 1.0 - 0.05, u0_alt, v1);
-        tesselator_vertex_uv(x - 2.0 / 16.0, y - 2.0 / 16.0, z + 1.0 - 0.05, u1_alt, v1);
-        tesselator_vertex_uv(x - 2.0 / 16.0, y + 1.0 + 2.0 / 16.0, z + 1.0 - 0.05, u1_alt, v0);
+        tesselator_vertex_uv(x + 1.0 + 2.0/16.0, y + 1.0 + 2.0/16.0, z + 1.0 - 0.05, u0_alt, v0);
+        tesselator_vertex_uv(x + 1.0 + 2.0/16.0, y - 2.0/16.0, z + 1.0 - 0.05, u0_alt, v1);
+        tesselator_vertex_uv(x - 2.0/16.0, y - 2.0/16.0, z + 1.0 - 0.05, u1_alt, v1);
+        tesselator_vertex_uv(x - 2.0/16.0, y + 1.0 + 2.0/16.0, z + 1.0 - 0.05, u1_alt, v0);
     }
 }
 
@@ -599,6 +598,11 @@ uint8_t renderer_block_render(renderer_block_t *renderer, block_t *block, int x,
         return 1;
     }
     if(render_type == BLOCK_RENDER_TYPE_FIRE) {
+        float brightness = block->get_brightness(block, renderer->world, x, y, z);
+        if(block->light_value > 0) {
+            brightness = 1.0;
+        }
+        tesselator_color_float(brightness, brightness, brightness, 1.0);
         renderer_block_render_fire(renderer, block, x, y, z);
         return 1;
     }

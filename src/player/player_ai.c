@@ -18,7 +18,7 @@ ai_t player_ai_create(struct player_s *player) {
 void player_ai_tick(struct ai_s *proto_ai) {
     ai_t *ai = (ai_t *)proto_ai;
     player_t *player = (player_t *)ai->player;
-    inventory_tick(&player->inventory);
+    //inventory_tick(&player->inventory);
     inputs_update_movement(&player->inputs);
     ai_basic_tick(proto_ai);
 

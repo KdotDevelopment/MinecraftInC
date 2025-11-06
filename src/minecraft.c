@@ -150,12 +150,8 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
-    minecraft->player.mob->player->inventory.slots[0] = blocks.torch.id;
-    minecraft->player.mob->player->inventory.counts[0] = 10;
-    minecraft->player.mob->player->inventory.slots[1] = blocks.gears.id;
-    minecraft->player.mob->player->inventory.counts[1] = 10;
-    minecraft->player.mob->player->inventory.slots[2] = blocks.fire.id;
-    minecraft->player.mob->player->inventory.counts[2] = 10;
+    minecraft->player.mob->player->inventory.inv[0] = item_stack_create(BLOCK_TORCH, 64, 0);
+    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(BLOCK_GEARS, 64, 0);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
     renderer_world_change_world(&minecraft->renderer_world, minecraft->world);
@@ -289,11 +285,12 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                         return;
                     }
                 }else {
-                    int selected = inventory_get_selected(&minecraft->player.mob->player->inventory);
-                    if(selected <= 0) return;
+                    item_stack_t selected = inventory_player_get_selected(&minecraft->player.mob->player->inventory);
+                    if(selected.item_id <= 0) return;
     
-                    block_t *block = &block_list[world_get_block(minecraft->world, vx, vy, vz)];
-                    block_t *selected_block = &block_list[selected];
+                    // TODO item place
+                    /*block_t *block = &block_list[world_get_block(minecraft->world, vx, vy, vz)];
+                    item_t *selected_block = &item_list[selected.item_id];
                     AABB_t aabb = block_list[selected].id == blocks.air.id ? (AABB_t){ .null = 1 } : selected_block->get_collision_aabb(selected_block, vx, vy, vz);
                     if((block->id == blocks.air.id || block->id == blocks.water.id || block->id == blocks.still_water.id || block->id == blocks.lava.id || block->id == blocks.still_lava.id) && (aabb.null || !AABB_intersects(minecraft->player.bb, aabb))) {
                         if(!minecraft->gamemode.remove_item(&minecraft->gamemode, selected)) {
@@ -302,7 +299,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                         world_set_block_with_update(minecraft->world, vx, vy, vz, selected);
                         selected_block->on_placed(selected_block, (struct world_s *)minecraft->world, vx, vy, vz, minecraft->hit_result.face);
                         minecraft->renderer.held_block.position = 0;
-                    }
+                    }*/
                 }
             }
         }
@@ -335,7 +332,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     if(minecraft->current_screen == NULL || minecraft->current_screen->grabs_mouse) {
         for(int i = 0; i < array_list_length(events); i++) {
             if(events[i].type == SDL_MOUSEWHEEL) {
-                inventory_swap_paint(&minecraft->player.mob->player->inventory, events[i].wheel.y);
+                //inventory_swap_paint(&minecraft->player.mob->player->inventory, events[i].wheel.y);
             }
             if(minecraft->current_screen == NULL) {
                 if(!minecraft->has_mouse && events[i].type == SDL_MOUSEBUTTONDOWN) {
@@ -354,7 +351,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         if(block_id == blocks.grass.id) block_id = blocks.dirt.id;
                         if(block_id == blocks.double_slab.id) block_id = blocks.slab.id;
                         if(block_id == blocks.bedrock.id) block_id = blocks.stone.id;
-                        inventory_grab_texture(&minecraft->player.mob->player->inventory, block_id);
+                        //inventory_grab_texture(&minecraft->player.mob->player->inventory, block_id);
                     }
                 }
             }else {
@@ -452,16 +449,17 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
             renderer->held_block.moving = 0;
         }
     }
-    int selected = inventory_get_selected(&minecraft->player.mob->player->inventory);
+    
+    /*item_stack_t selected = inventory_player_get_selected(&minecraft->player.mob->player->inventory);
     block_t *block = &block_list[blocks.air.id];
-    if(selected > 0) block = &block_list[selected];
+    if(selected.item_id > 0) block = &block_list[selected];
     float s = (block == renderer->held_block.block ? 1.0 : 0.0) - renderer->held_block.position;
     if(s < -0.4) s = -0.4;
     if(s > 0.4) s = 0.4;
     renderer->held_block.position += s;
     if(renderer->held_block.position < 0.1) {
         renderer->held_block.block = block;
-    }
+    }*/
 
     /*if(minecraft->raining) {
         world_t *world = minecraft->world;

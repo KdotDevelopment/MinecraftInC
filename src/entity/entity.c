@@ -302,7 +302,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
     entity->z = (entity->bb.z0 + entity->bb.z1) / 2.0;
     entity->walk_dist += sqrtf((entity->x - x1) * (entity->x - x1) + (entity->z - z1) * (entity->z - z1)) * 0.6;
     if(entity->make_step_sound) {
-        uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y - entity->height_offset - 0.2, entity->z);
+        uint8_t block_id = world_get_block((world_t *)entity->world, floor_double(entity->x), floor_double(entity->y) - entity->height_offset - 0.2, floor_double(entity->z));
         if(entity->walk_dist > entity->next_step && block_id > blocks.air.id) {
             entity->next_step++;
             block_sound_t *sound = block_list[block_id].sound;

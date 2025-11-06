@@ -66,7 +66,7 @@ void screen_block_select_render(struct screen_s *proto_screen, int mx, int my, f
 void screen_block_select_on_mouse_clicked(struct screen_s *proto_screen, int x, int y, int button) {
     screen_t *screen = (screen_t *)proto_screen;
     if(button == SDL_BUTTON_LEFT) {
-        inventory_replace_slot(&((minecraft_t *)screen->minecraft)->player.mob->player->inventory, get_block_on_screen(screen, x, y));
+        inventory_player_set_slot(&((minecraft_t *)screen->minecraft)->player.mob->player->inventory, ((minecraft_t *)screen->minecraft)->player.mob->player->inventory.selected, item_stack_create(get_block_on_screen(screen, x, y), 1, 0));
         minecraft_set_current_screen(screen->minecraft, NULL);
     }
 

@@ -31,7 +31,7 @@ void gamemode_creative_init_world(struct gamemode_s *gamemode, struct world_s *w
 
 void gamemode_creative_adjust_player(struct gamemode_s *gamemode, entity_t *player) {
     for(int i = 0; i < 9; i++) {
-        player->mob->player->inventory.counts[i] = 1;
-        player->mob->player->inventory.slots[i] = session_allowed_blocks[i];
+        //player->mob->player->inventory.counts[i] = 1;
+        //player->mob->player->inventory.slots[i] = session_allowed_blocks[i];
     }
 }

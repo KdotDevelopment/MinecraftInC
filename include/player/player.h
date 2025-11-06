@@ -3,7 +3,7 @@
 #include <entity/entity.h>
 #include <entity/mob/mob.h>
 #include <player/inputs.h>
-#include <player/inventory.h>
+#include <player/inventory_player.h>
 
 struct world_s;
 

@@ -94,13 +94,12 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     for(int i = 0; i < 9; i++) {
         int x = hud->width / 2 - 90 + i * 20;
         int y = hud->height - 16;
-        uint8_t block_id = hud->minecraft->player.mob->player->inventory.slots[i];
-        block_t *block = &block_list[block_id];
-        if(block_id != -1 && block_id != 0) {
+        item_stack_t item = hud->minecraft->player.mob->player->inventory.inv[i];
+        if(item.item_id > 0) {
             glPushMatrix();
             glTranslatef(x, y, -50.0);
-            if(hud->minecraft->player.mob->player->inventory.pop_times[i] > 0) {
-                float a = (hud->minecraft->player.mob->player->inventory.pop_times[i] - partial_tick) / 5.0;
+            if(item.animations_to_go > 0) {
+                float a = (item.animations_to_go - partial_tick) / 5.0;
                 float b = -tsin(a * a * M_PI) * 8.0;
                 float c = tsin(a * a * M_PI) + 1.0;
                 float d = tsin(a * M_PI) + 1.0;
@@ -116,12 +115,12 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
             glScalef(-1.0, -1.0, -1.0);
             glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "terrain.png"));
             tesselator_begin_quads();
-            block->render_full_brightness(&block_list[block_id]);
+            // ...
             tesselator_end();
             glPopMatrix();
-            if(hud->minecraft->player.mob->player->inventory.counts[i] > 1) {
+            if(hud->minecraft->player.mob->player->inventory.inv[i].stack_size > 1) {
                 char number[4];
-                sprintf(number, "%d", hud->minecraft->player.mob->player->inventory.counts[i]);
+                sprintf(number, "%d", hud->minecraft->player.mob->player->inventory.inv[i].stack_size);
                 font_render(&hud->minecraft->font, number, x + 19 - font_get_width(&hud->minecraft->font, number), y + 6, 0xffffffff);
             }
         }

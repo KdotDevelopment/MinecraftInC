@@ -7,9 +7,11 @@ I got bored of working on Classic 0.30 so I moved on to Infdev.
 ## How to Build
 I only make this project on WSL, so it must be built on linux unless you rewrite the makefile for building on Windows. However, the primary binary that I create here is only for Windows, which by the way, is completely statically linked.
 
-Before the project can be built, you must convert all the assets into header files. This can be easily done with the following command: ```make assets```
+Before the project can be built, you must convert all the assets into header files. This can be easily done with the following command: ```make assets``` You may need some dependencies for creating the assets, such as ImageMagik and libpng-dev.
 
 Building for Windows:
+
+Don't forget to download the mingw-w64 to use gcc for windows.
 ```make windows -j```
 
 Building for Linux:

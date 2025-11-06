@@ -30,7 +30,7 @@ void player_create(entity_t *entity, struct world_s *world) {
     player->entity->texture_id = 123;
     player->entity->bb_width = 0.6;
     player->entity->bb_height = 1.8;
-    player->inventory = inventory_create();
+    player->inventory = inventory_player_create(entity);
     player->mob->ai = player_ai_create((struct player_s *)player);
     player->entity->allowed_in_creative_mode = 1;
     player->arrows = 20;

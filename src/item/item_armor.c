@@ -11,6 +11,7 @@ item_t item_armor_create(uint8_t id, uint8_t texture_id, uint8_t armor_type, uin
     item.damage_reduce = damage_reduce_amounts[armor_type];
     item.durability = max_damages[armor_type] * 3 << piece;
     item.max_stack_size = 1;
+    item.is_armor = 1;
 
     item_list[id + 256] = item;
 

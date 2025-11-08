@@ -109,6 +109,12 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
     int y1 = renderer->y + renderer->height;
     int z1 = renderer->z + renderer->depth;
 
+    int chunk_x = x0 >> 4;
+    int chunk_z = z0 >> 4;
+    chunk_t *chunk = world_get_chunk(renderer->world, chunk_x, chunk_z);
+    
+    uint8_t use_cached_chunk = (chunk != NULL);
+
     for(int i = 0; i < 2; i++) {
         renderer->skip_render[i] = 1;
     }
@@ -126,16 +132,36 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
         tesselator_begin_quads();
         tesselator_set_translation(-renderer->x, -renderer->y, -renderer->z);
         
-        for(int y = y0; y < y1; y++) {
-            for(int z = z0; z < z1; z++) {
-                for(int x = x0; x < x1; x++) {
-                    uint8_t block_id = world_get_block(renderer->world, x, y, z);
-                    if(block_id > 0) {
-                        block_t *block = &block_list[block_id];
-                        if(block->render_pass != i) {
-                            b0 = 1;
-                        }else {
-                            b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
+        if(use_cached_chunk) {     
+            for(int y = y0; y < y1; y++) {
+                for(int z = z0; z < z1; z++) {
+                    int local_z = z & (CHUNK_SIZE_WIDTH - 1);
+                    for(int x = x0; x < x1; x++) {
+                        int local_x = x & (CHUNK_SIZE_WIDTH - 1);
+                        uint8_t block_id = chunk_get_block_id(chunk, local_x, y, local_z);
+                        if(block_id > 0) {
+                            block_t *block = &block_list[block_id];
+                            if(block->render_pass != i) {
+                                b0 = 1;
+                            }else {
+                                b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for(int y = y0; y < y1; y++) {
+                for(int z = z0; z < z1; z++) {
+                    for(int x = x0; x < x1; x++) {
+                        uint8_t block_id = world_get_block(renderer->world, x, y, z);
+                        if(block_id > 0) {
+                            block_t *block = &block_list[block_id];
+                            if(block->render_pass != i) {
+                                b0 = 1;
+                            }else {
+                                b1 |= renderer_block_render(&renderer->renderer_block, block, x, y, z);
+                            }
                         }
                     }
                 }

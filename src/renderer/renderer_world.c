@@ -127,10 +127,10 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->y1 = renderer->y_chunks;
     renderer->z1 = renderer->z_chunks;
 
-    /*for(int i = 0; i < array_list_length(renderer->renderer_chunks_to_update); i++) {
+    for(int i = 0; i < array_list_length(renderer->renderer_chunks_to_update); i++) {
         renderer_chunk_t *renderer_chunk = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, i);
         renderer_chunk->needs_update = 0;
-    }*/
+    }
 
     renderer->renderer_chunks_to_update = array_list_clear(renderer->renderer_chunks_to_update);
 
@@ -272,7 +272,7 @@ int renderer_world_sort_and_render(renderer_world_t *renderer, entity_t *player,
     double dy = player->y - renderer->last_load_y;
     double dz = player->z - renderer->last_load_z;
 
-    if(dx * dx + dy * dy + dz * dz > 0.01) {
+    if(dx * dx + dy * dy + dz * dz > 16.0) {
         renderer->last_load_x = player->x;
         renderer->last_load_y = player->y;
         renderer->last_load_z = player->z;
@@ -555,21 +555,27 @@ void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick) {
 }
 
 void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *player) {
-    qsort(array_list_get(renderer->renderer_chunks_to_update, 0), array_list_length(renderer->renderer_chunks_to_update), sizeof(renderer_chunk_t *), renderer_chunk_player_compare);
+    size_t len = array_list_length(renderer->renderer_chunks_to_update);
+    if(len == 0) return;
+    qsort(array_list_get(renderer->renderer_chunks_to_update, 0), len, sizeof(renderer_chunk_t *), renderer_chunk_player_compare);
 
-    int last_index = array_list_length(renderer->renderer_chunks_to_update) - 1;
-    int total_renderers = last_index + 1;
-
-    for(int i = 0; i < total_renderers; i++) {
-        renderer_chunk_t *chunk_renderer = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, last_index - i);
-        if(renderer_chunk_distance_to_entity_squared(chunk_renderer, player) > 2500.0 && i > 2) {
+    int processed = 0;
+    while(len > 0) {
+        int idx = (int)len - 1;
+        renderer_chunk_t *chunk_renderer = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, idx);
+        
+        if(renderer_chunk_distance_to_entity_squared(chunk_renderer, player) > 2500.0 && processed > 2) {
             return;
         }
-        renderer->renderer_chunks_to_update = array_list_remove(renderer->renderer_chunks_to_update, last_index - i);
+        
+        renderer->renderer_chunks_to_update = array_list_remove(renderer->renderer_chunks_to_update, idx);
         renderer_chunk_update(chunk_renderer);
         chunk_renderer->needs_update = 0;
+        processed++;
+        len--;
     }
 }
+ 
 
 void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, int unused, item_stack_t *item_stack, float partial_tick) {
     glEnable(GL_BLEND);

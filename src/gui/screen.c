@@ -12,6 +12,7 @@ screen_t screen_create() {
     screen_t screen = { 0 };
     screen.grabs_mouse = 0;
     screen.buttons = array_list_create(sizeof(button_t));
+    screen.pauses_game = 1;
 
     screen.render = screen_render;
     screen.on_key_pressed = screen_on_key_pressed;

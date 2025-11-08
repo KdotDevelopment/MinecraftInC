@@ -25,6 +25,9 @@ void mob_sheep_create(entity_t *entity, struct world_s *world, float x, float y,
     mob->graze_o = 0.0F;
     mob->ai = ai_sheep_create(mob);
     mob->entity->model = models_get(&world->minecraft->models, mob->model_type);
+    mob->hurt_sound = SOUND_MOB_SHEEP;
+    mob->living_sound = SOUND_MOB_SHEEP;
+    mob->death_sound = SOUND_MOB_SHEEP;
 
     entity_set_pos(entity, x, y, z);
 

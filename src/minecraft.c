@@ -384,18 +384,15 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
 }
 
 void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
-    if(time_millis() > minecraft->sounds.last_music) {
-        sounds_play_music(&minecraft->sounds, "Calm");
-        minecraft->sounds.last_music = time_millis() + random_next_int_range(&minecraft->sounds.random, 0, 900000) + 300000;
-    }
-
     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
-    for(int i = 0; i < array_list_length(minecraft->textures.animations); i++) {
-        texture_animated_t *texture = minecraft->textures.animations[i];
-        texture->anaglyph = minecraft->settings.anaglyph;
-        texture->tick(texture);
-        memcpy(minecraft->textures.texture_buffer, texture->data, 1024);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, texture->texture_id % 16 << 4, texture->texture_id / 16 << 4, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, minecraft->textures.texture_buffer);
+    if(!minecraft->is_paused) {
+        for(int i = 0; i < array_list_length(minecraft->textures.animations); i++) {
+            texture_animated_t *texture = minecraft->textures.animations[i];
+            texture->anaglyph = minecraft->settings.anaglyph;
+            texture->tick(texture);
+            memcpy(minecraft->textures.texture_buffer, texture->data, 1024);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, texture->texture_id % 16 << 4, texture->texture_id / 16 << 4, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, minecraft->textures.texture_buffer);
+        }
     }
 
     if(minecraft->miss_time > 0) {
@@ -553,7 +550,14 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     minecraft->renderer_world.ticks++;
     //world_tick_entities(minecraft->world);
     //world_tick(minecraft->world);
-    particles_tick(&minecraft->particles);
+    if(minecraft->world != NULL && !minecraft->is_paused) {
+        renderer_camera_update(&minecraft->renderer);
+        renderer_world_update_clouds(&minecraft->renderer_world);
+        world_update_entities(minecraft->world);
+        world_restart_time_of_day(minecraft->world);
+        world_visual_update(minecraft->world, floor_double(minecraft->player.x), floor_double(minecraft->player.y), floor_double(minecraft->player.z));
+        particles_tick(&minecraft->particles);
+    }
 }
 
 void minecraft_run(minecraft_t *minecraft) {
@@ -625,25 +629,43 @@ void minecraft_run(minecraft_t *minecraft) {
         timer->delta = timer->elapsed_delta;
         float delta = timer->delta;
 
-        for(int i = 0; i < timer->elapsed_ticks; i++) {
+        int ticks = 0;
+        for(;;) {
+            if(ticks >= minecraft->timer.elapsed_ticks) {
+                if(minecraft->is_paused) {
+                    minecraft->timer.delta = 1;
+                }
+                glEnable(GL_TEXTURE);
+                if(minecraft->world != NULL) {
+                    while(world_update_lighting(minecraft->world));
+                }
+                gamemode_set_partial_time(&minecraft->gamemode, delta);
+                renderer_camera_update_mouse(&minecraft->renderer, delta);
+                minecraft->is_paused = minecraft->current_screen != NULL && minecraft->current_screen->pauses_game;
+                frame++;
+                break;
+            }
             minecraft->ticks++;
             minecraft_tick(minecraft, events);
-            if(minecraft->world != NULL) {
-                renderer_world_update_clouds(&minecraft->renderer_world);
-                world_update_entities(minecraft->world);
-                world_restart_time_of_day(minecraft->world);
-                world_visual_update(minecraft->world, floor_double(minecraft->player.x), floor_double(minecraft->player.y), floor_double(minecraft->player.z));
-            }
+            ticks++;
+        }
+
+        renderer_camera_t *renderer = &minecraft->renderer;
+
+        /*for(int i = 0; i < timer->elapsed_ticks; i++) {
+            minecraft->ticks++;
+            minecraft_tick(minecraft, events);
+            
             events = array_list_clear(events);
         }
 
-        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_2D);*/
 
-        gamemode_set_partial_time(&minecraft->gamemode, delta);
-        renderer_camera_update_mouse(&minecraft->renderer, delta);
+        //if(minecraft->world != NULL && !minecraft->is_paused) {
+            
+        //}
 
         minecraft->gamemode.render(&minecraft->gamemode, delta);
-        renderer_camera_t *renderer = &minecraft->renderer;
         if(renderer->display_active && (SDL_GetWindowFlags(minecraft->window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
             minecraft_pause(minecraft);
         }
@@ -677,13 +699,6 @@ void minecraft_run(minecraft_t *minecraft) {
         my = my * h / minecraft->height - 1;
 
         //screen_hud_render(&minecraft->hud, mx, my, delta);
-
-        if(minecraft->world != NULL) {
-            while(world_update_lighting(minecraft->world));
-            //if not paused
-            renderer_camera_update(renderer);
-            // update particles
-        }
 
         /*glMatrixMode(GL_PROJECTION);
         glLoadIdentity();

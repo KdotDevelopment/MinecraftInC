@@ -39,6 +39,10 @@ void mob_create(entity_t *entity, struct world_s *world) {
     mob->anim_stepo = 0;
     mob->hurt_duration = 1;
 
+    mob->hurt_sound = SOUND_RANDOM_HURT;
+    mob->death_sound = SOUND_RANDOM_HURT;
+    mob->living_sound = SOUND_NONE;
+
     mob->health = 20;
     mob->time_offs = random_uniform() * M_PI * 12398.0;
     mob->rot = random_uniform() * M_PI * 2;
@@ -334,7 +338,10 @@ void mob_hurt(entity_t *entity, entity_t *entity_causer, int damage) {
     }
 
     if(mob->health <= 0) {
+        world_play_sound_at_entity(entity->world, entity, entity->mob->death_sound, 1.0, (random_uniform() - random_uniform()) * 0.2 + 1.0);
         mob->die(mob, causer);
+    }else {
+        world_play_sound_at_entity(entity->world, entity, entity->mob->hurt_sound, 1.0, (random_uniform() - random_uniform()) * 0.2 + 1.0);
     }
 }
 
@@ -366,8 +373,10 @@ void mob_cause_fall_damage(entity_t *entity, float distance) {
     entity_cause_fall_damage(entity, distance);
     //if(world->creative_mode) return;
     int damage = (int)ceil(distance - 3);
+    uint8_t block_id = world_get_block(entity->world, floor_double(entity->x), floor_double(entity->y - 0.2 - entity->height_offset), floor_double(entity->z));
     if(damage > 0) {
         entity->hurt(entity, NULL, damage);
+        world_play_sound_at_entity(entity->world, entity, block_list[block_id].sound->base_type, block_list[block_id].sound->volume * 0.5, block_list[block_id].sound->pitch * (12.0 / 16.0));
     }
 }
 

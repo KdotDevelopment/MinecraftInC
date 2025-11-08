@@ -9,6 +9,8 @@
 screen_t screen_death_create() {
     screen_t screen = screen_create();
 
+    screen.pauses_game = 0;
+
     screen.type = SCREEN_TYPE_DEATH;
     screen.on_open = screen_death_on_open;
     screen.on_button_clicked = screen_death_on_button_clicked;

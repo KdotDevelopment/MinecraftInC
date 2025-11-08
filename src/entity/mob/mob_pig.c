@@ -14,6 +14,9 @@ void mob_pig_create(entity_t *entity, struct world_s *world, float x, float y, f
     mob->texture_name = "mob/pig.png";
     mob->entity->height_offset = 1.72;
     mob->entity->model = models_get(&world->minecraft->models, mob->model_type);
+    mob->hurt_sound = SOUND_MOB_PIG;
+    mob->living_sound = SOUND_MOB_PIG;
+    mob->death_sound = SOUND_MOB_PIG_DEATH;
 
     mob->die = mob_pig_die;
 }

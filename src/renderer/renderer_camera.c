@@ -52,7 +52,7 @@ vec3_t renderer_camera_get_player_vector(renderer_camera_t *renderer, float delt
 void renderer_camera_hurt_effect(renderer_camera_t *renderer, float delta) {
     mob_t *player = renderer->minecraft->player.mob;
     float dtime = player->hurt_time - delta;
-    if(player->hurt_time <= 0) {
+    if(player->health <= 0) {
         delta += player->death_time;
         glRotatef(40.0 - 8000.0 / (delta + 200.0), 0.0, 0.0, 1.0);
     }
@@ -251,11 +251,11 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         if(renderer->minecraft->settings.anaglyph) glTranslatef(-((i << 1) - 1) * 0.07, 0.0, 0.0);
 
         float fov = 70.0;
-        /*
-        if(entity_is_inside_material(player->mob.entity)) {
+        
+        if(entity_is_underwater(player)) {
             fov = 60.0;
         }
-        */
+        
         if(player->mob->health <= 0) {
             float ddeath_time = player->mob->death_time + delta;
             fov /= (1.0 - 500.0 / (ddeath_time + 500.0)) * 2.0 + 1.0;
@@ -266,7 +266,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glLoadIdentity();
         if(renderer->minecraft->settings.anaglyph) glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0);
 
-        //renderer_camera_hurt_effect(renderer, delta);
+        renderer_camera_hurt_effect(renderer, delta);
         if(renderer->minecraft->settings.show_bobbing) renderer_camera_apply_bobbing(renderer, delta);
 
         if(!renderer->minecraft->settings.third_person) {
@@ -305,7 +305,6 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
 
         renderer_camera_setup_fog(renderer);
         glEnable(GL_FOG);
-        renderer_world_update_renderers(&renderer->minecraft->renderer_world, player);
         renderer_world_draw_sky(&renderer->minecraft->renderer_world, delta);
 
         renderer_camera_setup_fog(renderer);

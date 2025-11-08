@@ -48,6 +48,7 @@ typedef struct screen_s {
     int id;
     int counter;
     float counter_f;
+    uint8_t pauses_game;
 
     void (*render)(struct screen_s *screen, int x, int y, float partial_tick);
     void (*on_key_pressed)(struct screen_s *screen, char event_char, int event_key);

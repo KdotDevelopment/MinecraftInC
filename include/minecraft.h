@@ -49,6 +49,7 @@ typedef struct minecraft_s {
     uint8_t running;
     uint64_t ticks;
     uint8_t raining;
+    uint8_t is_paused;
     int miss_time;
     screen_hud_t hud;
     SDL_Window *window;

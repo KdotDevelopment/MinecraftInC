@@ -48,6 +48,9 @@ typedef struct mob_s {
     float tilt;
     uint8_t dead; // = false;
     ai_t ai;
+    uint8_t hurt_sound;
+    uint8_t death_sound;
+    uint8_t living_sound;
 
     uint8_t has_armor;
     uint8_t has_helmet;

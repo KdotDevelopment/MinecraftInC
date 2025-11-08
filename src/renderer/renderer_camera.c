@@ -311,7 +311,6 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         renderer_camera_setup_fog(renderer);
         frustum_set_position(&frustum, dx, dy, dz);
         renderer_world_update_frustum(&renderer->minecraft->renderer_world, &frustum);
-        glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
         renderer_world_update_renderers(&renderer->minecraft->renderer_world, player);
 
         renderer_camera_setup_fog(renderer);

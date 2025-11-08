@@ -67,8 +67,9 @@ uint8_t check_position(generate_big_tree_t *this) {
     vec3_t top_pos = (vec3_t){ this->origin.x, this->origin.y + this->height_limit - 1, this->origin.z };
     uint8_t ground_block_id = world_get_block(this->world, base_pos.x, base_pos.y - 1, base_pos.z);
 
-    if(ground_block_id != blocks.grass.id && ground_block_id != blocks.dirt.id)
+    if(ground_block_id != blocks.grass.id && ground_block_id != blocks.dirt.id) {
         return 0;
+    }
 
     int block_line_check = check_line(this, base_pos, top_pos);
 
@@ -102,11 +103,11 @@ float tree_shape(generate_big_tree_t *this, int y) {
 
 void prepare(generate_big_tree_t *this) {
     this->height = (int)((double)this->height_limit * this->trunk_height_scale);
-    if (this->height >= this->height_limit)
+    if(this->height >= this->height_limit)
         this->height = this->height_limit - 1;
 
     int clusters_per_y = (int)(1.382 + pow(this->foliage_density * this->height_limit / 13.0, 2.0));
-    if (clusters_per_y < 1)
+    if(clusters_per_y < 1)
         clusters_per_y = 1;
 
     int max_clusters = clusters_per_y * this->height_limit;
@@ -124,7 +125,7 @@ void prepare(generate_big_tree_t *this) {
 
     foliage_y--;
 
-    while (rel_y >= 0) {
+    while(rel_y >= 0) {
         float shapefac = tree_shape(this, rel_y);
         if (shapefac < 0.0f) {
             foliage_y--;
@@ -132,7 +133,7 @@ void prepare(generate_big_tree_t *this) {
             continue;
         }
 
-        for (int n = 0; n < clusters_per_y; n++) {
+        for(int n = 0; n < clusters_per_y; n++) {
             double radius = this->width_scale * shapefac * (random_next_uniform(this->rand) + 0.328);
             double angle = random_next_uniform(this->rand) * 2.0 * M_PI;
 
@@ -142,7 +143,7 @@ void prepare(generate_big_tree_t *this) {
             vec3_t check_start = { x, foliage_y, z };
             vec3_t check_end = { x, foliage_y + this->foliage_height, z };
 
-            if (check_line(this, check_start, check_end) == -1) {
+            if(check_line(this, check_start, check_end) == -1) {
                 double dist = sqrt(pow(this->origin.x - x, 2) + pow(this->origin.z - z, 2));
                 double branch_drop = dist * this->branch_slope;
 
@@ -152,7 +153,7 @@ void prepare(generate_big_tree_t *this) {
                 else
                     base.y = (int)((double)foliage_y - branch_drop);
 
-                if (check_line(this, base, check_start) == -1) {
+                if(check_line(this, base, check_start) == -1) {
                     temp_coords[cluster_count][0] = x;
                     temp_coords[cluster_count][1] = foliage_y;
                     temp_coords[cluster_count][2] = z;
@@ -276,7 +277,7 @@ void make_trunk(generate_big_tree_t *this) {
 }
 
 uint8_t trim_branches(generate_big_tree_t *this, int local_y) {
-    if(local_y < (this->height * 0.2)) return 0;
+    if(local_y < (this->height_limit * 0.2)) return 0;
     return 1;
 }
 

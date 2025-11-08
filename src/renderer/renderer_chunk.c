@@ -23,7 +23,7 @@ void renderer_chunk_create(renderer_chunk_t *renderer, world_t *world, int x, in
     renderer->renderer_block = renderer_block_create(world);
     renderer_chunk_set_position(renderer, x, y, z);
     renderer->is_visible = 1;
-    renderer->needs_update = 1;
+    renderer->needs_update = 0;
     renderer->x = -999;
 }
 

@@ -129,11 +129,11 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     minecraft->world = malloc(sizeof(world_t));
     world_create(minecraft->world, minecraft, "./.minecraft/saves", "World1", time(NULL));
-    for(int i = -196; i <= 196; i += 16) {
+    /*for(int i = -196; i <= 196; i += 16) {
         for(int j = -196; j <= 196; j += 16) {
-            //world_get_block(minecraft->world, i + minecraft->world->spawn_x, 64, j + minecraft->world->spawn_z);
+            world_get_block(minecraft->world, i + minecraft->world->spawn_x, 64, j + minecraft->world->spawn_z);
         }
-    }
+    }*/
     world_save(minecraft->world, 1);
     minecraft->renderer = renderer_camera_create(minecraft);
     player_create(&minecraft->player, (struct world_s *)minecraft->world);

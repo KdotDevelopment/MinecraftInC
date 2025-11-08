@@ -3,6 +3,7 @@
 #include <model/vec3.h>
 #include <entity/entity.h>
 #include <renderer/held_block.h>
+#include <renderer/renderer_screen_overlay.h>
 
 #include <util/random.h>
 
@@ -13,7 +14,7 @@ typedef struct minecraft_s minecraft_t;
 typedef struct {
     minecraft_t *minecraft;
     entity_t *entity;
-    held_block_t held_block;
+    renderer_screen_overlay_t renderer_overlay;
     uint8_t display_active;
     random_t random;
     int ticks;

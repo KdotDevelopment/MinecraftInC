@@ -17,3 +17,4 @@ double random_next_uniform(random_t *random);
 double random_uniform();
 uint64_t random_next_int_range(random_t *random, uint64_t min, uint64_t max);
 double random_next_normal(random_t *random, double stddev);
+void random_set_seed(random_t *random, long seed);

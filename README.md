@@ -10,9 +10,8 @@ I only make this project on WSL, so it must be built on linux unless you rewrite
 Before the project can be built, you must convert all the assets into header files. This can be easily done with the following command: ```make assets``` You may need some dependencies for creating the assets, such as ImageMagik and libpng-dev.
 
 Building for Windows:
-
-Don't forget to download the mingw-w64 to use gcc for windows.
 ```make windows -j```
+Don't forget to download the mingw-w64 to use gcc for windows.
 
 Building for Linux:
 ```make -j```

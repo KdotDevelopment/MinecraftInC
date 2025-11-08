@@ -17,7 +17,7 @@ item_t item_painting_create(uint8_t id, uint8_t texture_id) {
     return item;
 }
 
-uint8_t item_painting_on_use(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side) {
+uint8_t item_painting_on_use(item_t *item, item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side) {
     if(side == 0) return 0;
     if(side == 1) return 0;
     int8_t new_side = 0;

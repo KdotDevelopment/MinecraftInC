@@ -479,7 +479,7 @@ hit_result_t world_clip(world_t *world, vec3_t v0, vec3_t v1) {
             v0.y += d.y * b.z;
         }
         
-    vec3_t v00 = { floor_double(v0.x), floor_double(v0.y), floor_double(v0.z) };
+        vec3_t v00 = { floor_double(v0.x), floor_double(v0.y), floor_double(v0.z) };
         i0x = v00.x;
         i0y = v00.y;
         i0z = v00.z;

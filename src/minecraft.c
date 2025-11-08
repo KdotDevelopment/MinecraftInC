@@ -97,7 +97,6 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->gamemode = gamemode_creative_create(minecraft);
     #endif
 
-    minecraft->renderer = renderer_camera_create(minecraft);
     game_settings_create(&minecraft->settings, (struct minecraft_s *)minecraft);
     SDL_GL_SetSwapInterval(minecraft->settings.limit_framerate ? 1 : 0);
     minecraft->textures = textures_create(&minecraft->settings);
@@ -136,6 +135,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
         }
     }
     world_save(minecraft->world, 1);
+    minecraft->renderer = renderer_camera_create(minecraft);
     player_create(&minecraft->player, (struct world_s *)minecraft->world);
     printf("Player created at %f, %f, %f\n", minecraft->player.x, minecraft->player.y, minecraft->player.z);
     minecraft->player.x = 0;
@@ -151,7 +151,12 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.mob->player->inventory.inv[0] = item_stack_create(BLOCK_TORCH, 64, 0);
-    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(BLOCK_GEARS, 64, 0);
+    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(BLOCK_FIRE, 64, 0);
+    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.diamond_hoe.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_helmet.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_chestplate.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_leggings.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_boots.item_id, 1, 0);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
     renderer_world_change_world(&minecraft->renderer_world, minecraft->world);
@@ -248,11 +253,84 @@ void minecraft_pause(minecraft_t *minecraft) {
 void on_mouse_clicked(minecraft_t *minecraft, int button) {
     if(button != SDL_BUTTON_LEFT || minecraft->miss_time <= 0) {
         if(button == SDL_BUTTON_LEFT) {
-            minecraft->renderer.held_block.offset = -1;
-            minecraft->renderer.held_block.moving = 1;
+            minecraft->renderer.renderer_overlay.swing_time = -1;
+            minecraft->renderer.renderer_overlay.is_swinging = 1;
         }
+
+        if(button == SDL_BUTTON_RIGHT) {
+            item_stack_t current_item = inventory_player_get_selected(&minecraft->player.mob->player->inventory);
+            if(current_item.item_id != 0) {
+                int size = current_item.stack_size;
+                player_t *player = minecraft->player.mob->player;
+                item_stack_t result_item = item_list[current_item.item_id].on_right_click(&current_item, minecraft->world, player);
+                if(result_item.stack_size != size || result_item.item_damage != current_item.item_damage || result_item.item_id != current_item.item_id) {
+                    inventory_player_set_slot(&player->inventory, player->inventory.selected, result_item);
+                    minecraft->renderer.renderer_overlay.equipped_progress = 0;
+                    if(result_item.stack_size == 0) {
+                        item_stack_t null_item = item_stack_create(0, 0, 0);
+                        inventory_player_set_slot(&player->inventory, player->inventory.selected, null_item);
+                    }
+                }
+            }
+        }
+
+        if(minecraft->hit_result.null) {
+            if(button == SDL_BUTTON_LEFT && minecraft->gamemode.gamemode_type != GAMEMODE_CREATIVE) {
+                minecraft->miss_time = 10;
+            }
+        }else {
+            if(minecraft->hit_result.type == 1) {
+                if(button == SDL_BUTTON_LEFT) {
+                    entity_t *hit_entity = minecraft->hit_result.entity;
+
+                    // TODO entity damage
+
+                    return;
+                }
+            }else if(minecraft->hit_result.type == 0) {
+                int hit_x = minecraft->hit_result.x;
+                int hit_y = minecraft->hit_result.y;
+                int hit_z = minecraft->hit_result.z;
+                int face = minecraft->hit_result.face;
+                if(button == SDL_BUTTON_LEFT) {
+                    world_extinguish_fire(minecraft->world, hit_x, hit_y, hit_z, face);
+                    if(world_get_block(minecraft->world, hit_x, hit_y, hit_z) != blocks.bedrock.id) {
+                        minecraft->gamemode.start_destroy_block(&minecraft->gamemode, hit_x, hit_y, hit_z);
+                        return;
+                    }
+                }else {
+                    player_t *player = minecraft->player.mob->player;
+                    item_stack_t current_item = inventory_player_get_selected(&player->inventory);
+                    uint8_t block_id = world_get_block(minecraft->world, hit_x, hit_y, hit_z);
+                    if(block_id > 0 && block_list[block_id].on_interacted(&block_list[block_id], minecraft->world, hit_x, hit_y, hit_z, &minecraft->player)) {
+                        return;
+                    }
+                    if(current_item.item_id == 0) {
+                        return;
+                    }
+
+                    int size = current_item.stack_size;
+                    if(item_list[current_item.item_id].on_use(&item_list[current_item.item_id], &current_item, minecraft->world, hit_x, hit_y, hit_z, face)) {
+                        minecraft->renderer.renderer_overlay.swing_time = -1;
+                        minecraft->renderer.renderer_overlay.is_swinging = 1;
+                        inventory_player_set_slot(&player->inventory, player->inventory.selected, current_item);
+                    }
+
+                    if(current_item.stack_size == 0) {
+                        item_stack_t null_item = item_stack_create(0, 0, 0);
+                        inventory_player_set_slot(&player->inventory, player->inventory.selected, null_item);
+                        return;
+                    }
+
+                    if(current_item.stack_size != size) {
+                        minecraft->renderer.renderer_overlay.equipped_progress = 0;
+                    }
+                }
+            }
+        }
+        return;
         if(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK && minecraft->player.mob->player->inventory.selected > 0 && minecraft->gamemode.use_item(&minecraft->gamemode, &minecraft->player, minecraft->player.mob->player->inventory.selected)) {
-            minecraft->renderer.held_block.position = 0;
+            //minecraft->renderer.held_block.position = 0;
         }else if(minecraft->hit_result.null) {
             if(button == SDL_BUTTON_LEFT && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
                 minecraft->miss_time = 10;
@@ -288,7 +366,6 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
                     item_stack_t selected = inventory_player_get_selected(&minecraft->player.mob->player->inventory);
                     if(selected.item_id <= 0) return;
     
-                    // TODO item place
                     /*block_t *block = &block_list[world_get_block(minecraft->world, vx, vy, vz)];
                     item_t *selected_block = &item_list[selected.item_id];
                     AABB_t aabb = block_list[selected].id == blocks.air.id ? (AABB_t){ .null = 1 } : selected_block->get_collision_aabb(selected_block, vx, vy, vz);
@@ -332,7 +409,10 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
     if(minecraft->current_screen == NULL || minecraft->current_screen->grabs_mouse) {
         for(int i = 0; i < array_list_length(events); i++) {
             if(events[i].type == SDL_MOUSEWHEEL) {
-                //inventory_swap_paint(&minecraft->player.mob->player->inventory, events[i].wheel.y);
+                int slot = events[i].wheel.y;
+                slot = slot > 0 ? 1 : (slot < 0 ? -1 : slot);
+                for(minecraft->player.mob->player->inventory.selected -= slot; minecraft->player.mob->player->inventory.selected < 0; minecraft->player.mob->player->inventory.selected += 9);
+                while(minecraft->player.mob->player->inventory.selected >= 9) minecraft->player.mob->player->inventory.selected -= 9;
             }
             if(minecraft->current_screen == NULL) {
                 if(!minecraft->has_mouse && events[i].type == SDL_MOUSEBUTTONDOWN) {
@@ -351,7 +431,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         if(block_id == blocks.grass.id) block_id = blocks.dirt.id;
                         if(block_id == blocks.double_slab.id) block_id = blocks.slab.id;
                         if(block_id == blocks.bedrock.id) block_id = blocks.stone.id;
-                        //inventory_grab_texture(&minecraft->player.mob->player->inventory, block_id);
+                        inventory_player_get_hotbar_slot(&minecraft->player.mob->player->inventory, block_id);
                     }
                 }
             }else {
@@ -437,16 +517,6 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
             if(minecraft->current_screen != NULL) {
                 minecraft->current_screen->tick((struct screen_s *)minecraft->current_screen);
             }
-        }
-    }
-
-    renderer_camera_t *renderer = &minecraft->renderer;
-    renderer->held_block.last_position = renderer->held_block.position;
-    if(renderer->held_block.moving) {
-        renderer->held_block.offset++;
-        if(renderer->held_block.offset == 7) {
-            renderer->held_block.offset = 0;
-            renderer->held_block.moving = 0;
         }
     }
     

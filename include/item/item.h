@@ -37,7 +37,7 @@ typedef struct item_s {
         };
     };
 
-    uint8_t (*on_use)(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
+    uint8_t (*on_use)(struct item_s *item, item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
     item_stack_t (*on_right_click)(item_stack_t *item_stack, world_t *world, player_t *player);
     float (*get_strength_against_block)(struct item_s *item, struct block_s *block);
     void (*hit_entity)(struct item_s *item, item_stack_t *item_stack);
@@ -48,7 +48,7 @@ typedef struct item_s {
 extern item_t item_list[1024];
 
 item_t item_create(int16_t id, uint8_t texture_id);
-uint8_t item_on_use(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
+uint8_t item_on_use(item_t *item, item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side);
 item_stack_t item_on_right_click(item_stack_t *item_stack, world_t *world, player_t *player);
 float item_get_strength_against_block(item_t *item, block_t *block);
 void item_hit_entity(item_t *item, item_stack_t *item_stack);

@@ -47,18 +47,26 @@ double noise_perlin_get(noise_t *noise, double x, double y, double z) {
     double vx = x + noise->x_coord;
     double vy = y + noise->y_coord;
     double vz = z + noise->z_coord;
-    int ix = ((int)vx) & 255;
-    int iy = ((int)vy) & 255;
-    int iz = ((int)vz) & 255;
-    if(vx < ix) ix--;
-    if(vy < iy) iy--;
-    if(vz < iz) iz--;
-    vx -= ix;
-    vy -= iy;
-    vz -= iz;
+
+    int X = (int)vx;
+    if(vx < (double)X) X--;
+    int Y = (int)vy;
+    if(vy < (double)Y) Y--;
+    int Z = (int)vz;
+    if(vz < (double)Z) Z--;
+
+    vx -= (double)X;
+    vy -= (double)Y;
+    vz -= (double)Z;
+
+    int ix = X & 255;
+    int iy = Y & 255;
+    int iz = Z & 255;
+
     double xd = F(vx);
     double yd = F(vy);
     double zd = F(vz);
+
     int aaa, aba, aab, abb, baa, bba, bab, bbb;
     aaa = noise->hash[noise->hash[noise->hash[ix] + iy] + iz];
     aba = noise->hash[noise->hash[noise->hash[ix] + iy + 1] + iz];
@@ -68,6 +76,7 @@ double noise_perlin_get(noise_t *noise, double x, double y, double z) {
     bba = noise->hash[noise->hash[noise->hash[ix + 1] + iy + 1] + iz];
     bab = noise->hash[noise->hash[noise->hash[ix + 1] + iy] + iz + 1];
     bbb = noise->hash[noise->hash[noise->hash[ix + 1] + iy + 1] + iz + 1];
+
     double l1 = lerp(xd, grad(aaa, vx, vy, vz), grad(baa, vx - 1.0, vy, vz));
     double l2 = lerp(xd, grad(aba, vx, vy - 1.0, vz), grad(bba, vx - 1.0, vy - 1.0, vz));
     double l3 = lerp(xd, grad(aab, vx, vy, vz - 1.0), grad(bab, vx - 1.0, vy, vz - 1.0));

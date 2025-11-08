@@ -48,7 +48,7 @@ void chunk_provider_generate_save_chunks(chunk_provider_t *chunk_provider, uint8
 }
 
 chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider, int chunk_x, int chunk_z) {
-    chunk_provider->random.seed = ((int64_t)chunk_x * 341873128712 + (int64_t)chunk_z * 132897987541);
+    random_set_seed(&chunk_provider->random, (int64_t)chunk_x * 341873128712 + (int64_t)chunk_z * 132897987541);
 
     uint8_t chunk_data[32768];
     memset(chunk_data, 0, sizeof(chunk_data));
@@ -202,7 +202,7 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
 }
 
 void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_provider_t *interface, int chunk_x, int chunk_z) {
-    chunk_provider->random.seed = ((int64_t)chunk_x * 318279123 + (int64_t)chunk_z * 919871212);
+    random_set_seed(&chunk_provider->random, (int64_t)chunk_x * 318279123 + (int64_t)chunk_z * 919871212);
 
     int chunk_start_x = chunk_x * CHUNK_SIZE_WIDTH;
     int chunk_start_z = chunk_z * CHUNK_SIZE_WIDTH;
@@ -240,7 +240,7 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
     }
 
     // Trees
-    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) * 2.0 - 1.0 - random_next_uniform(&chunk_provider->random));
+    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) - random_next_uniform(&chunk_provider->random));
     if(tree_count < 0) tree_count = 0;
 
     if(random_next_int_range(&chunk_provider->random, 0, 99) == 0) {

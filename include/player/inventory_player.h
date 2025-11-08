@@ -16,6 +16,6 @@ item_stack_t inventory_player_remove_item(inventory_t *inventory, int slot, int 
 void inventory_player_set_slot(inventory_t *inventory, int slot, item_stack_t item);
 item_stack_t inventory_player_get_slot(inventory_t *inventory, int slot);
 char *inventory_player_get_name();
-int player_inventory_get_armor_value(inventory_t *inventory);
+int inventory_player_get_armor_value(inventory_t *inventory);
 void inventory_player_on_changed(inventory_t *inventory);
 void inventory_player_drop_items(inventory_t *inventory);

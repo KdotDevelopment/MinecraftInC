@@ -2,7 +2,7 @@
 
 #include <item/item.h>
 
-item_stack_t item_stack_create(uint8_t item_id, uint8_t stack_size, int16_t item_damage) {
+item_stack_t item_stack_create(int16_t item_id, uint8_t stack_size, int16_t item_damage) {
     item_stack_t item_stack = { 0 };
 
     item_stack.item_id = item_id;

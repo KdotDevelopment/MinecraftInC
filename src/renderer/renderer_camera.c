@@ -3,6 +3,7 @@
 #include <minecraft.h>
 #include <model/vec3.h>
 #include <renderer/tesselator.h>
+#include <renderer/renderer_lighting.h>
 #include <world/block/blocks.h>
 
 #include <SDL2/SDL.h>
@@ -20,8 +21,8 @@ renderer_camera_t renderer_camera_create(minecraft_t *minecraft) {
     renderer_camera_t renderer_camera = { 0 };
 
     renderer_camera.minecraft = minecraft;
+    renderer_camera.renderer_overlay = renderer_screen_overlay_create(minecraft->world);
     renderer_camera.entity = NULL;
-    renderer_camera.held_block = (held_block_t){ .minecraft = minecraft };
     renderer_camera.random = random_create(time(NULL));
     renderer_camera.fog_r = 0.0;
     renderer_camera.fog_g = 0.0;
@@ -37,8 +38,8 @@ void renderer_camera_update(renderer_camera_t *renderer) {
     brightness = brightness * (1.0 - distance_factor) + distance_factor;
     renderer->fog_fade += (brightness - renderer->fog_fade) * 0.1;
     renderer->ticks++;
-
-    // TODO
+    renderer_screen_overlay_update_item(&renderer->renderer_overlay);
+    // TODO rain particles (ingamehasfocus = rain)
 }
 
 vec3_t renderer_camera_get_player_vector(renderer_camera_t *renderer, float delta) {
@@ -316,7 +317,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         renderer_camera_setup_fog(renderer);
         glEnable(GL_FOG);
         glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->minecraft->textures, "terrain.png"));
-        // render_helper_disable_standard_item_lighting
+        renderer_lighting_disable();
         renderer_world_sort_and_render(&renderer->minecraft->renderer_world, player, 0, delta);
 
         int player_x = floor_double(player->x);
@@ -337,12 +338,12 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
                 }
             }
         }
-        // render_helper_enable_standard_item_lighting
+        renderer_lighting_enable();
         glPushMatrix();
         renderer_world_update_entities(&renderer->minecraft->renderer_world, renderer_camera_get_player_vector(renderer, delta), &frustum, delta);
         // render lit particles
         glPopMatrix();
-        // render_helper_disable_standard_item_lighting
+        renderer_lighting_disable();
 
         renderer_camera_setup_fog(renderer);
         // render particles
@@ -437,21 +438,21 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glPushMatrix();
         renderer_camera_hurt_effect(renderer, delta);
         if(renderer->minecraft->settings.show_bobbing) {
-            //renderer_camera_apply_bobbing(renderer, delta);
+            renderer_camera_apply_bobbing(renderer, delta);
         }
 
         if(!renderer->minecraft->settings.third_person) {
-            // render item in first person
+            renderer_screen_overlay_render(&renderer->renderer_overlay, delta);
         }
 
         glPopMatrix();
         if(!renderer->minecraft->settings.third_person) {
-            // item renderer render overlays
-            //renderer_camera_hurt_effect(renderer, delta);
+            renderer_screen_overlay_render_overlays(&renderer->renderer_overlay, delta);
+            renderer_camera_hurt_effect(renderer, delta);
         }
 
         if(renderer->minecraft->settings.show_bobbing) {
-            //renderer_camera_apply_bobbing(renderer, delta);
+            renderer_camera_apply_bobbing(renderer, delta);
         }
 
         if(!renderer->minecraft->settings.anaglyph) {
@@ -487,7 +488,7 @@ void renderer_camera_setup_fog(renderer_camera_t *renderer_camera) {
     glFogfv(GL_FOG_COLOR, (float []){ renderer_camera->fog_r, renderer_camera->fog_g, renderer_camera->fog_b, 1.0 });
     glNormal3f(0.0, -1.0, 0.0);
     glColor4f(1.0, 1.0, 1.0, 1.0);
-    block_t *block = &block_list[world_get_block(world, player->x, player->y + 0.12, player->z)];
+    block_t *block = &block_list[world_get_block(world, floor_double(player->x), floor_double(player->y + 0.12), floor_double(player->z))];
     if(block->id != blocks.air.id && block->material != &materials.air) {
         glFogi(GL_FOG_MODE, GL_EXP);
         if(block->material == &materials.water) {

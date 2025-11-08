@@ -1,6 +1,7 @@
 #include <gui/screen_hud.h>
 #include <gui/gui.h>
 #include <renderer/renderer_camera.h>
+#include <renderer/renderer_lighting.h>
 #include <renderer/tesselator.h>
 #include <player/player.h>
 #include <minecraft.h>
@@ -36,7 +37,10 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     gui_blit(hud->width / 2 - 91, hud->height - 22, 0, 0, 182, 22, -90.0);
     gui_blit(hud->width / 2 - 92 + hud->minecraft->player.mob->player->inventory.selected * 20, hud->height - 23, 0, 22, 24, 22, -90.0);
     glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "gui/icons.png"));
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
     gui_blit(hud->width / 2 - 7, hud->height / 2 - 7, 0, 0, 16, 15.99, -90.0);
+    glDisable(GL_BLEND);
     int iframe = hud->minecraft->player.mob->invulnerable_time / 3 % 2 == 1;
     if(hud->minecraft->player.mob->invulnerable_time < 10) {
         iframe = 0;
@@ -45,14 +49,29 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     int health = hud->minecraft->player.mob->health;
     int last_health = hud->minecraft->player.mob->last_health;
     if(hud->minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL) {
+        int armor_value = inventory_player_get_armor_value(&hud->minecraft->player.mob->player->inventory);
         for(int i = 0; i < 10; i++) {
+            int h = hud->height - 32;
+            if(armor_value > 0) {
+                int armor_w = hud->width / 2 + 91 - (i << 3) - 9;
+                if((i << 1) + 1 < armor_value) {
+                    gui_blit(armor_w, h, 34, 9, 9, 9, -90);
+                }
+
+                if((i << 1) + 1 == armor_value) {
+                    gui_blit(armor_w, h, 25, 9, 9, 9, -90);
+                }
+
+                if((i << 1) + 1 > armor_value) {
+                    gui_blit(armor_w, h, 16, 9, 9, 9, -90);
+                }
+            }
             int8_t a = 0;
             if(iframe) {
                 a = 1;
             }
 
             int w = hud->width / 2 - 91 + i * 8;
-            int h = hud->height - 32;
             if(health <= 4) {
                 h += random_next_int_range(&hud->random, 0, 2);
             }
@@ -91,33 +110,28 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     }
 
     glDisable(GL_BLEND);
+    glEnable(GL_NORMALIZE);
+    glPushMatrix();
+    glRotatef(180, 1, 0, 0);
+    renderer_lighting_enable();
+    glPopMatrix();
     for(int i = 0; i < 9; i++) {
-        int x = hud->width / 2 - 90 + i * 20;
-        int y = hud->height - 16;
+        int x = hud->width / 2 - 90 + i * 20 + 2;
+        int y = hud->height - 16 - 3;
         item_stack_t item = hud->minecraft->player.mob->player->inventory.inv[i];
         if(item.item_id > 0) {
-            glPushMatrix();
-            glTranslatef(x, y, -50.0);
+            float a = item.animations_to_go - partial_tick;
             if(item.animations_to_go > 0) {
-                float a = (item.animations_to_go - partial_tick) / 5.0;
-                float b = -tsin(a * a * M_PI) * 8.0;
-                float c = tsin(a * a * M_PI) + 1.0;
-                float d = tsin(a * M_PI) + 1.0;
-                glTranslatef(10, b + 10, 0);
-                glScalef(c, d, 1);
-                glTranslatef(-10, -10, 0);
+                glPushMatrix();
+                float bounce = a / 5.0;
+                glTranslatef(x + 8, y + 12, 0);
+                glScalef(1.0 / bounce, (bounce + 1.0) / 2.0, 1.0);
+                glTranslatef(-(x + 8), -(y + 12), 0);
             }
-            glScalef(10.0, 10.0, 10.0);
-            glTranslatef(1.0, 0.5, 0.0);
-            glRotatef(-30.0, 1.0, 0.0, 0.0);
-            glRotatef(45.0, 0.0, 1.0, 0.0);
-            glTranslatef(-1.5, 0.5, 0.5);
-            glScalef(-1.0, -1.0, -1.0);
             glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "terrain.png"));
-            tesselator_begin_quads();
-            // ...
-            tesselator_end();
-            glPopMatrix();
+            if(a > 0) {
+                glPopMatrix();
+            }
             if(hud->minecraft->player.mob->player->inventory.inv[i].stack_size > 1) {
                 char number[4];
                 sprintf(number, "%d", hud->minecraft->player.mob->player->inventory.inv[i].stack_size);
@@ -126,6 +140,7 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
         }
     }
 
+    renderer_lighting_disable();
     glDisable(GL_NORMALIZE);
     font_render(&hud->minecraft->font, "Minecraft Infdev", 2, 2, 0xffffffff);
     if(hud->minecraft->settings.show_framerate) font_render(&hud->minecraft->font, hud->minecraft->debug, 2, 12, 0xffffffff);

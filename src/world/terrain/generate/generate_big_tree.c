@@ -136,8 +136,8 @@ void prepare(generate_big_tree_t *this) {
             double radius = this->width_scale * shapefac * (random_next_uniform(this->rand) + 0.328);
             double angle = random_next_uniform(this->rand) * 2.0 * M_PI;
 
-            int x = (int)(radius * sin(angle) + this->origin.x + 0.5);
-            int z = (int)(radius * cos(angle) + this->origin.z + 0.5);
+            int x = (int)(radius * tsin(angle) + this->origin.x + 0.5);
+            int z = (int)(radius * tcos(angle) + this->origin.z + 0.5);
 
             vec3_t check_start = { x, foliage_y, z };
             vec3_t check_end = { x, foliage_y + this->foliage_height, z };

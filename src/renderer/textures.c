@@ -13,6 +13,7 @@
 #include <assets/char.h>
 #include <assets/gui/gui.h>
 #include <assets/gui/icons.h>
+#include <assets/gui/items.h>
 #include <assets/gui/logo.h>
 #include <assets/item/arrows.h>
 #include <assets/mob/creeper.h>
@@ -82,6 +83,7 @@ int textures_load(textures_t *textures, const char *resource) {
     if(strcmp(resource, "gui/logo.png") == 0) { p = (uint8_t *)asset_logo_rgba; width = asset_logo_width; height = asset_logo_height; }
     if(strcmp(resource, "terrain/sun.png") == 0) { p = (uint8_t *)asset_sun_rgba; width = asset_sun_width; height = asset_sun_height; }
     if(strcmp(resource, "terrain/moon.png") == 0) { p = (uint8_t *)asset_moon_rgba; width = asset_moon_width; height = asset_moon_height; }
+    if(strcmp(resource, "gui/items.png") == 0) { p = (uint8_t *)asset_items_rgba; width = asset_items_width; height = asset_items_height; }
     //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
     //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
 

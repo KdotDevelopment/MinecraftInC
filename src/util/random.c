@@ -6,9 +6,11 @@
 
 random_t random_create(uint64_t seed) {
     random_t random = { 0 };
-    random.seed = seed;
-    random.state = seed;
+
+    random_set_seed(&random, seed);
+    random.state = random.seed;
     random.last_normal = 0x7ff0000000000000; //infinity
+    
     return random;
 }
 
@@ -49,4 +51,8 @@ double random_next_normal(random_t *random, double stddev) {
 
     random->last_normal = r * tcos(phi);
     return r * tsin(phi) * stddev;
+}
+
+void random_set_seed(random_t *random, long seed) {
+    random->seed = (seed ^ 0x5DEECE66DL) & ((1L << 48) - 1);
 }

@@ -1,5 +1,6 @@
 #include <item/item_flint_and_steel.h>
 
+#include <sound/sounds.h>
 #include <world/block/blocks.h>
 
 item_t item_flint_and_steel_create(uint8_t id, uint8_t texture_id) {
@@ -15,7 +16,7 @@ item_t item_flint_and_steel_create(uint8_t id, uint8_t texture_id) {
     return item;
 }
 
-uint8_t item_flint_and_steel_on_use(item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side) {
+uint8_t item_flint_and_steel_on_use(item_t *item, item_stack_t *item_stack, world_t *world, int x, int y, int z, uint8_t side) {
     if(side == 0) y--;
     if(side == 1) y++;
     if(side == 2) z--;
@@ -25,7 +26,7 @@ uint8_t item_flint_and_steel_on_use(item_stack_t *item_stack, world_t *world, in
 
     uint8_t block_id = world_get_block(world, x, y, z);
     if(block_id == 0) {
-        // sound fire.ignite
+        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_FIRE_IGNITE, 1.0, random_uniform() * 0.4 + 0.8);
         world_set_block_with_update(world, x, y, z, BLOCK_FIRE);
     }
     item_stack_damage(item_stack, 1);

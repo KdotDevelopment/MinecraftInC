@@ -39,7 +39,8 @@ uint8_t gamemode_survival_remove_item(struct gamemode_s *gamemode, int item) {
 
 void gamemode_survival_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
-    if(block_id != blocks.air.id && block_list[block_id].hardness == 0) {
+    // in the original code this says if the strength is >= 1, then remove. I do not understand how that makes sense.
+    if(block_id != blocks.air.id && block_get_strength(&block_list[block_id], &gamemode->minecraft->player) == 0) {
         gamemode->destroy_block(gamemode, x, y, z);
     }
 }

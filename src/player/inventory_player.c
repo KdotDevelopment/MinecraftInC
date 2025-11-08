@@ -150,7 +150,7 @@ void inventory_player_set_slot(inventory_t *inventory, int slot, item_stack_t it
         arr = inventory->armor;
         slot -= 36;
     }
-
+    
     arr[slot] = item;
 }
 
@@ -168,7 +168,7 @@ char *inventory_player_get_name() {
     return "Inventory";
 }
 
-int player_inventory_get_armor_value(inventory_t *inventory) {
+int inventory_player_get_armor_value(inventory_t *inventory) {
     int total_reduced = 0;
     int remaining_durability = 0;
     int total_durability = 0;

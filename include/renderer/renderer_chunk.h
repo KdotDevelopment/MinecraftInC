@@ -40,3 +40,5 @@ void renderer_chunk_call_occlusion_query_list(renderer_chunk_t *renderer);
 uint8_t renderer_chunk_skip_all_render_passes(renderer_chunk_t *renderer);
 int renderer_chunk_entity_compare(const void *a, const void *b);
 int renderer_chunk_player_compare(const void *a, const void *b);
+
+extern int chunk_updates;

@@ -25,7 +25,7 @@ LINUX_LDFLAGS = $(LDFLAGS) -fsanitize=address -lGLEW
 
 # Windows-specific flags
 WINDOWS_CFLAGS = -I./include -I./res -I./lib/zlib -Wall -std=c11 -fms-extensions -Dmain=main \
-	-isystem ./lib -DSURVIVAL_MODE -DGLEW_STATIC -g2 -gdwarf-2
+	-isystem ./lib -DSURVIVAL_MODE -DGLEW_STATIC -g2 -gdwarf-2 -O3
 WINDOWS_LDFLAGS = \
     -L./lib \
     -static -static-libgcc -static-libstdc++ \

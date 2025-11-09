@@ -11,8 +11,10 @@
 #include <assets/terrain.h>
 #include <assets/water.h>
 #include <assets/char.h>
+#include <assets/shadow.h>
 #include <assets/gui/gui.h>
 #include <assets/gui/icons.h>
+#include <assets/gui/inventory.h>
 #include <assets/gui/items.h>
 #include <assets/gui/logo.h>
 #include <assets/item/arrows.h>
@@ -38,7 +40,7 @@ textures_t textures_create(game_settings_t *settings) {
     textures_t textures = { 0 };
     textures.settings = settings;
     textures.textures = array_list_create(sizeof(uint32_t));
-    textures.texture_buffer = malloc(512 * 512);
+    textures.texture_buffer = malloc(16 * 16 * 4);
     textures.texture_names = array_list_create(sizeof(char *));
     textures.animations = array_list_create(sizeof(texture_animated_t *));
 
@@ -84,6 +86,8 @@ int textures_load(textures_t *textures, const char *resource) {
     if(strcmp(resource, "terrain/sun.png") == 0) { p = (uint8_t *)asset_sun_rgba; width = asset_sun_width; height = asset_sun_height; }
     if(strcmp(resource, "terrain/moon.png") == 0) { p = (uint8_t *)asset_moon_rgba; width = asset_moon_width; height = asset_moon_height; }
     if(strcmp(resource, "gui/items.png") == 0) { p = (uint8_t *)asset_items_rgba; width = asset_items_width; height = asset_items_height; }
+    if(strcmp(resource, "gui/inventory.png") == 0) { p = (uint8_t *)asset_inventory_rgba; width = asset_inventory_width; height = asset_inventory_height; }
+    if(strcmp(resource, "shadow.png") == 0) { p = (uint8_t *)asset_shadow_rgba; width = asset_shadow_width; height = asset_shadow_height; }
     //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
     //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }
 
@@ -103,6 +107,12 @@ int textures_load(textures_t *textures, const char *resource) {
     glBindTexture(GL_TEXTURE_2D, textures->id_buffer);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    GLint wrap_mode = GL_REPEAT;
+    if(strcmp(resource, "shadow.png") == 0) {
+        wrap_mode = GL_CLAMP;
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     free(pixels);
 
@@ -123,8 +133,19 @@ void textures_register_animation(textures_t *textures, texture_animated_t *textu
 }
 
 void textures_destroy(textures_t *textures) {
+    textures_reload(textures);
+
+    for(uint32_t i = 0; i < array_list_length(textures->animations); i++) {
+        texture_animated_t *animation = *(texture_animated_t **)array_list_get(textures->animations, i);
+        free(animation);
+    }
+
     array_list_free(textures->textures);
+    textures->textures = NULL;
     array_list_free(textures->texture_names);
+    textures->texture_names = NULL;
     array_list_free(textures->animations);
+    textures->animations = NULL;
     free(textures->texture_buffer);
+    textures->texture_buffer = NULL;
 }

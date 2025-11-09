@@ -142,8 +142,22 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
 
     renderer_lighting_disable();
     glDisable(GL_NORMALIZE);
-    font_render(&hud->minecraft->font, "Minecraft Infdev", 2, 2, 0xffffffff);
-    if(hud->minecraft->settings.show_framerate) font_render(&hud->minecraft->font, hud->minecraft->debug, 2, 12, 0xffffffff);
+    
+    if(hud->minecraft->settings.show_framerate) {
+        char *string = string_create(hud->minecraft->debug);
+        string_concat_front("Minecraft Infdev (", &string);
+        string_concat(&string, ")");
+        font_render(&hud->minecraft->font, string, 2, 2, 0xffffffff);
+        string_free(string);
+        char *renderers = renderer_world_get_render_debug(&hud->minecraft->renderer_world);
+        font_render(&hud->minecraft->font, renderers, 2, 12, 0xffffffff);
+        string_free(renderers);
+        char *entities = renderer_world_get_entities_debug(&hud->minecraft->renderer_world);
+        font_render(&hud->minecraft->font, entities, 2, 22, 0xffffffff);
+        string_free(entities);
+    }else {
+        font_render(&hud->minecraft->font, "Minecraft Infdev", 2, 2, 0xffffffff);
+    }
         
     //chat screen
 

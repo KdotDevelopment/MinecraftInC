@@ -108,9 +108,9 @@ uint8_t array_list_contains(void *array_list, void *element) {
 }
 
 void *array_list_clear(void *array_list) {
-    void *new_list = array_list_create(array_list_element_size(array_list));
-    array_list_free(array_list);
-    return new_list;
+    array_list_t *meta = (array_list_t *)array_list - 1;
+    meta->length = 0;
+    return array_list;
 }
 
 void *array_list_clone(void *array_list) {

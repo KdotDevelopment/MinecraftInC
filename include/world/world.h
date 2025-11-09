@@ -11,6 +11,7 @@
 #include <world/block/tile_entity/tile_entity.h>
 #include <world/chunk/chunk_provider.h>
 #include <renderer/renderer_world.h>
+#include <sound/sounds.h>
 
 #include <stdint.h>
 #include <stdio.h>

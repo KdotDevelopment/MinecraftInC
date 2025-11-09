@@ -24,8 +24,9 @@ typedef struct renderer_world_s {
     int y_chunks;
     int z_chunks;
     int render_list_base;
+    int render_list_capacity;
     renderer_chunk_t **render_lists; // array_list
-    uint32_t occlusion_query_base[262144];
+    uint32_t *occlusion_query_base;
     uint32_t occlusion_result[64];
     int *chunk_data_cache;
     int ticks;
@@ -73,4 +74,6 @@ void renderer_world_spawn_particle(renderer_world_t *renderer, uint8_t particle_
 void renderer_world_obtain_entity_skin(renderer_world_t *renderer, entity_t *entity);
 void renderer_world_release_entity_skin(renderer_world_t *renderer, entity_t *entity);
 void renderer_world_update_all(renderer_world_t *renderer);
+char *renderer_world_get_render_debug(renderer_world_t *renderer);
+char *renderer_world_get_entities_debug(renderer_world_t *renderer);
 void renderer_world_destroy(renderer_world_t *renderer);

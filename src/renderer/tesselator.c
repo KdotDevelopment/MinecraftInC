@@ -80,7 +80,6 @@ void tesselator_end() {
 
 void tesselator_clear() {
     g_tesselator.vertex_count = 0;
-    memset(g_tesselator.byte_buffer, 0, sizeof(g_tesselator.byte_buffer));
     g_tesselator.raw_buffer_index = 0;
     g_tesselator.added_vertices = 0;
 }

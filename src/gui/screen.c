@@ -58,7 +58,7 @@ void screen_render(struct screen_s *proto_screen, int mouse_x, int mouse_y, floa
 }
 
 void screen_render_background(screen_t *screen) {
-    if(screen->minecraft->world == NULL) {
+    if(screen->minecraft->world != NULL) {
         gui_fill_gradient(0, 0, screen->width, screen->height, 0x05050060, 0x303060A0);
         return;
     }
@@ -140,6 +140,10 @@ void screen_keyboard_event(screen_t *screen, SDL_Event event) {
 }
 
 void screen_tick(struct screen_s *proto_screen) {
+    return;
+}
+
+void screen_update_crafting(screen_t *screen) {
     return;
 }
 

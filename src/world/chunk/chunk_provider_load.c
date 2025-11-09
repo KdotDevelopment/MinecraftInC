@@ -45,8 +45,12 @@ chunk_t *chunk_provider_load_provide_chunk(chunk_provider_t *chunk_provider, int
     }
 
     if(chunk_provider->chunks[index] != NULL) {
-        chunk_unload_entities(chunk_provider->chunks[index]);
-        chunk_provider_load_save_chunk(chunk_provider, chunk_provider->chunks[index]);
+        chunk_t *existing_chunk = chunk_provider->chunks[index];
+        chunk_unload_entities(existing_chunk);
+        chunk_provider_load_save_chunk(chunk_provider, existing_chunk);
+        chunk_destroy(existing_chunk);
+        free(existing_chunk);
+        chunk_provider->chunks[index] = NULL;
     }
 
     chunk_t *chunk = chunk_provider_load_load_chunk(chunk_provider, x, z);
@@ -206,7 +210,7 @@ char *chunk_provider_load_chunk_file_for_xz(char *save_directory, int x, int z) 
 }
 
 chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x, int z) {
-    return NULL;
+    //return NULL;
     char *chunk_file = chunk_provider_load_chunk_file_for_xz(chunk_provider->save_directory, x, z);
     if(!chunk_file) {
         return NULL;
@@ -221,9 +225,17 @@ chunk_t *chunk_provider_load_load_chunk(chunk_provider_t *chunk_provider, int x,
     free(chunk_file);
     fclose(file);
 
+    nbt_base_t level_nbt = nbt_tag_compound_get_compound_tag(&nbt, "Level");
+    if(level_nbt.null) {
+        nbt_tag_compound_free(&nbt);
+        return NULL;
+    }
+
     chunk_t *chunk = malloc(sizeof(chunk_t));
     *chunk = (chunk_t){ 0 };
-    *chunk = chunk_read_nbt_data(chunk_provider->world, &nbt);
+    *chunk = chunk_read_nbt_data(chunk_provider->world, &level_nbt);
+
+    nbt_tag_compound_free(&nbt);
 
     return chunk;
 }
@@ -260,7 +272,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     chunk_write_nbt_data(chunk, &nbt);
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     progress_bar_write(file, &nbt_base);
-    nbt_tag_compound_free(&nbt);
+    nbt_tag_compound_free(&nbt_base);
 
 #ifdef _WIN32
     if(GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {

@@ -15,6 +15,8 @@
 #include <SDL2/SDL_opengl.h>
 
 #include <limits.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minecraft, world_t *world, textures_t *textures) {
@@ -27,14 +29,20 @@ void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minec
     renderer->last_load_z = -9999;
     renderer->textures = textures;
     renderer->list_id = glGenLists(2);
-    renderer->render_list_base = glGenLists(786432);
+    renderer->render_list_base = 0;
+    renderer->render_list_capacity = 0;
     renderer->world = world;
     renderer->renderer_chunks_to_update = array_list_create(sizeof(renderer_chunk_t *));
     renderer->render_lists = array_list_create(sizeof(renderer_chunk_t *));
 
     if(renderer->occlusion_enabled) {
-        memset(renderer->occlusion_query_base, 0, sizeof(renderer->occlusion_query_base));
-        glGenQueriesARB(262144, renderer->occlusion_query_base);
+        renderer->occlusion_query_base = malloc(sizeof(uint32_t) * 262144);
+        if(renderer->occlusion_query_base != NULL) {
+            memset(renderer->occlusion_query_base, 0, sizeof(uint32_t) * 262144);
+            glGenQueriesARB(262144, renderer->occlusion_query_base);
+        }
+    }else {
+        renderer->occlusion_query_base = NULL;
     }
 
     // Star renderer
@@ -96,6 +104,12 @@ void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
 
 void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->render_distance = renderer->minecraft->settings.view_distance;
+    int old_render_list_base = renderer->render_list_base;
+    int old_render_list_capacity = renderer->render_list_capacity;
+
+    renderer->render_list_base = 0;
+    renderer->render_list_capacity = 0;
+
     if(renderer->renderer_chunks != NULL) {
         for(int i = 0; i < renderer->renderer_chunk_count; i++) {
             renderer_chunk_t *renderer_chunk = (renderer_chunk_t *)renderer->renderer_chunks[i];
@@ -106,6 +120,10 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
 
     free(renderer->renderer_chunks);
     free(renderer->renderer_chunks_sorted);
+
+    if(old_render_list_base > 0 && old_render_list_capacity > 0) {
+        glDeleteLists(old_render_list_base, old_render_list_capacity);
+    }
 
     int distance = 5 << (3 - renderer->render_distance);
     if(distance > 28) {
@@ -127,6 +145,15 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     renderer->y1 = renderer->y_chunks;
     renderer->z1 = renderer->z_chunks;
 
+    renderer->render_list_capacity = renderer->renderer_chunk_count * 3;
+    if(renderer->render_list_capacity > 0) {
+        renderer->render_list_base = glGenLists(renderer->render_list_capacity);
+        if(renderer->render_list_base == 0) {
+            fprintf(stderr, "Failed to allocate %d display lists.\n", renderer->render_list_capacity);
+            renderer->render_list_capacity = 0;
+        }
+    }
+
     for(int i = 0; i < array_list_length(renderer->renderer_chunks_to_update); i++) {
         renderer_chunk_t *renderer_chunk = *(renderer_chunk_t **)array_list_get(renderer->renderer_chunks_to_update, i);
         renderer_chunk->needs_update = 0;
@@ -143,7 +170,7 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
                 renderer_chunk_t *renderer_chunk = malloc(sizeof(renderer_chunk_t));
                 renderer_chunk_create(renderer_chunk, renderer->world, x * CHUNK_SIZE_WIDTH, y * CHUNK_SIZE_WIDTH, z * CHUNK_SIZE_WIDTH, CHUNK_SIZE_WIDTH, renderer->render_list_base + render_list_index);
                 renderer->renderer_chunks[(z * renderer->y_chunks + y) * renderer->x_chunks + x] = renderer_chunk;
-                if(renderer->occlusion_enabled) {
+                if(renderer->occlusion_enabled && renderer->occlusion_query_base != NULL) {
                     renderer_chunk->gl_occlusion_query = renderer->occlusion_query_base[chunk_index];
                 }
                 renderer_chunk->waiting_on_occlusion = 0;
@@ -172,10 +199,11 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
     renderer->minecraft->entity_manager.render_x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
     renderer->minecraft->entity_manager.render_y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
     renderer->minecraft->entity_manager.render_z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
-    entity_t **entities = array_list_clone(renderer->world->loaded_entity_list);
-    renderer->entities_total = array_list_length(entities);
+    void *entities = renderer->world->loaded_entity_list;
+    uint32_t entity_count = array_list_length(entities);
+    renderer->entities_total = entity_count;
 
-    for(int i = 0; i < renderer->entities_total; i++) {
+    for(uint32_t i = 0; i < entity_count; i++) {
         entity_t *entity = *(entity_t **)array_list_get(entities, i);
         double dx = entity->x - pos.x;
         double dy = entity->y - pos.y;
@@ -193,8 +221,6 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
             renderer_entity_manager_render(&renderer->minecraft->entity_manager, entity, partial_tick);
         }
     }
-
-    array_list_free(entities);
 }
 
 void renderer_world_new_position(renderer_world_t *renderer, int x, int y, int z) {
@@ -732,21 +758,105 @@ void renderer_world_update_all(renderer_world_t *renderer) {
     }
 }
 
+char *renderer_world_get_render_debug(renderer_world_t *renderer) {
+    char *string = string_create("C: ");
+    char *renderers_rendered = string_create_from_int(renderer->renderers_rendered);
+    char *renderers_loaded = string_create_from_int(renderer->renderers_loaded);
+    char *renderers_clipped = string_create_from_int(renderer->renderers_clipped);
+    char *renderers_occluded = string_create_from_int(renderer->renderers_occluded);
+    string_concat(&string, renderers_rendered);
+    string_concat(&string, "/");
+    string_concat(&string, renderers_loaded);
+    string_concat(&string, ". F: ");
+    string_concat(&string, renderers_clipped);
+    string_concat(&string, ", O: ");
+    string_concat(&string, renderers_occluded);
+    string_free(renderers_rendered);
+    string_free(renderers_loaded);
+    string_free(renderers_clipped);
+    string_free(renderers_occluded);
+
+    return string;
+}
+
+char *renderer_world_get_entities_debug(renderer_world_t *renderer) {
+    char *string = string_create("E: ");
+    char *entities_rendered = string_create_from_int(renderer->entities_rendered);
+    char *entities_total = string_create_from_int(renderer->entities_total);
+    char *entities_unrendered = string_create_from_int(renderer->entities_total - renderer->entities_rendered);
+    string_concat(&string, entities_rendered);
+    string_concat(&string, "/");
+    string_concat(&string, entities_total);
+    string_concat(&string, ". B: 0, I: ");
+    string_concat(&string, entities_unrendered);
+    string_free(entities_rendered);
+    string_free(entities_total);
+    string_free(entities_unrendered);
+
+    return string;
+}
+
 void renderer_world_destroy(renderer_world_t *renderer) {
-    /*glDeleteLists(renderer->base_list_id, 4096 << 6 << 1);
-    glDeleteLists(renderer->list_id, 2);
-    array_list_free(renderer->chunks);
-    free(renderer->chunk_data_cache);
-    if(renderer->chunk_cache != NULL) {
-        for(int i = 0; i < renderer->x_chunks; i++) {
-            for(int j = 0; j < renderer->y_chunks; j++) {
-                for(int k = 0; k < renderer->z_chunks; k++) {
-                    int c = (k * renderer->y_chunks + j) * renderer->x_chunks + i;
-                    free(renderer->chunk_cache[c]);
-                }
+    if(renderer->renderer_chunks != NULL) {
+        for(int i = 0; i < renderer->renderer_chunk_count; i++) {
+            renderer_chunk_t *chunk = renderer->renderer_chunks[i];
+            if(chunk == NULL) {
+                continue;
             }
+
+            renderer_chunk_stop_rendering(chunk);
+            if(chunk->render_list > 0) {
+                glDeleteLists(chunk->render_list + 2, 1);
+            }
+            free(chunk);
         }
-        free(renderer->chunk_cache);
+
+        free(renderer->renderer_chunks);
+        renderer->renderer_chunks = NULL;
     }
-    if(renderer->load_queue != NULL) free(renderer->load_queue);*/
+
+    free(renderer->renderer_chunks_sorted);
+    renderer->renderer_chunks_sorted = NULL;
+
+    if(renderer->renderer_chunks_to_update != NULL) {
+        array_list_free(renderer->renderer_chunks_to_update);
+        renderer->renderer_chunks_to_update = NULL;
+    }
+
+    if(renderer->render_lists != NULL) {
+        array_list_free(renderer->render_lists);
+        renderer->render_lists = NULL;
+    }
+
+    if(renderer->occlusion_enabled && renderer->occlusion_query_base != NULL) {
+        glDeleteQueriesARB(262144, renderer->occlusion_query_base);
+        free(renderer->occlusion_query_base);
+        renderer->occlusion_query_base = NULL;
+    }
+
+    if(renderer->render_list_base > 0 && renderer->render_list_capacity > 0) {
+        glDeleteLists(renderer->render_list_base, renderer->render_list_capacity);
+    }
+    renderer->render_list_base = 0;
+    renderer->render_list_capacity = 0;
+
+    if(renderer->list_id > 0) {
+        glDeleteLists(renderer->list_id, 2);
+        renderer->list_id = 0;
+    }
+
+    if(renderer->star_render_list > 0) {
+        glDeleteLists(renderer->star_render_list, 1);
+        renderer->star_render_list = 0;
+    }
+
+    if(renderer->sky_render_list > 0) {
+        glDeleteLists(renderer->sky_render_list, 1);
+        renderer->sky_render_list = 0;
+    }
+
+    free(renderer->chunk_data_cache);
+    renderer->chunk_data_cache = NULL;
+
+    renderer->renderer_chunk_count = 0;
 }

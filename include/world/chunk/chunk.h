@@ -37,6 +37,7 @@ typedef struct chunk_s {
 
 void chunk_create(chunk_t *chunk, struct world_s *world, int x, int z);
 void chunk_create_from(chunk_t *chunk, struct world_s *world, uint8_t *data, int x, int z);
+void chunk_destroy(chunk_t *chunk);
 int chunk_get_height_value(chunk_t *chunk, int x, int z);
 void chunk_generate_height_map(chunk_t *chunk);
 void chunk_update_skylight(chunk_t *chunk, int x, int z);

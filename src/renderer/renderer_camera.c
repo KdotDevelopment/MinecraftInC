@@ -122,13 +122,8 @@ void renderer_camera_update_mouse(renderer_camera_t *renderer, float delta) {
     }
 
     if(renderer->minecraft->current_screen != NULL) {
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        renderer_camera_setup_gui(renderer);
         glColor4ub(255, 0, 255, 255);
-        glOrtho(0.0, w, h, 0.0, 0.0, 1);
         renderer->minecraft->current_screen->render((struct screen_s *)renderer->minecraft->current_screen, mx, my, delta);
     }
 
@@ -487,14 +482,17 @@ void renderer_camera_setup_fog(renderer_camera_t *renderer_camera) {
     glNormal3f(0.0, -1.0, 0.0);
     glColor4f(1.0, 1.0, 1.0, 1.0);
     block_t *block = &block_list[world_get_block(world, floor_double(player->x), floor_double(player->y + 0.12), floor_double(player->z))];
-    if(block->id != blocks.air.id && block->material != &materials.air) {
+    material_t *material = block->material;
+
+    if(material == &materials.water) {
         glFogi(GL_FOG_MODE, GL_EXP);
-        if(block->material == &materials.water) {
-            glFogf(GL_FOG_DENSITY, 0.1);
-        }
-        if(block->material == &materials.lava) {
-            glFogf(GL_FOG_DENSITY, 2.0);
-        }
+        glFogf(GL_FOG_DENSITY, 0.1f);
+    }else if(material == &materials.lava) {
+        glFogi(GL_FOG_MODE, GL_EXP);
+        glFogf(GL_FOG_DENSITY, 2.0f);
+    }else if(block->is_solid) {
+        glFogi(GL_FOG_MODE, GL_EXP);
+        glFogf(GL_FOG_DENSITY, 0.2f);
     }else {
         glFogi(GL_FOG_MODE, GL_LINEAR);
         glFogf(GL_FOG_START, renderer_camera->far_plane_distance * 0.25);

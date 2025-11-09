@@ -121,9 +121,20 @@ int8_t *nbt_tag_compound_get_byte_array(nbt_base_t *base, char *key, uint32_t le
 
     nbt_base_t tag = private_get_tag(base, key);
 
-    int8_t *array = malloc(length * sizeof(int8_t));
+    int8_t *array = calloc(length, sizeof(int8_t));
+    if(!array) {
+        return NULL;
+    }
 
-    memcpy(array, tag.byte_array, length);
+    uint32_t copy_length = tag.byte_array_length;
+    if(copy_length > length) {
+        copy_length = length;
+    }
+
+    if(tag.byte_array != NULL && copy_length > 0) {
+        memcpy(array, tag.byte_array, copy_length);
+    }
+
     return array;
 }
 

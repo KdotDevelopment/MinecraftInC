@@ -1,4 +1,5 @@
 #include <minecraft.h>
+
 #include <session_data.h>
 #include <renderer/renderer_camera.h>
 #include <renderer/tesselator.h>
@@ -14,6 +15,7 @@
 #include <gui/screen_block_select.h>
 #include <gui/screen_death.h>
 #include <gui/screen_title.h>
+#include <gui/container/screen_inventory.h>
 #include <particle/particle_water_drop.h>
 #include <model/models.h>
 #include <player/gamemode/gamemode_creative.h>
@@ -49,8 +51,43 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
         printf("Couldn't init SDL2: %s\n", SDL_GetError());
         exit(1);
     }
+    int window_width = width;
+    int window_height = height;
+    SDL_Rect usable_bounds;
+    if(SDL_GetDisplayUsableBounds(0, &usable_bounds) == 0) {
+        int max_w = usable_bounds.w;
+        int max_h = usable_bounds.h;
+        if(window_width > max_w || window_height > max_h) {
+            float scale_w = (float)max_w / (float)window_width;
+            float scale_h = (float)max_h / (float)window_height;
+            float scale = scale_w < scale_h ? scale_w : scale_h;
+            window_width = (int)((float)window_width * scale);
+            window_height = (int)((float)window_height * scale);
+        }
+        if(window_width >= max_w) window_width = max_w - SDL_max(64, max_w / 10);
+        if(window_height >= max_h) window_height = max_h - SDL_max(64, max_h / 10);
+    }else {
+        SDL_DisplayMode desktop_mode;
+        if(SDL_GetDesktopDisplayMode(0, &desktop_mode) == 0) {
+            int max_w = desktop_mode.w;
+            int max_h = desktop_mode.h;
+            if(window_width > max_w || window_height > max_h) {
+                float scale_w = (float)max_w / (float)window_width;
+                float scale_h = (float)max_h / (float)window_height;
+                float scale = scale_w < scale_h ? scale_w : scale_h;
+                window_width = (int)((float)window_width * scale);
+                window_height = (int)((float)window_height * scale);
+            }
+            if(window_width >= max_w) window_width = max_w - SDL_max(64, max_w / 10);
+            if(window_height >= max_h) window_height = max_h - SDL_max(64, max_h / 10);
+        }
+    }
+    if(window_width < 640) window_width = 640;
+    if(window_height < 480) window_height = 480;
+
     SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-    minecraft->window = SDL_CreateWindow("Minecraft Infdev", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+    if(fullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    minecraft->window = SDL_CreateWindow("Minecraft Infdev", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width, window_height, flags);
     if(!minecraft->window) {
         printf("Couldn't create window: %s\n", SDL_GetError());
         exit(1);
@@ -153,13 +190,16 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.mob->player->inventory.inv[8] = item_stack_create(BLOCK_TORCH, 64, 0);
     minecraft->player.mob->player->inventory.inv[0] = item_stack_create(items.iron_pickaxe.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.iron_sword.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.bow.item_id, 1, 0);
     minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.iron_axe.item_id, 1, 0);
     minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.iron_shovel.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_helmet.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_chestplate.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_leggings.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_boots.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[10] = item_stack_create(items.arrow.item_id, 64, 0);
+    minecraft->player.mob->player->inventory.inv[11] = item_stack_create(items.flint_and_steel.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[12] = item_stack_create(items.cooked_pork.item_id, 20, 0);
+    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_helmet.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_chestplate.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_leggings.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_boots.item_id, 1, 0);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
     renderer_world_change_world(&minecraft->renderer_world, minecraft->world);
@@ -411,13 +451,17 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         minecraft->raining = !minecraft->raining;
                     }
                     if(events[i].key.keysym.scancode == SDL_SCANCODE_TAB && minecraft->gamemode.gamemode_type == GAMEMODE_SURVIVAL && minecraft->player.mob->player->arrows > 0) {
-                        entity_t *arrow = malloc(sizeof(entity_t));
+                        /*entity_t *arrow = malloc(sizeof(entity_t));
                         entity_arrow_create(arrow, minecraft->world, &minecraft->player, minecraft->player.x, minecraft->player.y, minecraft->player.z, minecraft->player.y_rot, minecraft->player.x_rot, 1.2);
                         world_spawn_entity(minecraft->world, arrow);
-                        minecraft->player.mob->player->arrows--;
+                        minecraft->player.mob->player->arrows--;*/
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.inventory_key.key) {
-                        minecraft->gamemode.open_inventory((struct gamemode_s *)&minecraft->gamemode);
+                        //minecraft->gamemode.open_inventory((struct gamemode_s *)&minecraft->gamemode);
+                        screen_t *inv = malloc(sizeof(screen_t));
+                        screen_inventory_create(inv, &minecraft->player.mob->player->inventory);
+                        minecraft_set_current_screen(minecraft, inv);
+                        events[i] = (SDL_Event){ 0 };
                     }
                     if(events[i].key.keysym.scancode == minecraft->settings.chat_key.key) {
                         events[i] = (SDL_Event){ 0 };
@@ -514,7 +558,7 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
 void minecraft_run(minecraft_t *minecraft) {
     minecraft->running = 1;
     int frame = 0;
-    //uint64_t start = time_millis();
+    uint64_t start = time_millis();
     //minecraft_grab_mouse(minecraft);
     SDL_Event event;
     SDL_Event *events = array_list_create(sizeof(SDL_Event));
@@ -648,10 +692,10 @@ void minecraft_run(minecraft_t *minecraft) {
            // minecraft->current_screen->render((struct screen_s *)minecraft->current_screen, mx, my, delta);
         }*/
         
-        frame++;
+        //frame++;
         //SDL_GL_SwapWindow(minecraft->window);
 
-        /*while(time_millis() >= start + 1000) {
+        while(time_millis() >= start + 1000) {
             char *chunks = string_create_from_int(chunk_updates);
             string_concat(&chunks, " chunk updates");
             string_set_from_int(&minecraft->debug, frame);
@@ -661,7 +705,7 @@ void minecraft_run(minecraft_t *minecraft) {
             start += 1000;
             frame = 0;
             chunk_updates = 0;
-        }*/
+        }
     }
     array_list_free(events);
 }
@@ -682,8 +726,7 @@ int main(int argc, char *argv[]) {
         free(minecraft.current_screen);
     }
     world_destroy(minecraft.world);
-    free(minecraft.textures.animations[0]); //water animated texture
-    free(minecraft.textures.animations[1]); //lava animated texture
+    free(minecraft.world);
     textures_destroy(&minecraft.textures);
     renderer_world_destroy(&minecraft.renderer_world);
     particles_destroy(&minecraft.particles);

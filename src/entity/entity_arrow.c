@@ -112,6 +112,7 @@ void entity_arrow_tick(struct entity_s *entity) {
         entity->xd = 0;
         entity->yd = 0;
         entity->zd = 0;
+        world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_DRR, 1.0, 1.2 / (random_uniform() * 0.2 + 0.9));
     }
 
     if(!entity->has_hit) {
@@ -133,52 +134,7 @@ void entity_arrow_tick(struct entity_s *entity) {
 }
 
 void entity_arrow_render(struct entity_s *entity, textures_t *textures, float delta) {
-    glBindTexture(GL_TEXTURE_2D, textures_load(textures, "item/arrows.png"));
-    float brightness = world_get_brightness((world_t *)entity->world, entity->x, entity->y, entity->z);
-    glPushMatrix();
-    glColor4f(brightness, brightness, brightness, 1);
-    glTranslatef(entity->last_tick_x + (entity->x - entity->last_tick_x) * delta,
-                 entity->last_tick_y + (entity->y - entity->last_tick_y) * delta,
-                 entity->last_tick_z + (entity->z - entity->last_tick_z) * delta);
-    glRotatef(entity->y_roto + (entity->y_rot - entity->y_roto) * delta - 90.0, 0, 1, 0);
-    glRotatef(entity->x_roto + (entity->x_rot - entity->x_roto) * delta, 0, 0, 1);
-    glRotatef(45, 1, 0, 0);
-    delta = 0.5;
-    float fins_v1 = (0 + entity->arrow_type * 10) / 32.0;
-    float stem_v1 = (5 + entity->arrow_type * 10) / 32.0;
-    float fins_v2 = (5 + entity->arrow_type * 10) / 32.0;
-    float stem_v2 = (10 + entity->arrow_type * 10) / 32.0;
-    float u = 0.15625;
-    float b = 0.05625;
-    glScalef(b, b, b);
-    glNormal3f(b, 0, 0);
-    tesselator_begin_quads();
-    tesselator_vertex_uv(-7, -2, -2, 0, stem_v1);
-    tesselator_vertex_uv(-7, -2, 2, u, stem_v1);
-    tesselator_vertex_uv(-7, 2, 2, u, stem_v2);
-    tesselator_vertex_uv(-7, 2, -2, 0, stem_v2);
-    tesselator_end();
-    glNormal3f(-b, 0, 0);
-    tesselator_begin_quads();
-    tesselator_vertex_uv(-7, 2, -2, 0, stem_v1);
-    tesselator_vertex_uv(-7, 2, 2, u, stem_v1);
-    tesselator_vertex_uv(-7, -2, 2, u, stem_v2);
-    tesselator_vertex_uv(-7, -2, -2, 0, stem_v2);
-    tesselator_end();
     
-    for(int i = 0; i < 4; i++) {
-        glRotatef(90, 1, 0, 0);
-        glNormal3f(0, -b, 0);
-        tesselator_begin_quads(); //not in original? remove if not working
-        tesselator_vertex_uv(-8, -2, 0, 0, fins_v1);
-        tesselator_vertex_uv(8, -2, 0, delta, fins_v1);
-        tesselator_vertex_uv(8, 2, 0, delta, fins_v2);
-        tesselator_vertex_uv(-8, 2, 0, 0, fins_v2);
-        tesselator_end();
-    }
-
-    glColor4f(1, 1, 1, 1);
-    glPopMatrix();
 }
 
 void entity_arrow_award_kill_score(struct entity_s *entity, struct entity_s *causer, int score) {

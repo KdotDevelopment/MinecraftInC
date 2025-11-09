@@ -34,9 +34,9 @@ item_stack_t inventory_player_get_selected(inventory_t *inventory) {
     return inventory->inv[inventory->selected];
 }
 
-int get_slot(inventory_t *inventory, uint8_t block_id) {
+int get_slot(inventory_t *inventory, int16_t item_id) {
     for(int i = 0; i < 36; i++) {
-        if(inventory->inv[i].item_id != 0 && inventory->inv[i].item_id == block_id) {
+        if(inventory->inv[i].item_id != 0 && inventory->inv[i].item_id == item_id) {
             return i;
         }
     }
@@ -135,16 +135,16 @@ item_stack_t inventory_player_remove_item(inventory_t *inventory, int slot, int 
         slot -= 36;
     }
 
-    item_stack_t current = arr[slot];
-    if(current.item_id == 0) return item_stack_create(0, 0, 0);
+    item_stack_t *current = &arr[slot];
+    if(current->item_id == 0) return item_stack_create(0, 0, 0);
 
-    if(current.stack_size <= amount) {
-        item_stack_t taken = current;
+    if(current->stack_size <= amount) {
+        item_stack_t taken = *current;
         arr[slot] = item_stack_create(0, 0, 0);
         return taken;
     }else {
-        item_stack_t taken = item_stack_split(&current, amount);
-        if(current.stack_size == 0) {
+        item_stack_t taken = item_stack_split(current, amount);
+        if(current->stack_size == 0) {
             arr[slot] = item_stack_create(0, 0, 0);
         }
         return taken;

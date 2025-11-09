@@ -3,6 +3,8 @@
 #include <entity/entity.h>
 #include <item/item_stack.h>
 
+struct screen_s;
+
 typedef struct inventory_s {
     item_stack_t inv[36];
     item_stack_t armor[4]; // only for player inventories
@@ -10,6 +12,7 @@ typedef struct inventory_s {
     int size;
     int stack_limit;
     entity_t *host; // typically the player
+    struct screen_s *host_screen;
 
     char *(*get_name)();
     item_stack_t (*get_slot)(struct inventory_s *inventory, int slot);

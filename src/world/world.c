@@ -51,12 +51,12 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->is_new_world = 1;
     world->chunks_generated_this_frame = 0;
     world->visual_update_random = random_create(seed);
-    strncpy(world->save_file, saves_dir, sizeof(world->save_file));
+    strncpy(world->save_file, saves_dir, sizeof(world->save_file) - 1);
     strcat(world->save_file, "/");
     strcat(world->save_file, world_name);
-    world->spawn_x = 0;
+    world->spawn_x = 64;
     world->spawn_y = 64;
-    world->spawn_z = 0;
+    world->spawn_z = 64;
 
     for(int i = 0; i <= 15; i++) {
         float value = 1.0 - (float)i / 15.0;
@@ -136,26 +136,37 @@ char *private_dirname(char *path) {
 }
 
 int private_create_directories_world(const char *path) {
+    char path_copy[1024];
+    strncpy(path_copy, path, sizeof(path_copy));
+    path_copy[sizeof(path_copy) - 1] = '\0';
+
+    char dir_buffer[1024];
+    strncpy(dir_buffer, path_copy, sizeof(dir_buffer));
+    dir_buffer[sizeof(dir_buffer) - 1] = '\0';
+
+    char *target_dir = private_dirname(dir_buffer);
+    if(target_dir == NULL || target_dir[0] == '\0') {
+        return 0;
+    }
+
     char temp_path[1024];
-    strncpy(temp_path, path, sizeof(temp_path));
+    strncpy(temp_path, target_dir, sizeof(temp_path));
     temp_path[sizeof(temp_path) - 1] = '\0';
 
     char *current = temp_path;
     char *next = NULL;
 
-    char *dir_path = private_dirname(temp_path);
-
     while((next = strchr(current, '/')) != NULL) {
         *next = '\0';
 
-        if(strlen(dir_path) > 0) {
+        if(strlen(temp_path) > 0 && strcmp(temp_path, ".") != 0) {
 #ifdef _WIN32
-            if(!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
-                fprintf(stderr, "Failed to create world directory: %s\n", dir_path);
+            if(!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+                fprintf(stderr, "Failed to create world directory: %s\n", temp_path);
                 return -1;
             }
 #else
-            if(mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
+            if(mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
                 perror("mkdir");
                 return -1;
             }
@@ -167,14 +178,18 @@ int private_create_directories_world(const char *path) {
     }
 
 #ifdef _WIN32
-    if(!CreateDirectory(dir_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
-        fprintf(stderr, "Failed to create world directory: %s\n", dir_path);
-        return -1;
+    if(strlen(temp_path) > 0 && strcmp(temp_path, ".") != 0) {
+        if(!CreateDirectory(temp_path, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
+            fprintf(stderr, "Failed to create world directory: %s\n", temp_path);
+            return -1;
+        }
     }
 #else
-    if(mkdir(dir_path, 0755) != 0 && errno != EEXIST) {
-        perror("mkdir");
-        return -1;
+    if(strlen(temp_path) > 0 && strcmp(temp_path, ".") != 0) {
+        if(mkdir(temp_path, 0755) != 0 && errno != EEXIST) {
+            perror("mkdir");
+            return -1;
+        }
     }
 #endif
 
@@ -189,6 +204,10 @@ void world_save(world_t *world, uint8_t check_entities) {
     if(!file) {
         private_create_directories_world(path);
         file = fopen(path, "wb");
+        if(!file) {
+            fprintf(stderr, "Failed to open %s for writing.\n", path);
+            return;
+        }
     }
 
     nbt_base_t nbt = nbt_tag_compound_create();
@@ -542,7 +561,6 @@ void world_spawn_particle(world_t *world, uint8_t particle_type, double x, doubl
 void world_spawn_entity(world_t *world, entity_t *entity) {
     int x = floor_double(entity->x / CHUNK_SIZE_WIDTH);
     int z = floor_double(entity->z / CHUNK_SIZE_WIDTH);
-    printf("Spawning entity in chunk %d, %d\n", x, z);
     if(!world_chunk_exists(world, x, z)) {
         printf("Failed to add entity\n");
         return;
@@ -1270,6 +1288,46 @@ void world_set_spawn_position(world_t *world, int x, int y, int z) {
 }
 
 void world_destroy(world_t *world) {
+    chunk_provider_load_save_chunks(&world->chunk_provider, 1);
+
+    for(int i = 0; i < CHUNK_PROVIDER_ARRAY_SIZE; i++) {
+        chunk_t *chunk = world->chunk_provider.chunks[i];
+        if(chunk != NULL) {
+            chunk_unload_entities(chunk);
+            chunk_destroy(chunk);
+            free(chunk);
+            world->chunk_provider.chunks[i] = NULL;
+        }
+    }
+
+    free(world->chunk_provider_gen.noise_array);
+    world->chunk_provider_gen.noise_array = NULL;
+    free(world->chunk_provider_gen.noise_array_1);
+    world->chunk_provider_gen.noise_array_1 = NULL;
+    free(world->chunk_provider_gen.noise_array_2);
+    world->chunk_provider_gen.noise_array_2 = NULL;
+    free(world->chunk_provider_gen.noise_array_3);
+    world->chunk_provider_gen.noise_array_3 = NULL;
+
+    if(world->chunk_provider_gen.noise_1.destroy != NULL) {
+        world->chunk_provider_gen.noise_1.destroy(&world->chunk_provider_gen.noise_1);
+    }
+    if(world->chunk_provider_gen.noise_2.destroy != NULL) {
+        world->chunk_provider_gen.noise_2.destroy(&world->chunk_provider_gen.noise_2);
+    }
+    if(world->chunk_provider_gen.noise_3.destroy != NULL) {
+        world->chunk_provider_gen.noise_3.destroy(&world->chunk_provider_gen.noise_3);
+    }
+    if(world->chunk_provider_gen.noise_4.destroy != NULL) {
+        world->chunk_provider_gen.noise_4.destroy(&world->chunk_provider_gen.noise_4);
+    }
+    if(world->chunk_provider_gen.noise_5.destroy != NULL) {
+        world->chunk_provider_gen.noise_5.destroy(&world->chunk_provider_gen.noise_5);
+    }
+    if(world->chunk_provider_gen.tree_noise.destroy != NULL) {
+        world->chunk_provider_gen.tree_noise.destroy(&world->chunk_provider_gen.tree_noise);
+    }
+
     array_list_free(world->lighting_update_list);
     array_list_free(world->loaded_entity_list);
     array_list_free(world->next_tick_data_list);

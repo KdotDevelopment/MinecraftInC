@@ -36,6 +36,45 @@ void chunk_create_from(chunk_t *chunk, struct world_s *world, uint8_t *data, int
     chunk->block_light_map = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
 }
 
+void chunk_destroy(chunk_t *chunk) {
+    if(chunk == NULL) {
+        return;
+    }
+
+    if(chunk->tile_entity_map != NULL) {
+        for(uint32_t i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
+            entity_index_pair_t *map_pair = array_list_get(chunk->tile_entity_map, i);
+            if(map_pair != NULL && map_pair->tile_entity != NULL) {
+                free(map_pair->tile_entity);
+                map_pair->tile_entity = NULL;
+            }
+        }
+
+        array_list_free(chunk->tile_entity_map);
+        chunk->tile_entity_map = NULL;
+    }
+
+    if(chunk->entities != NULL) {
+        for(int i = 0; i < (CHUNK_SIZE_HEIGHT >> 4); i++) {
+            if(chunk->entities[i] != NULL) {
+                array_list_free(chunk->entities[i]);
+            }
+        }
+
+        free(chunk->entities);
+        chunk->entities = NULL;
+    }
+
+    free(chunk->data);
+    chunk->data = NULL;
+    free(chunk->sky_light_map);
+    chunk->sky_light_map = NULL;
+    free(chunk->block_light_map);
+    chunk->block_light_map = NULL;
+
+    chunk->world = NULL;
+}
+
 int chunk_get_height_value(chunk_t *chunk, int x, int z) {
     return chunk->height_map[z * CHUNK_SIZE_WIDTH | x] & 0xFF;
 }

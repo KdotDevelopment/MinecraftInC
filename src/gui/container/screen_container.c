@@ -18,6 +18,7 @@ screen_t screen_container_create() {
 
     screen.render = screen_container_render;
     screen.on_mouse_clicked = screen_container_on_mouse_clicked;
+    screen.on_key_pressed = screen_container_on_key_pressed;
     screen.destroy = screen_container_destroy;
 
     return screen;
@@ -46,11 +47,11 @@ void screen_container_render(screen_t *screen, int mx, int my, float partial_tic
         item_stack_t item = inv->get_slot(inv, index);
 
         if(item.item_id == 0) {
-            int texture = slot->background_texture;
+            int texture = slot->get_texture(slot);
             if(texture >= 0) {
                 glDisable(GL_LIGHTING);
-                glBindTexture(GL_TEXTURE_2D, textures_load(&screen->minecraft->textures, "gui/icons.png"));
-                gui_blit(slot_x, slot_y, texture % 16 << 4, texture / 16 << 4, 16, 16, -90);
+                glBindTexture(GL_TEXTURE_2D, textures_load(&screen->minecraft->textures, "gui/items.png"));
+                gui_blit(slot_x, slot_y, texture % 16 << 4, texture / 16 << 4, 16, 16, 0);
                 glEnable(GL_LIGHTING);
             }
         }else {
@@ -61,14 +62,17 @@ void screen_container_render(screen_t *screen, int mx, int my, float partial_tic
         if(slot_is_under_cursor(slot, mx, my)) {
             glDisable(GL_LIGHTING);
             glDisable(GL_DEPTH_TEST);
-            gui_fill_gradient(slot->x, slot->y, slot->x + 16, slot->y + 16, 0x80FFFFFF, 0x80FFFFFF);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            gui_fill_gradient(slot->x, slot->y, slot->x + 16, slot->y + 16, 0xFFFFFF80, 0xFFFFFF80);
+            glDisable(GL_BLEND);
             glEnable(GL_LIGHTING);
             glEnable(GL_DEPTH_TEST);
         }
     }
 
     if(screen->held_item.item_id != 0) {
-        glTranslatef(0, 0, 32);
+        glTranslatef(0, 0, 0);
         renderer_entity_item_render_gui(screen->minecraft, &screen->held_item, mx - width - 8, my - height - 8);
         renderer_entity_item_render_overlay_gui(&screen->minecraft->font, &screen->held_item, mx - width - 8, my - height - 8);
     }
@@ -117,7 +121,7 @@ void screen_container_on_mouse_clicked(screen_t *screen, int mx, int my, int but
                 }
 
                 slot->on_pickup(slot);
-            }else if(item.item_id == 0 && screen->held_item.item_id != 0) {
+            }else if(item.item_id == 0 && screen->held_item.item_id != 0 && slot->can_put_item(slot, screen->held_item)) {
                 // placing
                 int place_count = 0;
                 if(button == SDL_BUTTON_LEFT) {
@@ -225,6 +229,12 @@ void screen_container_on_mouse_clicked(screen_t *screen, int mx, int my, int but
                 }
             }
         }
+    }
+}
+
+void screen_container_on_key_pressed(screen_t *screen, char event_char, int event_key) {
+    if(event_key == screen->minecraft->settings.inventory_key.key || event_key == SDL_SCANCODE_ESCAPE) {
+        minecraft_set_current_screen(screen->minecraft, NULL);
     }
 }
 

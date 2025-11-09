@@ -25,6 +25,7 @@ inventory_t inventory_player_create(entity_t *player) {
     inventory.get_slot = inventory_player_get_slot;
     inventory.remove_item = inventory_player_remove_item;
     inventory.on_changed = inventory_player_on_changed;
+    inventory.set_slot = inventory_player_set_slot;
 
     return inventory;
 }

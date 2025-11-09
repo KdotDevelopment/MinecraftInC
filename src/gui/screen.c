@@ -13,6 +13,8 @@ screen_t screen_create() {
     screen.grabs_mouse = 0;
     screen.buttons = array_list_create(sizeof(button_t));
     screen.pauses_game = 1;
+    screen.inventory_slots = NULL;
+    screen.held_item = item_stack_create(0, 0, 0);
 
     screen.render = screen_render;
     screen.on_key_pressed = screen_on_key_pressed;
@@ -22,6 +24,8 @@ screen_t screen_create() {
     screen.tick = screen_tick;
     screen.on_close = screen_on_close;
     screen.destroy = screen_destroy;
+    screen.render_container_foreground = screen_render_container_foreground;
+    screen.render_container_foreground = screen_render_container_background;
 
     return screen;
 }
@@ -152,4 +156,12 @@ void screen_destroy(struct screen_s *proto_screen) {
     }
     array_list_free(screen->buttons);
     screen->buttons = NULL;
+}
+
+void screen_render_container_foreground(screen_t *screen) {
+    return;
+}
+
+void screen_render_container_background(screen_t *screen) {
+    return;
 }

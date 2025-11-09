@@ -14,5 +14,6 @@ typedef struct inventory_s {
     char *(*get_name)();
     item_stack_t (*get_slot)(struct inventory_s *inventory, int slot);
     item_stack_t (*remove_item)(struct inventory_s *inventory, int slot, int amount);
+    void (*set_slot)(struct inventory_s *inventory, int slot, item_stack_t item);
     void (*on_changed)(struct inventory_s *inventory);
 } inventory_t;

@@ -9,6 +9,17 @@ CFLAGS = -I./include -I./res -Wall -std=c11 -fms-extensions -g -O1 -flarge-sourc
 LDFLAGS = -lpthread -lSDL2 -lSDL2main -lGL -lGLU -lm -lopenal -lvorbisfile -lz
 
 # Linux-specific flags
+#LINUX_CFLAGS = $(CFLAGS)
+#LINUX_LDFLAGS = -static-libgcc -static-libstdc++ \
+	-Wl,-Bstatic \
+	-lSDL2 -lGLEW -lGLU -lvorbisfile -lvorbis -logg -lz \
+	-Wl,-Bdynamic \
+	-lGL -lopenal \
+	-lX11 -lXext -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lXfixes -lXss \
+	-lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon -ldecor-0 \
+	-lpulse -lpulse-simple \
+	-ldrm -lgbm \
+	-lpthread -lm -ldl -lrt -lasound
 LINUX_CFLAGS = $(CFLAGS) -fsanitize=address
 LINUX_LDFLAGS = $(LDFLAGS) -fsanitize=address -lGLEW
 

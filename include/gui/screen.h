@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gui/button.h>
+#include <gui/container/slot.h>
 #include <gui/font.h>
 #include <gui/gui.h>
 #include <game_settings.h>
@@ -18,6 +19,7 @@ enum {
     SCREEN_TYPE_NONE,
     SCREEN_TYPE_BLOCK_SELECT,
     SCREEN_TYPE_CHAT_INPUT,
+    SCREEN_TYPE_CONTAINER,
     SCREEN_TYPE_CONTROLS,
     SCREEN_TYPE_DEATH,
     SCREEN_TYPE_ERROR,
@@ -49,8 +51,14 @@ typedef struct screen_s {
     int counter;
     float counter_f;
     uint8_t pauses_game;
+    slot_t *inventory_slots; //arraylist
+    int container_x;
+    int container_y;
+    item_stack_t held_item;
 
     void (*render)(struct screen_s *screen, int x, int y, float partial_tick);
+    void (*render_container_foreground)(struct screen_s *screen);
+    void (*render_container_background)(struct screen_s *screen);
     void (*on_key_pressed)(struct screen_s *screen, char event_char, int event_key);
     void (*on_mouse_clicked)(struct screen_s *screen, int x, int y, int button);
     void (*on_button_clicked)(struct screen_s *screen, button_t *button);
@@ -74,3 +82,5 @@ void screen_keyboard_event(screen_t *screen, SDL_Event event);
 void screen_tick(struct screen_s *screen);
 void screen_on_close(struct screen_s *screen);
 void screen_destroy(struct screen_s *screen);
+void screen_render_container_foreground(screen_t *screen);
+void screen_render_container_background(screen_t *screen);

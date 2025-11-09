@@ -461,7 +461,7 @@ void chunk_get_entities(chunk_t *chunk, entity_t *entity, AABB_t box, entity_t *
         for(int j = 0; j < array_list_length(chunk->entities[i]); j++) {
             entity_t *other = *(entity_t **)array_list_get(chunk->entities[i], j);
             if(other != entity && AABB_intersects_inner(box, other->bb)) {
-                *entity_list = array_list_push(*entity_list, other);
+                *entity_list = array_list_push(*entity_list, &other);
             }
         }
     }

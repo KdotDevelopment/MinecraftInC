@@ -18,7 +18,12 @@ ai_t player_ai_create(struct player_s *player) {
 void player_ai_tick(struct ai_s *proto_ai) {
     ai_t *ai = (ai_t *)proto_ai;
     player_t *player = (player_t *)ai->player;
-    //inventory_tick(&player->inventory);
+    // TODO peaceful mode healing
+    for(int i = 0; i < 36; i++) {
+        if(player->inventory.inv[i].item_id != 0 && player->inventory.inv[i].animations_to_go > 0) {
+            player->inventory.inv[i].animations_to_go--;
+        }
+    }
     inputs_update_movement(&player->inputs);
     ai_basic_tick(proto_ai);
 
@@ -37,14 +42,15 @@ void player_ai_tick(struct ai_s *proto_ai) {
     player->bob += (bob - player->bob) * 0.4;
     player->mob->tilt += (tilt - player->mob->tilt) * 0.8;
 
-    /*AABB_t bb = AABB_grow(player->entity.bb, 1.0, 0.0, 1.0);
-    entity_t ***entities = entity_map_get_entities(&player->world->entity_map, &player->entity, bb.x0, bb.y0, bb.z0, bb.x1, bb.y1, bb.z1);
-    if(player->health > 0 && entities != NULL) {
-        for(int i = 0; i < array_list_length(*entities); i++) {
-            entity_t *entity = *(entity_t **)array_list_get(*entities, i);
-            entity->player_touch(entity, &player->entity);
+    AABB_t bb = AABB_grow(player->entity->bb, 1.0, 0.0, 1.0);
+    entity_t **entities = world_get_entities_excluding(player->entity->world, player->entity, bb);
+    if(entities != NULL && array_list_length(entities) > 0) {
+        for(int i = 0; i < array_list_length(entities); i++) {
+            entity_t *entity = *(entity_t **)array_list_get(entities, i);
+            entity->player_touch(entity, player->entity);
         }
-    }*/
+    }
+    array_list_free(entities);
 }
 
 void player_ai_update(struct ai_s *proto_ai) {

@@ -1,4 +1,5 @@
 #include <player/gamemode/gamemode.h>
+
 #include <world/block/blocks.h>
 #include <minecraft.h>
 
@@ -29,16 +30,17 @@ void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world) {
     world->creative_mode = 0;
 }
 
-void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
+uint8_t gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     world_t *world = gamemode->minecraft->world;
     block_t *block = &block_list[world_get_block(world, x, y, z)];
+    uint8_t broken = world_set_block_with_update(world, x, y, z, blocks.air.id);
     if(block != NULL) {
         if(block->sound->base_type != BLOCK_SOUND_NONE) {
-            world_play_sound(world, x, y, z, block->sound->base_type, block->sound->volume, block->sound->pitch);
+            world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, block->sound->base_type, (block->sound->volume + 1.0) / 2.0, block->sound->pitch * 0.8);
         }
         block->on_destroyed(block, world, x, y, z, world_get_block_metadata(world, x, y, z));
     }
-    world_set_block_with_update(world, x, y, z, blocks.air.id);
+    return broken;
 }
 
 // sets damage time for breaking blocks

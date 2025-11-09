@@ -8,6 +8,7 @@ item_t item_create(int16_t id, uint8_t texture_id) {
 
     item.item_id = id + 256;
     item.texture_id = texture_id;
+    item.max_stack_size = 64;
 
     item.on_use = item_on_use;
     item.on_right_click = item_on_right_click;
@@ -15,6 +16,7 @@ item_t item_create(int16_t id, uint8_t texture_id) {
     item.hit_entity = item_hit_entity;
     item.on_block_destroy = item_on_block_destroy;
     item.get_damage_against_entity = item_get_damage_against_entity;
+    item.can_harvest_block = item_can_harvest_block;
 
     item_list[id + 256] = item;
 
@@ -43,4 +45,8 @@ void item_on_block_destroy(item_t *item, item_stack_t *item_stack) {
 
 int item_get_damage_against_entity(item_t *item) {
     return 1;
+}
+
+uint8_t item_can_harvest_block(item_t *item, uint8_t block) {
+    return 0;
 }

@@ -43,6 +43,7 @@ typedef struct item_s {
     void (*hit_entity)(struct item_s *item, item_stack_t *item_stack);
     void (*on_block_destroy)(struct item_s *item, item_stack_t *item_stack);
     int (*get_damage_against_entity)(struct item_s *item);
+    uint8_t (*can_harvest_block)(struct item_s *item, uint8_t block);
 } item_t;
 
 extern item_t item_list[1024];
@@ -54,3 +55,4 @@ float item_get_strength_against_block(item_t *item, block_t *block);
 void item_hit_entity(item_t *item, item_stack_t *item_stack);
 void item_on_block_destroy(item_t *item, item_stack_t *item_stack);
 int item_get_damage_against_entity(item_t *item);
+uint8_t item_can_harvest_block(item_t *item, uint8_t block);

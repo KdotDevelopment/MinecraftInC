@@ -1,4 +1,6 @@
 #include <player/gamemode/gamemode_survival.h>
+
+#include <item/item.h>
 #include <world/block/blocks.h>
 #include <world/world.h>
 #include <minecraft.h>
@@ -27,10 +29,18 @@ void gamemode_survival_init_player(struct gamemode_s *gamemode, entity_t *player
     //player->mob->player->inventory.counts[0] = 10;
 }
 
-void gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
+uint8_t gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int y, int z) {
     int block_id = world_get_block(gamemode->minecraft->world, x, y, z);
-    //block_spawn_items(&block_list[block_id], gamemode->minecraft->world, x, y, z, world_get_block_metadata(gamemode->minecraft->world, x, y, z));
-    gamemode_destroy_block(gamemode, x, y, z);
+    uint8_t broken = gamemode_destroy_block(gamemode, x, y, z);
+    item_stack_t current_item = inventory_player_get_selected(&gamemode->minecraft->player.mob->player->inventory);
+    if(current_item.item_id != 0) {
+        item_list[current_item.item_id].on_block_destroy(&item_list[current_item.item_id], &current_item);
+        inventory_player_set_slot(&gamemode->minecraft->player.mob->player->inventory, gamemode->minecraft->player.mob->player->inventory.selected, current_item);
+    }
+    if(broken && player_can_harvest_block(&gamemode->minecraft->player, &block_list[block_id])) {
+        block_spawn_items(&block_list[block_id], gamemode->minecraft->world, x, y, z, world_get_block_metadata(gamemode->minecraft->world, x, y, z));   
+    }
+    return broken;
 }
 
 uint8_t gamemode_survival_remove_item(struct gamemode_s *gamemode, int item) {

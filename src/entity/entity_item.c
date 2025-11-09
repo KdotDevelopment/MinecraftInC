@@ -1,5 +1,6 @@
 #include <entity/entity_item.h>
 
+#include <sound/sounds.h>
 #include <world/block/blocks.h>
 #include <model/model_item.h>
 #include <world/world.h>
@@ -34,6 +35,8 @@ void entity_item_create(entity_t *entity, struct world_s *world, float x, float 
     entity->make_step_sound = 0;
     entity->age = 0;
     entity->tick_count = 0;
+    entity->type = ENTITY_ITEM;
+    entity->hover_start = random_uniform() *  M_PI * 2.0;
 
     entity->tick = entity_item_tick;
     entity->render = entity_item_render;
@@ -41,6 +44,9 @@ void entity_item_create(entity_t *entity, struct world_s *world, float x, float 
 }
 
 void entity_item_tick(struct entity_s *entity) {
+    if(entity->delay_before_pickup > 0) {
+        entity->delay_before_pickup--;
+    }
     entity->xo = entity->x;
     entity->yo = entity->y;
     entity->zo = entity->z;
@@ -96,11 +102,11 @@ void entity_item_render(struct entity_s *entity, textures_t *textures, float del
 }
 
 void entity_item_player_touch(entity_t *entity, entity_t *player) {
-    /*player_t *real_player = (player_t *)player;
-    if(inventory_add_item(&real_player->inventory, entity->item_stack.item_id)) {
-        entity_t *anim = malloc(sizeof(entity_t));
-        entity_take_anim_create(anim, entity->world, entity, real_player);
-        world_spawn_entity(entity->world, anim);
+    if(entity->delay_before_pickup == 0 && !entity->is_dead && inventory_player_add_item(&player->mob->player->inventory, &entity->item_stack)) {
+        //entity_t *anim = malloc(sizeof(entity_t));
+        //entity_take_anim_create(anim, entity->world, entity, real_player);
+        //world_spawn_entity(entity->world, anim);
+        world_play_sound_at_entity(entity->world, player, SOUND_RANDOM_POP, 0.2, ((random_uniform() - random_uniform()) * 0.7 + 1.0) * 2.0);
         entity_remove(entity);
-    }*/
+    }
 }

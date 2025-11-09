@@ -1,5 +1,6 @@
 #pragma once
 
+#include <renderer/entity/renderer_entity_manager.h>
 #include <renderer/renderer_camera.h>
 #include <renderer/renderer_world.h>
 #include <renderer/held_block.h>
@@ -38,6 +39,7 @@ typedef struct minecraft_s {
     gamemode_t gamemode;
     sounds_t sounds;
     models_t models;
+    renderer_entity_manager_t entity_manager;
     uint8_t fullscreen;
     uint8_t has_mouse;
     char *debug;

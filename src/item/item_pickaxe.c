@@ -1,11 +1,14 @@
 #include <item/item_pickaxe.h>
 
+#include <item/item.h>
 #include <item/items.h>
 #include <item/item_tool.h>
 #include <world/material/materials.h>
 
 item_t item_pickaxe_create(uint8_t id, uint8_t texture_id, uint8_t pickaxe_type) {
     item_t item = item_tool_create(id, texture_id, PIECE_TOOL_PICKAXE, pickaxe_type);
+
+    item.can_harvest_block = item_pickaxe_can_harvest_block;
 
     item_list[id + 256] = item;
 

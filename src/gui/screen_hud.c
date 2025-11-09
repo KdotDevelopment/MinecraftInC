@@ -1,5 +1,6 @@
 #include <gui/screen_hud.h>
 #include <gui/gui.h>
+#include <renderer/entity/renderer_entity_item.h>
 #include <renderer/renderer_camera.h>
 #include <renderer/renderer_lighting.h>
 #include <renderer/tesselator.h>
@@ -115,28 +116,27 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
     glRotatef(180, 1, 0, 0);
     renderer_lighting_enable();
     glPopMatrix();
+
     for(int i = 0; i < 9; i++) {
         int x = hud->width / 2 - 90 + i * 20 + 2;
         int y = hud->height - 16 - 3;
         item_stack_t item = hud->minecraft->player.mob->player->inventory.inv[i];
-        if(item.item_id > 0) {
+        if(item.item_id != 0) {
             float a = item.animations_to_go - partial_tick;
-            if(item.animations_to_go > 0) {
+            if(a > 0) {
                 glPushMatrix();
-                float bounce = a / 5.0;
+                float bounce = 1.0 + a / 5.0;
                 glTranslatef(x + 8, y + 12, 0);
                 glScalef(1.0 / bounce, (bounce + 1.0) / 2.0, 1.0);
                 glTranslatef(-(x + 8), -(y + 12), 0);
             }
-            glBindTexture(GL_TEXTURE_2D, textures_load(&hud->minecraft->textures, "terrain.png"));
+
+            renderer_entity_item_render_gui(hud->minecraft, &item, x, y);
             if(a > 0) {
                 glPopMatrix();
             }
-            if(hud->minecraft->player.mob->player->inventory.inv[i].stack_size > 1) {
-                char number[4];
-                sprintf(number, "%d", hud->minecraft->player.mob->player->inventory.inv[i].stack_size);
-                font_render(&hud->minecraft->font, number, x + 19 - font_get_width(&hud->minecraft->font, number), y + 6, 0xffffffff);
-            }
+
+            renderer_entity_item_render_overlay_gui(&hud->minecraft->font, &item, x, y);
         }
     }
 

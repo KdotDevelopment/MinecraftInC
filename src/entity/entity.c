@@ -407,7 +407,7 @@ uint8_t entity_should_render(entity_t *entity, vec3_t vec) {
 }
 
 void entity_remove(entity_t *entity) {
-    entity->removed = 1;
+    entity->is_dead = 1;
 }
 
 uint8_t entity_is_free(entity_t *entity, float x, float y, float z) {
@@ -419,7 +419,7 @@ uint8_t entity_is_free(entity_t *entity, float x, float y, float z) {
 }
 
 uint8_t entity_is_underwater(entity_t *entity) {
-    uint8_t block_id = world_get_block((world_t *)entity->world, entity->x, entity->y, entity->z);
+    uint8_t block_id = world_get_block((world_t *)entity->world, floor_double(entity->x), floor_double(entity->y), floor_double(entity->z));
     return block_id != 0 ? block_list[block_id].material == &materials.water : 0;
 }
 
@@ -436,7 +436,7 @@ uint8_t entity_on_ground(entity_t *entity) {
 }
 
 float entity_get_brightness(entity_t *entity, float tick) {
-    return world_get_brightness((world_t *)entity->world, entity->x, entity->y + entity->height_offset / 2.0 - 0.5, entity->z);
+    return world_get_brightness((world_t *)entity->world, floor_double(entity->x), floor_double(entity->y + (entity->height_offset / 2.0)), floor_double(entity->z));
 }
 
 uint8_t entity_can_be_hit(entity_t *entity) {

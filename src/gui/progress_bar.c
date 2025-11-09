@@ -55,7 +55,7 @@ void progress_bar_set_progress(progress_bar_t *bar, int progress) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindTexture(GL_TEXTURE_2D, textures_load(&bar->minecraft->textures, "dirt.png"));
         tesselator_begin_quads();
-        tesselator_color_opaque_int(0x404040ff);
+        tesselator_color_opaque_int(0xff404040);
         tesselator_vertex_uv(0.0, a2, 0.0, 0.0, a2 / 32.0);
         tesselator_vertex_uv(a1, a2, 0.0, a1 / 32.0, a2 / 32.0);
         tesselator_vertex_uv(a1, 0.0, 0.0, a1 / 32.0, 0.0);
@@ -66,12 +66,12 @@ void progress_bar_set_progress(progress_bar_t *bar, int progress) {
             int b2 = a2 / 2 + 16;
             glDisable(GL_TEXTURE_2D);
             tesselator_begin_quads();
-            tesselator_color_opaque_int(0x808080ff);
+            tesselator_color_opaque_int(0xff808080);
             tesselator_vertex(b1, b2, 0.0);
             tesselator_vertex(b1, b2 + 2, 0.0);
             tesselator_vertex(b1 + 100, b2 + 2, 0.0);
             tesselator_vertex(b1 + 100, b2, 0.0);
-            tesselator_color_opaque_int(0x80ff80ff);
+            tesselator_color_opaque_int(0xffff8080);
             tesselator_vertex(b1, b2, 0.0);
             tesselator_vertex(b1, b2 + 2, 0.0);
             tesselator_vertex(b1 + progress, b2 + 2, 0.0);

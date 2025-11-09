@@ -63,7 +63,7 @@ void screen_render_background(screen_t *screen) {
     glBindTexture(GL_TEXTURE_2D, textures_load(&((minecraft_t *)screen->minecraft)->textures, "dirt.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
     tesselator_begin_quads();
-    tesselator_color_opaque_int(0x40404000);
+    tesselator_color_opaque_int(0x00404040);
     tesselator_vertex_uv(0, screen->height, 0, 0, screen->height / 32);
     tesselator_vertex_uv(screen->width, screen->height, 0, screen->width / 32, screen->height / 32);
     tesselator_vertex_uv(screen->width, 0, 0, screen->width / 32, 0);

@@ -16,7 +16,7 @@ item_t item_soup_create(int16_t id, uint8_t texture_id, int16_t heal_amount) {
 item_stack_t item_soup_on_right_click(item_stack_t *item_stack, world_t *world, player_t *player) {
     item_food_on_right_click(item_stack, world, player);
 
-    item_stack_t empty_bowl = item_stack_create(ITEM_BOWL, 1, 0);
+    item_stack_t empty_bowl = item_stack_create(items.bowl.item_id, 1, 0);
 
     return empty_bowl;
 }

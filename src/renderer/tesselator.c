@@ -104,7 +104,7 @@ void tesselator_color_float(float r, float g, float b, float a) {
 }
 
 void tesselator_color_opaque_int(uint32_t color) {
-    tesselator_color_opaque(((color >> 24) & 0xFF), ((color >> 16) & 0xFF), ((color >> 8) & 0xFF));
+    tesselator_color_opaque(((color >> 16) & 0xFF), ((color >> 8) & 0xFF), ((color) & 0xFF));
 }
 
 void tesselator_color_opaque(uint8_t r, uint8_t g, uint8_t b) {

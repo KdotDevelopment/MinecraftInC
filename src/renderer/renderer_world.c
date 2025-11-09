@@ -86,7 +86,7 @@ void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
     renderer->last_load_x = -9999;
     renderer->last_load_y = -9999;
     renderer->last_load_z = -9999;
-    // rendermanager set world
+    renderer->minecraft->entity_manager.world = world;
     renderer->renderer_block = renderer_block_create(world);
     if(world != NULL) {
         world_add_renderer(world, renderer);
@@ -164,14 +164,14 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
 }
 
 void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frustum_t *frustum, float partial_tick) {
-    // render_manager cache active render info
+    renderer_entity_manager_cache(&renderer->minecraft->entity_manager, renderer->minecraft->world, &renderer->minecraft->player, partial_tick);
     renderer->entities_total = 0;
     renderer->entities_rendered = 0;
     renderer->entities_hidden = 0;
     entity_t *player = renderer->world->player;
-    // render_manager.x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
-    // render_manager.y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
-    // render_manager.z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
+    renderer->minecraft->entity_manager.render_x = renderer->minecraft->player.last_tick_x + (renderer->minecraft->player.x - renderer->minecraft->player.last_tick_x) * partial_tick;
+    renderer->minecraft->entity_manager.render_y = renderer->minecraft->player.last_tick_y + (renderer->minecraft->player.y - renderer->minecraft->player.last_tick_y) * partial_tick;
+    renderer->minecraft->entity_manager.render_z = renderer->minecraft->player.last_tick_z + (renderer->minecraft->player.z - renderer->minecraft->player.last_tick_z) * partial_tick;
     entity_t **entities = array_list_clone(renderer->world->loaded_entity_list);
     renderer->entities_total = array_list_length(entities);
 
@@ -188,9 +188,9 @@ void renderer_world_update_entities(renderer_world_t *renderer, vec3_t pos, frus
         double avg_size = (size_x + size_y + size_z) / 3.0;
         avg_size *= 64.0;
         
-        if(distance_sq < avg_size && frustum_contains_box_bb(*frustum, bb) && (entity != player || renderer->minecraft->settings.third_person)) {
+        if(distance_sq < avg_size * avg_size && frustum_contains_box_bb(*frustum, bb) && (entity != player || renderer->minecraft->settings.third_person)) {
             renderer->entities_rendered++;
-            // render_manager render entity (entity, partial_tick)
+            renderer_entity_manager_render(&renderer->minecraft->entity_manager, entity, partial_tick);
         }
     }
 

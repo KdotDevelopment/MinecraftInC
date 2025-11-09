@@ -30,7 +30,7 @@ typedef struct gamemode_s {
     uint8_t gamemode_type;
 
     void (*init_world)(struct gamemode_s *gamemode, struct world_s *world);
-    void (*destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
+    uint8_t (*destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
     uint8_t (*remove_item)(struct gamemode_s *gamemode, int item);
     void (*start_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z);
     void (*continue_destroy_block)(struct gamemode_s *gamemode, int x, int y, int z, uint8_t face);
@@ -46,7 +46,7 @@ typedef struct gamemode_s {
 
 gamemode_t gamemode_create(struct minecraft_s *minecraft);
 void gamemode_init_world(struct gamemode_s *gamemode, struct world_s *world);
-void gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
+uint8_t gamemode_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);
 void gamemode_set_partial_time(struct gamemode_s *gamemode, float partial_tick);
 uint8_t gamemode_remove_item(struct gamemode_s *gamemode, int item);
 void gamemode_start_destroy_block(struct gamemode_s *gamemode, int x, int y, int z);

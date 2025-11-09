@@ -96,6 +96,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     #else
     minecraft->gamemode = gamemode_creative_create(minecraft);
     #endif
+    renderer_entity_manager_create(&minecraft->entity_manager, minecraft);
 
     game_settings_create(&minecraft->settings, (struct minecraft_s *)minecraft);
     SDL_GL_SetSwapInterval(minecraft->settings.limit_framerate ? 1 : 0);
@@ -152,7 +153,8 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.mob->player->inventory.inv[0] = item_stack_create(BLOCK_TORCH, 64, 0);
     minecraft->player.mob->player->inventory.inv[1] = item_stack_create(BLOCK_FIRE, 64, 0);
-    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.diamond_hoe.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.wooden_pickaxe.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.gold_pickaxe.item_id, 1, 0);
     minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_helmet.item_id, 1, 0);
     minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_chestplate.item_id, 1, 0);
     minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_leggings.item_id, 1, 0);

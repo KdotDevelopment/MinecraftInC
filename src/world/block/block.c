@@ -1,4 +1,6 @@
 #include <world/block/block.h>
+
+#include <item/item.h>
 #include <world/world.h>
 #include <renderer/tesselator.h>
 #include <particle/particle_terrain.h>
@@ -337,7 +339,7 @@ void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int 
             float y_diff = random_next_uniform(&world->random) * 0.7 + 0.15;
             float z_diff = random_next_uniform(&world->random) * 0.7 + 0.15;
             entity_t *item = malloc(sizeof(entity_t));
-            item_stack_t item_stack = item_stack_create(block->id, 1, 0);
+            item_stack_t item_stack = item_stack_create(item_id, 1, 0);
             entity_item_create(item, world, x + x_diff, y + y_diff, z + z_diff, item_stack);
             item->delay_before_pickup = 10;
             world_spawn_entity(world, item);
@@ -351,8 +353,23 @@ float block_get_strength(block_t *block, entity_t *player) {
     }else if(!player_can_harvest_block(player, block)) {
         return 1.0 / block->hardness / 100.0;
     }else {
-        // inventory item strength
-        return 1.0 / block->hardness / 30.0;
+        inventory_t *inv = &player->mob->player->inventory;
+        float multiplier = 1.0;
+        if(inv->inv[inv->selected].item_id != 0) {
+            item_stack_t item = inv->inv[inv->selected];
+            multiplier = 1.0 * item_list[item.item_id].get_strength_against_block(&item_list[item.item_id], block);
+        }
+
+        float speed = multiplier;
+        if(entity_is_underwater(player)) {
+            speed = multiplier / 5.0;
+        }
+
+        if(!entity_on_ground(player)) {
+            speed /= 5.0;
+        }
+
+        return speed / block->hardness / 30.0;
     }
 }
 

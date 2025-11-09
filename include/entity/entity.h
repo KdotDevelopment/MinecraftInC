@@ -13,13 +13,15 @@ struct mob_s;
 
 typedef enum {
     ENTITY_ARROW,
+    ENTITY_ENTITY,
     ENTITY_ITEM,
     ENTITY_PAINTING,
     ENTITY_PRIMED_TNT,
-    ENTITY_ITEM_TAKE, //when a mob picks up an item this is the animation it makes
-    ENTITY_ITEM_TAKE_MOCK, //the hidden item entity inside of an item take animation
+    ENTITY_ITEM_TAKE,
+    ENTITY_MOB,
     ENTITY_MOB_PLAYER,
     ENTITY_MOB_CREEPER,
+    ENTITY_MOB_GIANT,
     ENTITY_MOB_HUMANOID,
     ENTITY_MOB_PIG,
     ENTITY_MOB_SHEEP,
@@ -81,6 +83,7 @@ typedef struct entity_s {
             struct entity_s *item;
             item_stack_t item_stack;
             uint8_t delay_before_pickup;
+            float hover_start;
         };
         struct { // painting
             painting_t *painting;

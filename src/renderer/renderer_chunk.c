@@ -150,7 +150,7 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
                     }
                 }
             }
-        } else {
+        }else {
             for(int y = y0; y < y1; y++) {
                 for(int z = z0; z < z1; z++) {
                     for(int x = x0; x < x1; x++) {

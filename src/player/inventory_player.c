@@ -70,10 +70,10 @@ uint8_t inventory_player_add_item(inventory_t *inventory, item_stack_t *item) {
     if(item->item_damage == 0) {
         int remaining = item->stack_size;
         int id = item->item_id;
-
         int slot = -1;
+
         for(int i = 0; i < 36; i++) {
-            if(inventory->inv[i].item_id == id) {
+            if(inventory->inv[i].item_id == id && inventory->inv[i].item_damage == item->item_damage) {
                 int limit = item_list[id].max_stack_size;
                 if(limit > 64) limit = 64;
                 if(inventory->inv[i].stack_size < limit) {
@@ -84,20 +84,28 @@ uint8_t inventory_player_add_item(inventory_t *inventory, item_stack_t *item) {
         }
 
         if(slot < 0) {
-            slot = inventory_player_get_empty_slot(inventory);
+            for(int i = 0; i < 36; i++) {
+                if(inventory->inv[i].item_id == 0) {
+                    slot = i;
+                    break;
+                }
+            }
         }
 
         if(slot >= 0) {
             if(inventory->inv[slot].item_id == 0) {
-                inventory->inv[slot] = item_stack_create(id, 0, 0);
+                inventory->inv[slot] = *item;
+                inventory->inv[slot].animations_to_go = 5;
+                item->stack_size = 0;
+                return 1;
             }
 
             int limit = item_list[inventory->inv[slot].item_id].max_stack_size;
             if(limit > 64) limit = 64;
             int space = limit - inventory->inv[slot].stack_size;
             if(space < 0) space = 0;
-            int can_move = remaining < space ? remaining : space;
 
+            int can_move = (remaining < space) ? remaining : space;
             if(can_move > 0) {
                 inventory->inv[slot].stack_size += can_move;
                 inventory->inv[slot].animations_to_go = 5;
@@ -106,8 +114,6 @@ uint8_t inventory_player_add_item(inventory_t *inventory, item_stack_t *item) {
 
             item->stack_size = remaining;
             if(item->stack_size == 0) return 1;
-        } else {
-            item->stack_size = remaining;
         }
     }
 

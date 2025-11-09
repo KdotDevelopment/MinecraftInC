@@ -62,7 +62,7 @@ void screen_title_render(screen_t *screen, int mouse_x, int mouse_y, float parti
     screen_render_background(screen);
     glBindTexture(GL_TEXTURE_2D, textures_load(&((minecraft_t *)screen->minecraft)->textures, "gui/logo.png"));
     glColor4f(1.0, 1.0, 1.0, 1.0);
-    tesselator_color_opaque_int(0xffffff);
+    tesselator_color_opaque_int(0xffffffff);
     gui_blit((screen->width - 256) / 2, 30, 0, 0, 256, 49, 0);
     glPushMatrix();
     glTranslatef((screen->width / 2) + 90, 70, 0);

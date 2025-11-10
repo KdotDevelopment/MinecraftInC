@@ -6,6 +6,7 @@
 #include <gui/font.h>
 #include <gui/gui.h>
 #include <game_settings.h>
+#include <world/block/tile_entity/tile_entity.h>
 
 #include <util/string.h>
 #include <util/array_list.h>
@@ -57,6 +58,7 @@ typedef struct screen_s {
 
     union {
         struct {
+            tile_entity_t *tile_entity; // furnace, chest
             inventory_t crafting_inv;
             inventory_t crafting_result;
             int mx;

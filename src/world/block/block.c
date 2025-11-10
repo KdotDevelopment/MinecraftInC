@@ -389,7 +389,7 @@ int block_get_tick_rate(block_t *block) {
     return 5;
 }
 
-tile_entity_t *block_get_tile_entity(block_t *block) {
+tile_entity_t *block_get_tile_entity(world_t *world) {
     return NULL;
 }
 

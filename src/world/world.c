@@ -1016,6 +1016,13 @@ void world_remove_tile_entity(world_t *world, int x, int y, int z) {
     }
 }
 
+void world_update_chunk(world_t *world, int x, int y, int z) {
+    if(world_block_exists(world, x, y, z)) {
+        chunk_t *chunk = world_get_chunk(world, x >> 4, z >> 4);
+        chunk->is_modified = 1;
+    }
+}
+
 uint8_t world_is_solid(world_t *world, int x, int y, int z) {
     uint8_t block_id = world_get_block(world, x, y, z);
     return block_list[block_id].is_opaque;

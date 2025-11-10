@@ -1,5 +1,7 @@
 #include <player/player.h>
 
+#include <gui/container/screen_crafting.h>
+#include <gui/container/screen_furnace.h>
 #include <item/item.h>
 #include <model/model.h>
 #include <world/world.h>
@@ -59,4 +61,16 @@ uint8_t player_can_harvest_block(entity_t *player, block_t *block) {
         item_stack_t item = inventory_player_get_selected(&player->mob->player->inventory);
         return item.item_id != 0 ? item_list[item.item_id].can_harvest_block(&item_list[item.item_id], block->id) : 0;
     }
+}
+
+void player_render_crafting_screen(entity_t *player) {
+    screen_t *screen = malloc(sizeof(screen_t));
+    screen_crafting_create(screen, &player->mob->player->inventory);
+    minecraft_set_current_screen(player->world->minecraft, screen);
+}
+
+void player_render_furnace_screen(entity_t *player, tile_entity_t *tile_entity) {
+    screen_t *screen = malloc(sizeof(screen_t));
+    screen_furnace_create(screen, &player->mob->player->inventory, tile_entity);
+    minecraft_set_current_screen(player->world->minecraft, screen);
 }

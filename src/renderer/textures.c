@@ -12,6 +12,9 @@
 #include <assets/water.h>
 #include <assets/char.h>
 #include <assets/shadow.h>
+#include <assets/gui/crafting.h>
+#include <assets/gui/container.h>
+#include <assets/gui/furnace.h>
 #include <assets/gui/gui.h>
 #include <assets/gui/icons.h>
 #include <assets/gui/inventory.h>
@@ -87,6 +90,9 @@ int textures_load(textures_t *textures, const char *resource) {
     if(strcmp(resource, "terrain/moon.png") == 0) { p = (uint8_t *)asset_moon_rgba; width = asset_moon_width; height = asset_moon_height; }
     if(strcmp(resource, "gui/items.png") == 0) { p = (uint8_t *)asset_items_rgba; width = asset_items_width; height = asset_items_height; }
     if(strcmp(resource, "gui/inventory.png") == 0) { p = (uint8_t *)asset_inventory_rgba; width = asset_inventory_width; height = asset_inventory_height; }
+    if(strcmp(resource, "gui/crafting.png") == 0) { p = (uint8_t *)asset_crafting_rgba; width = asset_crafting_width; height = asset_crafting_height; }
+    if(strcmp(resource, "gui/furnace.png") == 0) { p = (uint8_t *)asset_furnace_rgba; width = asset_furnace_width; height = asset_furnace_height; }
+    if(strcmp(resource, "gui/container.png") == 0) { p = (uint8_t *)asset_container_rgba; width = asset_container_width; height = asset_container_height; }
     if(strcmp(resource, "shadow.png") == 0) { p = (uint8_t *)asset_shadow_rgba; width = asset_shadow_width; height = asset_shadow_height; }
     //if(strcmp(resource, "armor/chain.png") == 0) { p = (uint8_t *)asset_chain_rgba; width = asset_chain_width; height = asset_chain_height; }
     //if(strcmp(resource, "armor/plate.png") == 0) { p = (uint8_t *)asset_plate_rgba; width = asset_plate_width; height = asset_plate_height; }

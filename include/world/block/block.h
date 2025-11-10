@@ -97,7 +97,7 @@ typedef struct block_s {
     uint8_t (*can_place_at)(struct block_s *block, struct world_s *world, int x, int y, int z);
     int16_t (*get_item_dropped)(struct block_s *block, uint8_t metadata, random_t *random);
     int (*get_tick_rate)(struct block_s *block);
-    struct tile_entity_s *(*get_tile_entity)(struct block_s *block);
+    struct tile_entity_s *(*get_tile_entity)(struct world_s *world);
     uint8_t (*on_interacted)(struct block_s *block, struct world_s *world, int x, int y, int z, struct entity_s *player);
     uint8_t (*can_grow_on)(struct block_s *block, uint8_t block_id);
     uint8_t (*can_stay)(struct block_s *block, struct world_s *world, int x, int y, int z);
@@ -139,7 +139,7 @@ uint8_t block_get_drop_count(block_t *block, random_t *random);
 uint8_t block_can_place_at(block_t *block, struct world_s *world, int x, int y, int z);
 void block_on_exploded(block_t *block, struct world_s *world, int x, int y, int z);
 int block_get_tick_rate(block_t *block);
-struct tile_entity_s *block_get_tile_entity(block_t *block);
+struct tile_entity_s *block_get_tile_entity(struct world_s *world);
 uint8_t block_on_interacted(block_t *block, struct world_s *world, int x, int y, int z, struct entity_s *player);
 uint8_t block_can_grow_on(block_t *block, uint8_t block_id);
 uint8_t block_can_stay(block_t *block, struct world_s *world, int x, int y, int z);

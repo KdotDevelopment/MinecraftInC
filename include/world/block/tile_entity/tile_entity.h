@@ -1,12 +1,14 @@
 #pragma once
 
 #include <item/item_stack.h>
+#include <gui/container/inventory.h>
 
 struct world_s;
 
 typedef struct tile_entity_s {
     struct world_s *world;
     uint8_t inventory_size;
+    inventory_t inventory;
     int x;
     int y;
     int z;

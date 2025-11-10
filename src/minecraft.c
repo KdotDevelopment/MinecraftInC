@@ -194,9 +194,12 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.bow.id, 1, 0);
     minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.iron_axe.id, 1, 0);
     minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.iron_shovel.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[4] = item_stack_create(blocks.furnace.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[5] = item_stack_create(blocks.chest.id, 1, 0);
     minecraft->player.mob->player->inventory.inv[10] = item_stack_create(items.arrow.id, 64, 0);
     minecraft->player.mob->player->inventory.inv[11] = item_stack_create(items.flint_and_steel.id, 1, 0);
     minecraft->player.mob->player->inventory.inv[12] = item_stack_create(items.cooked_pork.id, 20, 0);
+    minecraft->player.mob->player->inventory.inv[13] = item_stack_create(items.diamond.id, 64, 0);
     minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_helmet.id, 1, 0);
     minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_chestplate.id, 1, 0);
     minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_leggings.id, 1, 0);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <world/block/block.h>
+#include <world/block/tile_entity/tile_entity_furnace.h>
 
 #include <stdint.h>
 
@@ -10,3 +11,4 @@ int block_furnace_get_texture(block_t *block, struct world_s *world, int x, int 
 void block_furnace_visual_update(block_t *block, struct world_s *world, int x, int y, int z, random_t *random);
 int block_furnace_get_texture_side(block_t *block, uint8_t face);
 uint8_t block_furnace_on_interacted(block_t *block, struct world_s *world, int x, int y, int z, entity_t *player);
+tile_entity_t *block_furnace_get_tile_entity(struct world_s *world);

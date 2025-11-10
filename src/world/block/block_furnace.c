@@ -4,6 +4,8 @@
 #include <world/block/blocks.h>
 #include <world/world.h>
 
+#include <stdlib.h>
+
 block_t block_furnace_create(uint8_t block_id, uint8_t is_lit) {
     block_t block = block_container_create(block_id, TEXTURE_FURNACE, &block_sounds.stone, 3.5, 0, &materials.rock);
 
@@ -14,6 +16,7 @@ block_t block_furnace_create(uint8_t block_id, uint8_t is_lit) {
     block.visual_update = block_furnace_visual_update;
     block.get_texture_side = block_furnace_get_texture_side;
     block.on_interacted = block_furnace_on_interacted;
+    block.get_tile_entity = block_furnace_get_tile_entity;
 
     block_list[block.id] = block;
 
@@ -23,8 +26,8 @@ block_t block_furnace_create(uint8_t block_id, uint8_t is_lit) {
 void private_set_default_direction(block_t *block, world_t *world, int x, int y, int z) {
     uint8_t block_north = world_get_block(world, x, y, z - 1);
     uint8_t block_south = world_get_block(world, x, y, z + 1);
-    uint8_t block_east = world_get_block(world, x + 1, y, z);
-    uint8_t block_west = world_get_block(world, x - 1, y, z);
+    uint8_t block_east = world_get_block(world, x - 1, y, z);
+    uint8_t block_west = world_get_block(world, x + 1, y, z);
     uint8_t direction = 3;
 
     if(block_list[block_north].is_opaque && !block_list[block_south].is_opaque) {
@@ -98,6 +101,13 @@ int block_furnace_get_texture_side(block_t *block, uint8_t face) {
 
 uint8_t block_furnace_on_interacted(block_t *block, world_t *world, int x, int y, int z, entity_t *player) {
     tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
-    // open furnace gui
+    player_render_furnace_screen(player, tile_entity);
     return 1;
+}
+
+tile_entity_t *block_furnace_get_tile_entity(world_t *world)  {
+    tile_entity_t *tile_entity = malloc(sizeof(tile_entity_t));
+    tile_entity_furnace_create(tile_entity, world, 0, 0, 0);
+
+    return tile_entity;
 }

@@ -125,6 +125,7 @@ void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side);
 tile_entity_t *world_get_tile_entity(world_t *world, int x, int y, int z);
 void world_set_tile_entity(world_t *world, int x, int y, int z, tile_entity_t *tile_entity);
 void world_remove_tile_entity(world_t *world, int x, int y, int z);
+void world_update_chunk(world_t *world, int x, int y, int z);
 uint8_t world_is_solid(world_t *world, int x, int y, int z);
 // world_save_indirectly
 uint8_t world_update_lighting(world_t *world);

@@ -18,6 +18,7 @@ block_t block_chest_create() {
     block.can_place_at = block_chest_can_place_at;
     block.on_removed = block_chest_on_removed;
     block.on_interacted = block_chest_on_interacted;
+    block.get_tile_entity = block_chest_get_tile_entity;
 
     block_list[block.id] = block;
 
@@ -157,21 +158,21 @@ void block_chest_on_removed(block_t *block, world_t *world, int x, int y, int z)
     tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
 
     for(int i = 0; i < tile_entity->inventory_size; i++) {
-        item_stack_t *item_stack = tile_entity_chest_get_item(tile_entity, i);
-        if(item_stack != NULL) {
+        item_stack_t item_stack = tile_entity_chest_get_item(&tile_entity->inventory, i);
+        if(item_stack.item_id != 0) {
             float rand_x = random_next_uniform(&world->random) * 0.8 + 0.1;
             float rand_y = random_next_uniform(&world->random) * 0.8 + 0.1;
             float rand_z = random_next_uniform(&world->random) * 0.8 + 0.1;
 
-            while(item_stack->stack_size > 0) {
+            while(item_stack.stack_size > 0) {
                 int item_count = random_next_int_range(&world->random, 0, 20) + 10;
-                if(item_count > item_stack->stack_size) {
-                    item_count = item_stack->stack_size;
+                if(item_count > item_stack.stack_size) {
+                    item_count = item_stack.stack_size;
                 }
 
-                item_stack->stack_size -= item_count;
+                item_stack.stack_size -= item_count;
                 entity_t *item = malloc(sizeof(entity_t));
-                item_stack_t drop_stack = item_stack_create(item_stack->item_id, item_count, item_stack->item_damage);
+                item_stack_t drop_stack = item_stack_create(item_stack.item_id, item_count, item_stack.item_damage);
                 entity_item_create(item, world, x + rand_x, y + rand_y, z + rand_z, drop_stack);
                 item->xd = random_next_normal(&world->random, 1.0) * 0.05;
                 item->yd = random_next_normal(&world->random, 1.0) * 0.05 + 0.2;
@@ -185,7 +186,7 @@ void block_chest_on_removed(block_t *block, world_t *world, int x, int y, int z)
 }
 
 uint8_t block_chest_on_interacted(block_t *block, world_t *world, int x, int y, int z, entity_t *player) {
-    tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
+    //tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
     if(world_is_solid(world, x, y + 1, z)) return 1;
     else if(world_get_block(world, x - 1, y, z) == block->id && world_is_solid(world, x - 1, y + 1, z)) return 1;
     else if(world_get_block(world, x + 1, y, z) == block->id && world_is_solid(world, x + 1, y + 1, z)) return 1;
@@ -210,4 +211,11 @@ uint8_t block_chest_on_interacted(block_t *block, world_t *world, int x, int y, 
 
     // display chest gui
     return 1;
+}
+
+tile_entity_t *block_chest_get_tile_entity(world_t *world) {
+    tile_entity_t *tile_entity = malloc(sizeof(tile_entity_t));
+    tile_entity_chest_create(tile_entity, world, 0, 0, 0);
+
+    return tile_entity;
 }

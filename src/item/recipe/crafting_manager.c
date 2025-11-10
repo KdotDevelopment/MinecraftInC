@@ -1,6 +1,10 @@
 #include <item/recipe/crafting_manager.h>
 
 #include <item/items.h>
+#include <item/recipe/recipes_armor.h>
+#include <item/recipe/recipes_ingots.h>
+#include <item/recipe/recipes_tools.h>
+#include <item/recipe/recipes_weapons.h>
 #include <world/block/blocks.h>
 
 #include <util/array_list.h>
@@ -20,15 +24,15 @@ crafting_manager_t crafting_manager_create() {
 
     manager.recipes = array_list_create(sizeof(recipe_t));
 
-    // tools
-    // weapons
-    // ingots
+    recipes_tools_add(&manager);
+    recipes_weapons_add(&manager);
+    recipes_ingots_add(&manager);
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(items.soup.id, 1, 0), "Y", "X", "#", 'X', blocks.brown_mushroom.id, 'Y', blocks.red_mushroom.id, '#', items.bowl.id });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(items.soup.id, 1, 0), "Y", "X", "#", 'X', blocks.red_mushroom.id, 'Y', blocks.brown_mushroom.id, '#', items.bowl.id });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.chest.id, 1, 0), "###", "# #", "###", '#', blocks.wood.id, 0, 0, 0, 0 });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.furnace.id, 1, 0), "###", "# #", "###", '#', blocks.cobblestone.id, 0, 0, 0, 0 });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.workbench.id, 1, 0), "##", "##", "", '#', blocks.wood.id, 0, 0, 0, 0 });
-    // add armor recipes
+    recipes_armor_add(&manager);
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.gray_wool.id, 1, 0), "###", "###", "###", '#', items.string.id, 0, 0, 0, 0 });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.tnt.id, 1, 0), "X#X", "#X#", "X#X", 'X', items.gunpowder.id, '#', blocks.sand.id, 0, 0 });
     crafting_manager_add_recipe(&manager, (recipe_t){ item_stack_create(blocks.slab.id, 3, 0), "###", "", "", '#', blocks.cobblestone.id, 0, 0, 0, 0 });

@@ -4,6 +4,7 @@
 #include <item/item_stack.h>
 
 struct screen_s;
+struct tile_entity_s;
 
 typedef struct inventory_s {
     item_stack_t inv[36];
@@ -13,6 +14,7 @@ typedef struct inventory_s {
     int stack_limit;
     entity_t *host; // typically the player
     struct screen_s *host_screen;
+    struct tile_entity_s *host_tile_entity;
 
     char *(*get_name)();
     item_stack_t (*get_slot)(struct inventory_s *inventory, int slot);

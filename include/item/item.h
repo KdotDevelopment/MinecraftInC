@@ -9,7 +9,7 @@ struct item_stack_s;
 struct block_s;
 
 typedef struct item_s {
-    int16_t item_id; // shifted by 256 for non-block items
+    int16_t id; // shifted by 256 for non-block items
     int16_t texture_id;
     uint8_t max_stack_size;
     int16_t durability;

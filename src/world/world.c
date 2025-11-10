@@ -199,13 +199,13 @@ int private_create_directories_world(const char *path) {
 void world_save(world_t *world, uint8_t check_entities) {
     char path[290];
     snprintf(path, sizeof(path), "%s/level.dat", world->save_file);
-    printf("%s\n", path);
+    //printf("%s\n", path);
     FILE *file = fopen(path, "wb");
     if(!file) {
         private_create_directories_world(path);
         file = fopen(path, "wb");
         if(!file) {
-            fprintf(stderr, "Failed to open %s for writing.\n", path);
+            printf("Failed to open %s for writing.\n", path);
             return;
         }
     }

@@ -15,5 +15,5 @@ block_t block_gravel_create() {
 }
 
 int16_t block_gravel_get_item_dropped(block_t *block, uint8_t metadata, random_t *random) {
-    return random_next_int_range(random, 0, 9) == 0 ? items.flint.item_id : block->id;
+    return random_next_int_range(random, 0, 9) == 0 ? items.flint.id : block->id;
 }

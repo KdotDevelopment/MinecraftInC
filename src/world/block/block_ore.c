@@ -17,8 +17,8 @@ block_t block_ore_create(uint8_t id, uint8_t texture_id, float hardness, float r
 }
 
 int16_t block_ore_get_item_dropped(block_t *block, uint8_t metadata, random_t *random) {
-    if(block->id == BLOCK_COAL_ORE) return items.coal.item_id;
-    if(block->id == BLOCK_DIAMOND_ORE) return items.diamond.item_id;
+    if(block->id == BLOCK_COAL_ORE) return items.coal.id;
+    if(block->id == BLOCK_DIAMOND_ORE) return items.diamond.id;
     return block->id;
 }
 

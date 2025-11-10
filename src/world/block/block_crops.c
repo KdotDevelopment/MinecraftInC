@@ -102,7 +102,7 @@ void block_crops_on_destroyed(block_t *block, world_t *world, int x, int y, int 
             float offset_z = random_next_uniform(&world->random) * 0.7 + 0.15;
 
             entity_t *item = malloc(sizeof(entity_t));
-            item_stack_t item_stack = item_stack_create(items.seeds.item_id, 1, 0);
+            item_stack_t item_stack = item_stack_create(items.seeds.id, 1, 0);
             entity_item_create(item, world, x + offset_x, y + offset_y, z + offset_z, item_stack);
             item->delay_before_pickup = 10;
             world_spawn_entity(world, item);
@@ -113,7 +113,7 @@ void block_crops_on_destroyed(block_t *block, world_t *world, int x, int y, int 
 int16_t block_crops_get_item_dropped(block_t *block, uint8_t metadata, random_t *random) {
     // Must be some debugging left over from Notch
     printf("Get resource: %d\n", metadata);
-    return metadata == 7 ? items.seeds.item_id : -1;
+    return metadata == 7 ? items.seeds.id : -1;
 }
 
 uint8_t block_crops_get_drop_count(block_t *block, random_t *random) {

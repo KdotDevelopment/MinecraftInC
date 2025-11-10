@@ -60,7 +60,23 @@ void screen_inventory_on_close(screen_t *screen) {
 }
 
 void screen_inventory_update_crafting(screen_t *screen) {
+    int16_t items[9];
+    memset(items, 0, 18);
+    for(int x = 0; x < 3; x++) {
+        for(int y = 0; y < 3; y++) {
+            int16_t result = -1;
+            if(x < 2 && y < 2) {
+                item_stack_t item = screen->crafting_inv.get_slot(&screen->crafting_inv, x + (y << 1));
+                if(item.item_id != 0) {
+                    result = item.item_id;
+                }
+            }
 
+            items[x * 3 + y] = result;
+        }
+    }
+
+    screen->crafting_result.set_slot(&screen->crafting_result, 0, crafting_manager_craft(&screen->minecraft->crafting_manager, items));
 }
 
 void screen_inventory_render(screen_t *screen, int mx, int my, float partial_tick) {

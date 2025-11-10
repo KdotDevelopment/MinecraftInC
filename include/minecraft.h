@@ -9,6 +9,7 @@
 #include <gui/progress_bar.h>
 #include <world/world.h>
 #include <gui/font.h>
+#include <item/recipe/crafting_manager.h>
 #include <player/hit_result.h>
 #include <particle/particles.h>
 #include <sound/sounds.h>
@@ -40,6 +41,7 @@ typedef struct minecraft_s {
     sounds_t sounds;
     models_t models;
     renderer_entity_manager_t entity_manager;
+    crafting_manager_t crafting_manager;
     uint8_t fullscreen;
     uint8_t has_mouse;
     char *debug;

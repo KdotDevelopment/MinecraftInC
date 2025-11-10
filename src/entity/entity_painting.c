@@ -87,7 +87,7 @@ void entity_painting_tick(entity_t *entity) {
         entity->painting_ticks = 0;
         entity->is_dead = 1;
         entity_t *item = malloc(sizeof(entity_t));
-        item_stack_t item_stack = item_stack_create(items.painting.item_id, 1, 0);
+        item_stack_t item_stack = item_stack_create(items.painting.id, 1, 0);
         entity_item_create(item, entity->world, entity->x, entity->y, entity->z, item_stack);
         world_spawn_entity(entity->world, item);
     }
@@ -139,7 +139,7 @@ uint8_t entity_painting_on_valid_surface(entity_t *entity) {
 void entity_painting_hurt(entity_t *entity, entity_t *other, int damage) {
     entity->is_dead = 1;
     entity_t *item = malloc(sizeof(entity_t));
-    item_stack_t item_stack = item_stack_create(items.painting.item_id, 1, 0);
+    item_stack_t item_stack = item_stack_create(items.painting.id, 1, 0);
     entity_item_create(item, entity->world, entity->x, entity->y, entity->z, item_stack);
     world_spawn_entity(entity->world, item);
 

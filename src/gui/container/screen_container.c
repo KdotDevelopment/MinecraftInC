@@ -72,7 +72,7 @@ void screen_container_render(screen_t *screen, int mx, int my, float partial_tic
     }
 
     if(screen->held_item.item_id != 0) {
-        glTranslatef(0, 0, 0);
+        glTranslatef(0, 0, 32);
         renderer_entity_item_render_gui(screen->minecraft, &screen->held_item, mx - width - 8, my - height - 8);
         renderer_entity_item_render_overlay_gui(&screen->minecraft->font, &screen->held_item, mx - width - 8, my - height - 8);
     }

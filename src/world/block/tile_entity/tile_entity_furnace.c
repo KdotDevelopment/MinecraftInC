@@ -187,11 +187,11 @@ uint8_t tile_entity_furnace_can_smelt(tile_entity_t *tile_entity) {
 }
 
 int16_t tile_entity_furnace_smelt_item(int16_t item_id) {
-    if(item_id == blocks.iron_ore.id) return items.iron_ingot.item_id;
-    if(item_id == blocks.gold_ore.id) return items.gold_ingot.item_id;
-    if(item_id == blocks.diamond_ore.id) return items.diamond.item_id;
+    if(item_id == blocks.iron_ore.id) return items.iron_ingot.id;
+    if(item_id == blocks.gold_ore.id) return items.gold_ingot.id;
+    if(item_id == blocks.diamond_ore.id) return items.diamond.id;
     if(item_id == blocks.sand.id) return blocks.glass.id;
-    if(item_id == items.raw_pork.item_id) return items.cooked_pork.item_id;
+    if(item_id == items.raw_pork.id) return items.cooked_pork.id;
     if(item_id == blocks.cobblestone.id) return blocks.stone.id;
     return -1;
 }
@@ -200,8 +200,8 @@ int tile_entity_furnace_get_burn_time(item_stack_t *item_stack) {
     if(item_stack == NULL) return 0;
     int16_t item_id = item_stack->item_id;
     if(item_id < 256 && block_list[item_id].material == &materials.wood) return 300;
-    if(item_id == items.stick.item_id) return 100;
-    if(item_id == items.coal.item_id) return 1600;
+    if(item_id == items.stick.id) return 100;
+    if(item_id == items.coal.id) return 1600;
     return 0;
 }
 

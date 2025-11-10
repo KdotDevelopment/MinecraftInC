@@ -122,6 +122,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     session_data_initialize();
     item_models_init();
     tesselator_create(&g_tesselator);
+    minecraft->crafting_manager = crafting_manager_create();
     minecraft->debug = string_create("");
     minecraft->sounds = sounds_create();
     minecraft->timer = timer_create(20);
@@ -189,17 +190,17 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
     minecraft->player.mob->player->inventory.inv[8] = item_stack_create(BLOCK_TORCH, 64, 0);
-    minecraft->player.mob->player->inventory.inv[0] = item_stack_create(items.iron_pickaxe.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.bow.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.iron_axe.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.iron_shovel.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[10] = item_stack_create(items.arrow.item_id, 64, 0);
-    minecraft->player.mob->player->inventory.inv[11] = item_stack_create(items.flint_and_steel.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[12] = item_stack_create(items.cooked_pork.item_id, 20, 0);
-    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_helmet.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_chestplate.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_leggings.item_id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_boots.item_id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[0] = item_stack_create(items.iron_pickaxe.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.bow.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.iron_axe.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.iron_shovel.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[10] = item_stack_create(items.arrow.id, 64, 0);
+    minecraft->player.mob->player->inventory.inv[11] = item_stack_create(items.flint_and_steel.id, 1, 0);
+    minecraft->player.mob->player->inventory.inv[12] = item_stack_create(items.cooked_pork.id, 20, 0);
+    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_helmet.id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_chestplate.id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_leggings.id, 1, 0);
+    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_boots.id, 1, 0);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
     renderer_world_change_world(&minecraft->renderer_world, minecraft->world);

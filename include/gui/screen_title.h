@@ -7,3 +7,4 @@ void screen_title_tick(screen_t *screen);
 void screen_title_on_open(screen_t *screen);
 void screen_title_on_button_clicked(screen_t *screen, button_t *button);
 void screen_title_render(screen_t *screen, int mouse_x, int mouse_y, float partial_tick);
+void screen_title_on_key_pressed(screen_t *screen, char event_char, int event_key);

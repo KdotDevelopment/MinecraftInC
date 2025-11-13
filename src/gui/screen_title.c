@@ -23,6 +23,7 @@ screen_t screen_title_create() {
     screen.on_open = screen_title_on_open;
     screen.on_button_clicked = screen_title_on_button_clicked;
     screen.render = screen_title_render;
+    screen.on_key_pressed = screen_title_on_key_pressed;
 
     return screen;
 }
@@ -81,18 +82,22 @@ void screen_title_render(screen_t *screen, int mouse_x, int mouse_y, float parti
     uint64_t avail_mem = max_mem - free_mem;
     char string[128];
     snprintf(string, sizeof(string),
-        "Free memory: %ld%% of %ldMB",
+        "Free memory: %lld%% of %lldMB",
         avail_mem * 100LL / max_mem,
         max_mem / 1024LL / 1024LL
     );
     gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 2, 0x808080);
     memset(string, 0, sizeof(string));
     snprintf(string, sizeof(string),
-        "Allocated memory: %ld%% (%ld MB)",
+        "Allocated memory: %lld%% (%lld MB)",
         total_mem * 100L / max_mem,
         total_mem / 1024L / 1024L
     );
     gui_draw_string(screen->font, string, screen->width - font_get_width(screen->font, string) - 2, 12, 0x808080);
 
     screen_render(screen, mouse_x, mouse_y, partial_tick);
+}
+
+void screen_title_on_key_pressed(screen_t *screen, char event_char, int event_key) {
+    return;
 }

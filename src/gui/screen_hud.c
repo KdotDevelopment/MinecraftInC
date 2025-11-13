@@ -6,6 +6,7 @@
 #include <renderer/tesselator.h>
 #include <player/player.h>
 #include <minecraft.h>
+#include <util/stats.h>
 
 #include <time.h>
 #include <string.h>
@@ -97,8 +98,8 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
         }
 
         if(entity_is_underwater(&hud->minecraft->player)) {
-            int air1 = (int)ceil((hud->minecraft->player.mob->air_supply - 2.0) * 10.0 / 300.0);
-            int air2 = (int)ceil(hud->minecraft->player.mob->air_supply * 10.0 / 300.0) - air1;
+            int air1 = (int)ceil((hud->minecraft->player.mob->entity->air_supply - 2.0) * 10.0 / 300.0);
+            int air2 = (int)ceil(hud->minecraft->player.mob->entity->air_supply * 10.0 / 300.0) - air1;
 
             for(int j = 0; j < air1 + air2; j++) {
                 if(j < air1) {
@@ -155,6 +156,24 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
         char *entities = renderer_world_get_entities_debug(&hud->minecraft->renderer_world);
         font_render(&hud->minecraft->font, entities, 2, 22, 0xffffffff);
         string_free(entities);
+        uint64_t max_mem = stats_get_max_memory();
+        uint64_t total_mem = stats_get_total_memory();
+        uint64_t free_mem = stats_get_free_memory();
+        uint64_t avail_mem = max_mem - free_mem;
+        char stats_string[128];
+        snprintf(stats_string, sizeof(stats_string),
+            "Free memory: %lld%% of %lldMB",
+            avail_mem * 100LL / max_mem,
+            max_mem / 1024LL / 1024LL
+        );
+        font_render(&hud->minecraft->font, stats_string, hud->width - font_get_width(&hud->minecraft->font, stats_string) - 2, 2, 0xffffffff);
+        memset(stats_string, 0, sizeof(stats_string));
+        snprintf(stats_string, sizeof(stats_string),
+            "Allocated memory: %lld%% (%lld MB)",
+            total_mem * 100L / max_mem,
+            total_mem / 1024L / 1024L
+        );
+        font_render(&hud->minecraft->font, stats_string, hud->width - font_get_width(&hud->minecraft->font, stats_string) - 2, 12, 0xffffffff);
     }else {
         font_render(&hud->minecraft->font, "Minecraft Infdev", 2, 2, 0xffffffff);
     }

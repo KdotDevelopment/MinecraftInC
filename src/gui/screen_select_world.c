@@ -42,6 +42,9 @@ void screen_select_world_on_open(screen_t *screen) {
 
 void screen_select_world_on_button_clicked(screen_t *screen, button_t *button) {
     if(button->active == 0) return;
+    if(button->id < 5) {
+        screen_select_world_select(screen, button->id + 1);
+    }
     if(button->id == 6) {
         minecraft_set_current_screen(screen->minecraft, (screen_t *)screen->parent);
         return;
@@ -53,4 +56,11 @@ void screen_select_world_render(screen_t *screen, int mouse_x, int mouse_y, floa
     gui_draw_centered_string(screen->font, "Select world", screen->width / 2, 20, 0xFFFFFFFF);
 
     screen_render(screen, mouse_x, mouse_y, partial_tick);
+}
+
+void screen_select_world_select(screen_t *screen, int world_id) {
+    char name[24];
+    snprintf(name, 23, "World%d", world_id);
+    minecraft_start_world(screen->minecraft, name);
+    minecraft_set_current_screen(screen->minecraft, NULL);
 }

@@ -101,6 +101,11 @@ int block_furnace_get_texture_side(block_t *block, uint8_t face) {
 
 uint8_t block_furnace_on_interacted(block_t *block, world_t *world, int x, int y, int z, entity_t *player) {
     tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
+    if(tile_entity == NULL) {
+        return 1;
+    }
+
+    tile_entity->inventory.host_tile_entity = tile_entity;
     player_render_furnace_screen(player, tile_entity);
     return 1;
 }

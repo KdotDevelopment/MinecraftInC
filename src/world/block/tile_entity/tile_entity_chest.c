@@ -17,7 +17,7 @@ void tile_entity_chest_create(tile_entity_t *tile_entity, world_t *world, int x,
     tile_entity->inventory_size = 27;
 
     memset(&tile_entity->inventory, 0, sizeof(inventory_t));
-    tile_entity->inventory.size = 36;
+    tile_entity->inventory.size = tile_entity->inventory_size;
     tile_entity->inventory.stack_limit = 64;
     tile_entity->inventory.host_tile_entity = tile_entity;
 
@@ -86,6 +86,7 @@ void tile_entity_chest_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity_read_nbt(tile_entity, nbt);
     
     nbt_base_t items = nbt_tag_compound_get_tag_list(nbt, "Items");
+    memset(&tile_entity->inventory, 0, sizeof(inventory_t));
     tile_entity->inventory_size = 27;
     
     for(int i = 0; i < array_list_length(items.tag_array); i++) {
@@ -101,6 +102,16 @@ void tile_entity_chest_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity->read_nbt = tile_entity_chest_read_nbt;
     tile_entity->write_nbt = tile_entity_chest_write_nbt;
     tile_entity->get_name = tile_entity_chest_get_name;
+
+    tile_entity->inventory.size = tile_entity->inventory_size;
+    tile_entity->inventory.stack_limit = 64;
+    tile_entity->inventory.host_tile_entity = tile_entity;
+
+    tile_entity->inventory.get_slot = tile_entity_chest_get_item;
+    tile_entity->inventory.set_slot = tile_entity_chest_set_slot_contents;
+    tile_entity->inventory.remove_item = tile_entity_chest_decr_stack_size;
+    tile_entity->inventory.get_name = tile_entity_chest_get_name;
+    tile_entity->inventory.on_changed = tile_entity_chest_on_inventory_changed;
 }
 
 void tile_entity_chest_write_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
@@ -112,7 +123,7 @@ void tile_entity_chest_write_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
         if(tile_entity->chest_contents[i].item_id != 0) {
             nbt_base_t item = nbt_tag_compound_create();
             nbt_tag_compound_set_byte(&item, "Slot", i);
-            tile_entity->chest_contents[i] = item_stack_from_nbt(&item);
+            item_stack_write_nbt(&tile_entity->chest_contents[i], &item);
             nbt_tag_list_set_tag(&tag_list, &item);
         }
     }
@@ -125,9 +136,18 @@ char *tile_entity_chest_get_name() {
 }
 
 void tile_entity_chest_on_inventory_changed(inventory_t *inventory) {
-    return;
+    if(inventory == NULL) {
+        return;
+    }
+
+    tile_entity_t *tile_entity = inventory->host_tile_entity;
+    if(tile_entity == NULL || tile_entity->world == NULL) {
+        return;
+    }
+
+    world_update_chunk(tile_entity->world, tile_entity->x, tile_entity->y, tile_entity->z);
 }
 
 void tile_entity_chest_on_changed(tile_entity_t *tile_entity) {
-    return;
+    world_update_chunk(tile_entity->world, tile_entity->x, tile_entity->y, tile_entity->z);
 }

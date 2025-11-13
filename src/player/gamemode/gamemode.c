@@ -8,7 +8,7 @@ gamemode_t gamemode_create(struct minecraft_s *minecraft) {
     gamemode.minecraft = minecraft;
     gamemode.instant_break = 0;
     gamemode.is_survival = 1;
-    gamemode.reach = 5;
+    gamemode.reach = 4;
 
     gamemode.destroy_block = gamemode_destroy_block;
     gamemode.remove_item = gamemode_remove_item;

@@ -4,6 +4,7 @@
 #include <renderer/renderer_camera.h>
 #include <renderer/tesselator.h>
 #include <renderer/frustum.h>
+#include <renderer/renderer_block.h>
 #include <renderer/texture/texture_fire.h>
 #include <renderer/texture/texture_gears.h>
 #include <renderer/texture/texture_lava.h>
@@ -43,6 +44,7 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     minecraft->running = 0;
     minecraft->ticks = 0;
     minecraft->has_mouse = 0;
+    minecraft->pending_mouse_button_up = 0;
     minecraft->hit_result = (hit_result_t){.null = 1};
     minecraft->last_click = 0;
     minecraft->raining = 0;
@@ -166,52 +168,16 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
 
     glViewport(0, 0, minecraft->frame_width, minecraft->frame_height);
 
-    minecraft->world = malloc(sizeof(world_t));
-    world_create(minecraft->world, minecraft, "./.minecraft/saves", "World1", time(NULL));
-    /*for(int i = -196; i <= 196; i += 16) {
-        for(int j = -196; j <= 196; j += 16) {
-            world_get_block(minecraft->world, i + minecraft->world->spawn_x, 64, j + minecraft->world->spawn_z);
-        }
-    }*/
-    world_save(minecraft->world, 1);
     minecraft->renderer = renderer_camera_create(minecraft);
-    player_create(&minecraft->player, (struct world_s *)minecraft->world);
-    printf("Player created at %f, %f, %f\n", minecraft->player.x, minecraft->player.y, minecraft->player.z);
-    minecraft->player.x = 0;
-    minecraft->player.y = 64;
-    minecraft->player.z = 0;
-    minecraft->world->player = &minecraft->player;
-    printf("Preparing lights\n");
-    while(array_list_length(minecraft->world->lighting_update_list) > 0) {
-        world_update_lighting(minecraft->world);
-    }
-    while(world_update_lighting(minecraft->world));
-    minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
+    
+    
     //minecraft->gamemode.init_player(&minecraft->gamemode, &minecraft->player);
     //minecraft->gamemode.adjust_player(&minecraft->gamemode, &minecraft->player);
-    minecraft->player.mob->player->inventory.inv[8] = item_stack_create(BLOCK_TORCH, 64, 0);
-    minecraft->player.mob->player->inventory.inv[0] = item_stack_create(items.iron_pickaxe.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[1] = item_stack_create(items.bow.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[2] = item_stack_create(items.iron_axe.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[3] = item_stack_create(items.iron_shovel.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[4] = item_stack_create(blocks.furnace.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[5] = item_stack_create(blocks.chest.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[10] = item_stack_create(items.arrow.id, 64, 0);
-    minecraft->player.mob->player->inventory.inv[11] = item_stack_create(items.flint_and_steel.id, 1, 0);
-    minecraft->player.mob->player->inventory.inv[12] = item_stack_create(items.cooked_pork.id, 20, 0);
-    minecraft->player.mob->player->inventory.inv[13] = item_stack_create(items.diamond.id, 64, 0);
-    minecraft->player.mob->player->inventory.armor[3] = item_stack_create(items.gold_helmet.id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[2] = item_stack_create(items.gold_chestplate.id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[1] = item_stack_create(items.gold_leggings.id, 1, 0);
-    minecraft->player.mob->player->inventory.armor[0] = item_stack_create(items.gold_boots.id, 1, 0);
 
     renderer_world_create(&minecraft->renderer_world, minecraft, minecraft->world, &minecraft->textures);
-    renderer_world_change_world(&minecraft->renderer_world, minecraft->world);
     //minecraft->world->renderer = (struct renderer_world_s *)&minecraft->renderer_world;
     //renderer_world_refresh((renderer_world_t *)&minecraft->renderer_world);
-    minecraft->particles = particles_create(minecraft->world, &minecraft->textures);
-    minecraft->world->particles = &minecraft->particles;
-
+    
     int x = minecraft->width;
     int y = minecraft->height;
     int w = x;
@@ -221,11 +187,79 @@ void minecraft_create(minecraft_t *minecraft, uint16_t width, uint16_t height, u
     h /= x;
     minecraft->hud = screen_hud_create((struct minecraft_s *)minecraft, w, h);
     //minecraft_grab_mouse(minecraft);
-    if(minecraft->world != NULL) {
+    if(minecraft->world == NULL) {
         screen_t *main_menu = malloc(sizeof(screen_t));
         *main_menu = screen_title_create();
         minecraft_set_current_screen(minecraft, main_menu);
     }
+}
+
+void minecraft_prepare_world(minecraft_t *minecraft, char *progress_text) {
+    progress_bar_set_title(&minecraft->progress_bar, progress_text);
+    progress_bar_set_text(&minecraft->progress_bar, "Preparing chunks");
+
+    for(int i = -196; i <= 196; i += 16) {
+        progress_bar_set_progress(&minecraft->progress_bar, (i + 196) * 100 / 392);
+        int x = minecraft->world->spawn_x;
+        int z = minecraft->world->spawn_z;
+        if(minecraft->world->player != NULL) {
+            x = minecraft->world->player->x;
+            z = minecraft->world->player->z;
+        }
+        for(int j = -196; j <= 196; j += 16) {
+            world_get_block(minecraft->world, i + x, 64, j + z);
+        }
+    }
+}
+
+void minecraft_set_world(minecraft_t *minecraft, world_t *world, char *progress_text) {
+    if(minecraft->world != NULL) {
+        world_save(minecraft->world, 1);
+    }
+    minecraft->world = world;
+    if(world != NULL) {
+        minecraft->renderer.renderer_overlay.world = world;
+        minecraft->renderer.renderer_overlay.renderer_block = renderer_block_create(world);
+        memset(&minecraft->player, 0, sizeof(entity_t));
+        world->player = &minecraft->player;
+        minecraft_prepare_world(minecraft, progress_text);
+        // cheap way to check if player exists
+        if(minecraft->player.write_nbt == NULL) {
+            player_create(&minecraft->player, minecraft->world);
+        }
+        minecraft->player.mob->player->inputs = inputs_create(&minecraft->settings);
+
+        if(minecraft->renderer_world.minecraft != NULL) {
+            renderer_world_change_world(&minecraft->renderer_world, world);
+        }
+
+        if(minecraft->particles.textures != NULL) {
+            // clear particles
+            minecraft->world->particles = &minecraft->particles;
+        }
+
+        // on respawn
+        world_spawn_player(world);
+    }
+}
+
+void minecraft_start_world(minecraft_t *minecraft, char *world_name) {
+    minecraft_set_world(minecraft, NULL, world_name);
+    world_t *world = malloc(sizeof(world_t));
+    world_create(world, minecraft, "./.minecraft/saves", world_name, time(NULL));
+    if(world->is_new_world) {
+        minecraft_set_world(minecraft, world, "Generating level");
+    }else {
+        minecraft_set_world(minecraft, world, "Loading level");
+    }
+
+    progress_bar_set_text(&minecraft->progress_bar, "Preparing lights");
+    int progress = 0;
+    while(array_list_length(minecraft->world->lighting_update_list) > 0) {
+        progress_bar_set_progress(&minecraft->progress_bar, progress++ % 100);
+        world_update_lighting(minecraft->world);
+    }
+    minecraft->particles = particles_create(minecraft->world, &minecraft->textures);
 }
 
 void minecraft_grab_mouse(minecraft_t *minecraft) {
@@ -252,9 +286,12 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
         *screen = screen_death_create();
     }
     if(screen != NULL) {
+        minecraft->pending_mouse_button_up = 0;
         minecraft->current_screen = screen;
         if(minecraft->has_mouse) {
-            inputs_reset_keys(&minecraft->player.mob->player->inputs);
+            if(minecraft->player.read_nbt != NULL) {
+                inputs_reset_keys(&minecraft->player.mob->player->inputs);
+            }
             minecraft->has_mouse = 0;
             SDL_ShowCursor(1);
         }
@@ -269,6 +306,7 @@ void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen) {
         screen_open(screen, minecraft, w, h);
     }else {
         minecraft->current_screen = NULL;
+        minecraft->pending_mouse_button_up = 0;
         minecraft_grab_mouse(minecraft);
     }
 }
@@ -328,7 +366,7 @@ void on_mouse_clicked(minecraft_t *minecraft, int button) {
         }else {
             if(minecraft->hit_result.type == 1) {
                 if(button == SDL_BUTTON_LEFT) {
-                    entity_t *hit_entity = minecraft->hit_result.entity;
+                    //entity_t *hit_entity = minecraft->hit_result.entity;
 
                     // TODO entity damage
 
@@ -398,6 +436,15 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         minecraft_set_current_screen(minecraft, NULL);
     }
 
+    for(int i = 0; i < array_list_length(events); i++) {
+        if(minecraft->pending_mouse_button_up != 0 && events[i].type == SDL_MOUSEBUTTONUP) {
+            if(events[i].button.button == minecraft->pending_mouse_button_up) {
+                events[i] = (SDL_Event){ 0 };
+                minecraft->pending_mouse_button_up = 0;
+            }
+        }
+    }
+
     if(minecraft->current_screen == NULL || minecraft->current_screen->grabs_mouse) {
         for(int i = 0; i < array_list_length(events); i++) {
             if(events[i].type == SDL_MOUSEWHEEL) {
@@ -415,8 +462,13 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
                         minecraft->last_click = minecraft->ticks;
                     }
                     if(events[i].button.button == SDL_BUTTON_RIGHT) {
+                        screen_t *previous_screen = minecraft->current_screen;
                         on_mouse_clicked(minecraft, SDL_BUTTON_RIGHT);
                         minecraft->last_click = minecraft->ticks;
+                        if(minecraft->current_screen != NULL && minecraft->current_screen != previous_screen) {
+                            minecraft->pending_mouse_button_up = SDL_BUTTON_RIGHT;
+                            events[i] = (SDL_Event){ 0 };
+                        }
                     }
                     if(events[i].button.button == SDL_BUTTON_MIDDLE && !minecraft->hit_result.null) {
                         uint8_t block_id = world_get_block(minecraft->world, minecraft->hit_result.x, minecraft->hit_result.y, minecraft->hit_result.z);
@@ -507,8 +559,8 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
             minecraft->current_screen->destroy((struct screen_s *)minecraft->current_screen);
             free(minecraft->current_screen);
             minecraft->current_screen = NULL;
+            minecraft->pending_mouse_button_up = 0;
         }else {
-            minecraft->last_click = minecraft->ticks + 10000;
             screen_do_input(minecraft->current_screen, events);
             if(minecraft->current_screen != NULL) {
                 minecraft->current_screen->tick((struct screen_s *)minecraft->current_screen);

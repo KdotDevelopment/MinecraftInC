@@ -59,10 +59,12 @@ typedef struct screen_s {
     union {
         struct {
             tile_entity_t *tile_entity; // furnace, chest
+            inventory_t *player_inv; // chest
             inventory_t crafting_inv;
             inventory_t crafting_result;
             int mx;
             int my; // used for inventory player model
+            int rows;
         };
         char *name; //world name screen, String
         char *names[5]; //load world screen, String

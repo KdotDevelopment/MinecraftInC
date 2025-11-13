@@ -1,9 +1,12 @@
 #include <player/player.h>
 
+#include <entity/mob/mob_humanoid.h>
 #include <gui/container/screen_crafting.h>
 #include <gui/container/screen_furnace.h>
+#include <gui/container/screen_chest.h>
 #include <item/item.h>
 #include <model/model.h>
+#include <nbt/nbt_tag_list.h>
 #include <world/world.h>
 #include <player/player_ai.h>
 #include <minecraft.h>
@@ -14,8 +17,7 @@
 
 // Extends mob/mob.h
 void player_create(entity_t *entity, struct world_s *world) {
-    world_t *real_world = (world_t *)world;
-    mob_create(entity, world);
+    mob_humanoid_create(entity, world, world->spawn_x, world->spawn_y, world->spawn_z);
     entity->mob->player = malloc(sizeof(player_t));
     player_t *player = entity->mob->player;
     player->mob = entity->mob;
@@ -40,12 +42,10 @@ void player_create(entity_t *entity, struct world_s *world) {
     player->arrows = 20;
     player->entity->model = models_get(&world->minecraft->models, player->mob->model_type);
 
-    entity_reset_pos(player->entity);
+    player->entity->read_nbt = player_read_nbt;
+    player->entity->write_nbt = player_write_nbt;
 
-    if(world) {
-        real_world->player = player->mob->entity;
-        world_spawn_entity(real_world, player->entity);
-    }
+    entity_reset_pos(player->entity);
 
     //return player;
 }
@@ -63,6 +63,49 @@ uint8_t player_can_harvest_block(entity_t *player, block_t *block) {
     }
 }
 
+void player_read_nbt(entity_t *player, nbt_base_t *nbt) {
+    mob_humanoid_read_nbt(player, nbt);
+    player->mob->player->score = nbt_tag_compound_get_int(nbt, "Score");
+    nbt_base_t inventory_nbt = nbt_tag_compound_get_tag_list(nbt, "Inventory");
+    inventory_t *inventory = &player->mob->player->inventory;
+
+    for(int i = 0; i < array_list_length(inventory_nbt.tag_array); i++) {
+        nbt_base_t *item_nbt = nbt_tag_list_get_tag(&inventory_nbt, i);
+        int slot = nbt_tag_compound_get_byte(item_nbt, "Slot") & 255;
+        if(slot >= 0 && slot < 36) {
+            inventory->inv[i] = item_stack_from_nbt(item_nbt);
+        }
+        if(slot >= 100 && slot < 104) {
+            inventory->armor[i - 100] = item_stack_from_nbt(item_nbt);
+        }
+    }
+
+    nbt_tag_compound_free(&inventory_nbt);
+}
+
+void player_write_nbt(entity_t *player, nbt_base_t *nbt) {
+    mob_humanoid_write_nbt(player, nbt);
+    nbt_tag_compound_set_int(nbt, "Score", player->mob->player->score);
+    inventory_t *inventory = &player->mob->player->inventory;
+    nbt_base_t inventory_nbt = nbt_tag_list_create();
+
+    for(int i = 0; i < 36; i++) {
+        nbt_base_t item_nbt = nbt_tag_compound_create();
+        nbt_tag_compound_set_byte(&item_nbt, "Slot", i);
+        item_stack_write_nbt(&inventory->inv[i], &item_nbt);
+        nbt_tag_list_set_tag(&inventory_nbt, &item_nbt);
+    }
+
+    for(int i = 0; i < 4; i++) {
+        nbt_base_t item_nbt = nbt_tag_compound_create();
+        nbt_tag_compound_set_byte(&item_nbt, "Slot", i + 100);
+        item_stack_write_nbt(&inventory->armor[i], &item_nbt);
+        nbt_tag_list_set_tag(&inventory_nbt, &item_nbt);
+    }
+
+    nbt_tag_compound_set_tag(nbt, "Inventory", &inventory_nbt);
+}
+
 void player_render_crafting_screen(entity_t *player) {
     screen_t *screen = malloc(sizeof(screen_t));
     screen_crafting_create(screen, &player->mob->player->inventory);
@@ -72,5 +115,11 @@ void player_render_crafting_screen(entity_t *player) {
 void player_render_furnace_screen(entity_t *player, tile_entity_t *tile_entity) {
     screen_t *screen = malloc(sizeof(screen_t));
     screen_furnace_create(screen, &player->mob->player->inventory, tile_entity);
+    minecraft_set_current_screen(player->world->minecraft, screen);
+}
+
+void player_render_chest_screen(entity_t *player, tile_entity_t *tile_entity) {
+    screen_t *screen = malloc(sizeof(screen_t));
+    screen_chest_create(screen, &player->mob->player->inventory, tile_entity);
     minecraft_set_current_screen(player->world->minecraft, screen);
 }

@@ -1,6 +1,7 @@
 #include <world/block/block_chest.h>
 
 #include <entity/entity_item.h>
+#include <gui/container/inventory_double_chest.h>
 #include <item/item_stack.h>
 #include <world/block/block_container.h>
 #include <world/block/blocks.h>
@@ -87,14 +88,14 @@ int block_chest_get_texture(block_t *block, world_t *world, int x, int y, int z,
     }else if(side != 2 && side != 3) {
         int texture_offset = 0;
 
-        if(block_west == block->id) {
+        if(block_north == block->id) {
             texture_offset = -1;
         }
 
         int diagonal_west = world_get_block(world, x - 1, y, block_north == block->id ? z - 1 : z + 1);
         int diagonal_east = world_get_block(world, x + 1, y, block_north == block->id ? z - 1 : z + 1);
 
-        if(side == 3) {
+        if(side == 4) {
             texture_offset = -1 - texture_offset;
         }
 
@@ -186,30 +187,43 @@ void block_chest_on_removed(block_t *block, world_t *world, int x, int y, int z)
 }
 
 uint8_t block_chest_on_interacted(block_t *block, world_t *world, int x, int y, int z, entity_t *player) {
-    //tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
+    tile_entity_t *tile_entity = world_get_tile_entity(world, x, y, z);
     if(world_is_solid(world, x, y + 1, z)) return 1;
     else if(world_get_block(world, x - 1, y, z) == block->id && world_is_solid(world, x - 1, y + 1, z)) return 1;
     else if(world_get_block(world, x + 1, y, z) == block->id && world_is_solid(world, x + 1, y + 1, z)) return 1;
     else if(world_get_block(world, x, y, z - 1) == block->id && world_is_solid(world, x, y + 1, z - 1)) return 1;
     else if(world_get_block(world, x, y, z + 1) == block->id && world_is_solid(world, x, y + 1, z + 1)) return 1;
 
+    tile_entity->chest_inventory = tile_entity->inventory;
+    tile_entity->chest_inventory.host_tile_entity = tile_entity;
+    tile_entity->chest_inventory.upper_chest = NULL;
+    tile_entity->chest_inventory.lower_chest = NULL;
+
     if(world_get_block(world, x - 1, y, z) == block->id) {
-        // large chest
+        tile_entity_t *neighbor = world_get_tile_entity(world, x - 1, y, z);
+        tile_entity->chest_inventory = inventory_double_chest_create("Large chest", &neighbor->inventory, &tile_entity->inventory);
+        tile_entity->chest_inventory.host_tile_entity = tile_entity;
     }
 
     if(world_get_block(world, x + 1, y, z) == block->id) {
-        // large chest
+        tile_entity_t *neighbor = world_get_tile_entity(world, x + 1, y, z);
+        tile_entity->chest_inventory = inventory_double_chest_create("Large chest", &tile_entity->inventory, &neighbor->inventory);
+        tile_entity->chest_inventory.host_tile_entity = tile_entity;
     }
 
     if(world_get_block(world, x, y, z - 1) == block->id) {
-        // large chest
+        tile_entity_t *neighbor = world_get_tile_entity(world, x, y, z - 1);
+        tile_entity->chest_inventory = inventory_double_chest_create("Large chest", &neighbor->inventory, &tile_entity->inventory);
+        tile_entity->chest_inventory.host_tile_entity = tile_entity;
     }
 
     if(world_get_block(world, x, y, z + 1) == block->id) {
-        // large chest
+        tile_entity_t *neighbor = world_get_tile_entity(world, x, y, z + 1);
+        tile_entity->chest_inventory = inventory_double_chest_create("Large chest", &tile_entity->inventory, &neighbor->inventory);
+        tile_entity->chest_inventory.host_tile_entity = tile_entity;
     }
 
-    // display chest gui
+    player_render_chest_screen(player, tile_entity);
     return 1;
 }
 

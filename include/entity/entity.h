@@ -32,10 +32,10 @@ typedef enum {
 
 typedef struct entity_s {
     struct world_s *world;
-    float xo, yo, zo;
-    float last_tick_x, last_tick_y, last_tick_z;
-    float x, y, z;
-    float xd, yd, zd;
+    double xo, yo, zo;
+    double last_tick_x, last_tick_y, last_tick_z;
+    double x, y, z;
+    double xd, yd, zd;
     float y_rot, x_rot;
     float y_roto, x_roto;
     AABB_t bb;
@@ -60,6 +60,7 @@ typedef struct entity_s {
     uint8_t no_physics; // = false
     float push_through; // = 0.0F
     uint8_t hovered; // = false
+    int air_supply; // = 300;
     int age;
     int tick_count; // = 0;
     entity_type_t type;
@@ -142,5 +143,7 @@ void entity_cause_fall_damage(entity_t *entity, float distance);
 void entity_award_kill_score(entity_t *entity, entity_t *causer, int score);
 void entity_player_touch(entity_t *entity, entity_t *player);
 uint8_t entity_can_be_hit(entity_t *entity);
+uint8_t entity_add_id(entity_t *entity, nbt_base_t *nbt);
+void entity_create_from_nbt(entity_t *entity, nbt_base_t *nbt, struct world_s *world);
 void entity_read_nbt(entity_t *entity, nbt_base_t *nbt);
 void entity_write_nbt(entity_t *entity, nbt_base_t *nbt);

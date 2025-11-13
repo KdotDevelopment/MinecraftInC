@@ -71,7 +71,7 @@ void progress_bar_set_progress(progress_bar_t *bar, int progress) {
             tesselator_vertex(b1, b2 + 2, 0.0);
             tesselator_vertex(b1 + 100, b2 + 2, 0.0);
             tesselator_vertex(b1 + 100, b2, 0.0);
-            tesselator_color_opaque_int(0xffff8080);
+            tesselator_color_opaque_int(0xff80ff80);
             tesselator_vertex(b1, b2, 0.0);
             tesselator_vertex(b1, b2 + 2, 0.0);
             tesselator_vertex(b1 + progress, b2 + 2, 0.0);

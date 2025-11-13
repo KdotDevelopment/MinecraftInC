@@ -92,6 +92,7 @@ void tile_entity_furnace_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity_read_nbt(tile_entity, nbt);
     
     nbt_base_t items = nbt_tag_compound_get_tag_list(nbt, "Items");
+    memset(&tile_entity->inventory, 0, sizeof(inventory_t));
     tile_entity->inventory_size = 3;
 
     for(int i = 0; i < array_list_length(items.tag_array); i++) {
@@ -112,6 +113,16 @@ void tile_entity_furnace_read_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
     tile_entity->read_nbt = tile_entity_furnace_read_nbt;
     tile_entity->write_nbt = tile_entity_furnace_write_nbt;
     tile_entity->get_name = tile_entity_furnace_get_name;
+
+    tile_entity->inventory.size = 3;
+    tile_entity->inventory.stack_limit = 64;
+    tile_entity->inventory.host_tile_entity = tile_entity;
+
+    tile_entity->inventory.on_changed = tile_entity_furnace_on_inventory_changed;
+    tile_entity->inventory.set_slot = tile_entity_furnace_set_slot_contents;
+    tile_entity->inventory.get_slot = tile_entity_furnace_get_item;
+    tile_entity->inventory.remove_item = tile_entity_furnace_decr_stack_size;
+    tile_entity->inventory.get_name = tile_entity_furnace_get_name;
 }
 
 void tile_entity_furnace_write_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) {
@@ -126,7 +137,7 @@ void tile_entity_furnace_write_nbt(tile_entity_t *tile_entity, nbt_base_t *nbt) 
         if(tile_entity->furnace_contents[i].item_id != 0) {
             nbt_base_t item = nbt_tag_compound_create();
             nbt_tag_compound_set_byte(&item, "Slot", i);
-            tile_entity->furnace_contents[i] = item_stack_from_nbt(&item);
+            item_stack_write_nbt(&tile_entity->furnace_contents[i], &item);
             nbt_tag_list_set_tag(&tag_list, &item);
         }
     }
@@ -252,9 +263,22 @@ int tile_entity_furnace_get_burn_time(item_stack_t *item_stack) {
 }
 
 void tile_entity_furnace_on_inventory_changed(inventory_t *inventory) {
-    world_update_chunk(inventory->host_tile_entity->world, inventory->host_tile_entity->x, inventory->host_tile_entity->y, inventory->host_tile_entity->z);
+    if(inventory == NULL) {
+        return;
+    }
+
+    tile_entity_t *tile_entity = inventory->host_tile_entity;
+    if(tile_entity == NULL || tile_entity->world == NULL) {
+        return;
+    }
+
+    world_update_chunk(tile_entity->world, tile_entity->x, tile_entity->y, tile_entity->z);
 }
 
 void tile_entity_furnace_on_changed(tile_entity_t *tile_entity) {
+    if(tile_entity == NULL || tile_entity->world == NULL) {
+        return;
+    }
+
     world_update_chunk(tile_entity->world, tile_entity->x, tile_entity->y, tile_entity->z);
 }

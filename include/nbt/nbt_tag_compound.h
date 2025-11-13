@@ -15,6 +15,7 @@ void nbt_tag_compound_set_byte_array(nbt_base_t *base, char *key, uint8_t *value
 void nbt_tag_compound_set_compound_tag(nbt_base_t *base, char *key, nbt_base_t *tag);
 void nbt_tag_compound_set_boolean(nbt_base_t *base, char *key, int8_t value);
 
+uint8_t nbt_tag_compound_has_key(nbt_base_t *base, char *key);
 int8_t nbt_tag_compound_get_byte(nbt_base_t *base, char *key);
 int16_t nbt_tag_compound_get_short(nbt_base_t *base, char *key);
 int32_t nbt_tag_compound_get_int(nbt_base_t *base, char *key);

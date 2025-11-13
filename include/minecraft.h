@@ -44,6 +44,7 @@ typedef struct minecraft_s {
     crafting_manager_t crafting_manager;
     uint8_t fullscreen;
     uint8_t has_mouse;
+    uint8_t pending_mouse_button_up;
     char *debug;
     int last_click;
     int32_t width;
@@ -61,6 +62,7 @@ typedef struct minecraft_s {
     char *game_dir;
 } minecraft_t;
 
+void minecraft_start_world(minecraft_t *minecraft, char *world_name);
 void minecraft_grab_mouse(minecraft_t *minecraft);
 void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen);
 void minecraft_pause(minecraft_t *minecraft);

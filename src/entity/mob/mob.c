@@ -1,4 +1,5 @@
 #include <entity/mob/mob.h>
+
 #include <world/world.h>
 #include <model/models.h>
 #include <model/model.h>
@@ -29,7 +30,6 @@ void mob_create(entity_t *entity, struct world_s *world) {
     mob->death_score = 0;
     mob->render_offset = 0;
     mob->invulnerable_time = 0;
-    mob->air_supply = AIR_SUPPLY;
     mob->hurt_dir = 0;
     mob->death_time = 0;
     mob->attack_time = 0;
@@ -59,6 +59,8 @@ void mob_create(entity_t *entity, struct world_s *world) {
     mob->ai_step = mob_ai_step;
     mob->entity->heal = mob_heal;
     mob->entity->can_be_hit = mob_can_be_hit;
+    mob->entity->read_nbt = mob_read_nbt;
+    mob->entity->write_nbt = mob_write_nbt;
 
     //return mob;
 }
@@ -90,13 +92,13 @@ void mob_tick(entity_t *entity) {
     }
 
     if(entity_is_underwater(entity)) {
-        if(mob->air_supply > 0) {
-            mob->air_supply--;
+        if(mob->entity->air_supply > 0) {
+            mob->entity->air_supply--;
         }else {
             entity->hurt(entity, NULL, 2);
         }
     } else {
-        mob->air_supply = AIR_SUPPLY;
+        mob->entity->air_supply = AIR_SUPPLY;
     }
 
     if(entity_is_in_lava(entity)) {
@@ -378,6 +380,25 @@ void mob_cause_fall_damage(entity_t *entity, float distance) {
         entity->hurt(entity, NULL, damage);
         world_play_sound_at_entity(entity->world, entity, block_list[block_id].sound->base_type, block_list[block_id].sound->volume * 0.5, block_list[block_id].sound->pitch * (12.0 / 16.0));
     }
+}
+
+void mob_read_nbt(entity_t *entity, nbt_base_t *nbt) {
+    entity_read_nbt(entity, nbt);
+    entity->mob->health = nbt_tag_compound_get_short(nbt, "Health");
+    if(!nbt_tag_compound_has_key(nbt, "Health")) {
+        entity->mob->health = 10;
+    }
+    entity->mob->hurt_time = nbt_tag_compound_get_short(nbt, "HurtTime");
+    entity->mob->death_time = nbt_tag_compound_get_short(nbt, "DeathTime");
+    entity->mob->attack_time = nbt_tag_compound_get_short(nbt, "AttackTime");
+}
+
+void mob_write_nbt(entity_t *entity, nbt_base_t *nbt) {
+    entity_write_nbt(entity, nbt);
+    nbt_tag_compound_set_short(nbt, "Health", entity->mob->health);
+    nbt_tag_compound_set_short(nbt, "HurtTime", entity->mob->hurt_time);
+    nbt_tag_compound_set_short(nbt, "DeathTime", entity->mob->death_time);
+    nbt_tag_compound_set_short(nbt, "AttackTime", entity->mob->attack_time);
 }
 
 void mob_travel(mob_t *mob, float x, float z) {

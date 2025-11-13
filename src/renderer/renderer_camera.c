@@ -157,7 +157,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
     }
 
     renderer->entity = NULL;
-    double a = 0.0;
+    //double a = 0.0;
 
     AABB_t box = AABB_expand(player->bb, sc * reach, s2 * reach, cc * reach);
     entity_t **entities = world_get_entities_excluding(renderer->minecraft->world, player, box);

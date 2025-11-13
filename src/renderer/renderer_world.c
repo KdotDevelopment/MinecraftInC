@@ -95,6 +95,7 @@ void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
     renderer->last_load_y = -9999;
     renderer->last_load_z = -9999;
     renderer->minecraft->entity_manager.world = world;
+    renderer->world = world;
     renderer->renderer_block = renderer_block_create(world);
     if(world != NULL) {
         world_add_renderer(world, renderer);

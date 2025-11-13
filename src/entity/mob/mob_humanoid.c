@@ -1,4 +1,5 @@
 #include <entity/mob/mob_humanoid.h>
+
 #include <model/model_humanoid.h>
 #include <world/world.h>
 #include <model/models.h>
@@ -20,6 +21,16 @@ void mob_humanoid_create(entity_t *entity, struct world_s *world, float x, float
     entity_set_pos(entity, x, y, z);
 
     mob->render_model = mob_humanoid_render_model;
+    entity->read_nbt = mob_humanoid_read_nbt;
+    entity->write_nbt = mob_humanoid_write_nbt;
+}
+
+void mob_humanoid_read_nbt(entity_t *entity, nbt_base_t *nbt) {
+    mob_read_nbt(entity, nbt);
+}
+
+void mob_humanoid_write_nbt(entity_t *entity, nbt_base_t *nbt) {
+    mob_write_nbt(entity, nbt);
 }
 
 void mob_humanoid_render_model(struct mob_s *mob, float time, float r, float bob, float y_rot, float x_rot, float scale) {

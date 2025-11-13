@@ -51,6 +51,7 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
     world->is_new_world = 1;
     world->chunks_generated_this_frame = 0;
     world->visual_update_random = random_create(seed);
+    world->player_nbt = (nbt_base_t){ .null = 1 };
     strncpy(world->save_file, saves_dir, sizeof(world->save_file) - 1);
     strcat(world->save_file, "/");
     strcat(world->save_file, world_name);
@@ -78,9 +79,9 @@ void world_create(world_t *world, struct minecraft_s *minecraft, char *saves_dir
         fclose(file);
         nbt = nbt_tag_compound_get_compound_tag(&nbt, "Data");
         world->random_seed = nbt_tag_compound_get_int(&nbt, "RandomSeed");
-        //world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
-        //world->spawn_y = nbt_tag_compound_get_int(&nbt, "SpawnY");
-        //world->spawn_z = nbt_tag_compound_get_int(&nbt, "SpawnZ");
+        world->spawn_x = nbt_tag_compound_get_int(&nbt, "SpawnX");
+        world->spawn_y = nbt_tag_compound_get_int(&nbt, "SpawnY");
+        world->spawn_z = nbt_tag_compound_get_int(&nbt, "SpawnZ");
         world->world_time = nbt_tag_compound_get_long(&nbt, "Time");
         world->size_on_disk = nbt_tag_compound_get_long(&nbt, "SizeOnDisk");
         world->player_nbt = nbt_tag_compound_get_compound_tag(&nbt, "Player");
@@ -114,7 +115,10 @@ nbt_base_t world_get_nbt_tag(char *game_dir, char *world_name) {
 }
 
 void world_spawn_player(world_t *world) {
-    
+    if(!world->player_nbt.null) {
+        world->player->read_nbt(world->player, &world->player_nbt);
+    }
+    world_spawn_entity(world, world->player);
 }
 
 char *private_dirname(char *path) {
@@ -220,7 +224,7 @@ void world_save(world_t *world, uint8_t check_entities) {
     nbt_tag_compound_set_long(&nbt, "LastPlayed", time(NULL));
     if(world->player != NULL) {
         nbt_base_t player_nbt = nbt_tag_compound_create();
-        // TODO: world->player->write_to_nbt(world->player, &player_nbt);
+        world->player->write_nbt(world->player, &player_nbt);
         nbt_tag_compound_set_compound_tag(&nbt, "Player", &player_nbt);
     }
 
@@ -1029,7 +1033,7 @@ uint8_t world_is_solid(world_t *world, int x, int y, int z) {
 }
 
 uint8_t world_update_lighting(world_t *world) {
-    int iterations = 100000;
+    int iterations = 1000;
 
     while(array_list_length(world->lighting_update_list) > 0) {
         int length = array_list_length(world->lighting_update_list);

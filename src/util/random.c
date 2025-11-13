@@ -67,5 +67,5 @@ int64_t random_next_long(random_t *random) {
 }
 
 void random_set_seed(random_t *random, long seed) {
-    random->seed = (seed ^ 0x5DEECE66DL) & ((1L << 48) - 1);
+    random->seed = (seed ^ 0x5DEECE66DL) & ((1LL << 48) - 1);
 }

@@ -3,8 +3,16 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
+#include <string.h>
 
 tesselator_t g_tesselator = { 0 };
+
+// I had to add this to get rid of type-punned pointer warnings
+inline uint32_t tesselator_float_to_bits(float value) {
+    uint32_t bits = 0;
+    memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
 
 void tesselator_create(tesselator_t *tesselator) {
     tesselator->vertex_count = 0;
@@ -129,8 +137,8 @@ void tesselator_vertex(double x, double y, double z) {
     if(g_tesselator.has_texture) {
         float u = g_tesselator.u;
         float v = g_tesselator.v;
-        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 3] = *(uint32_t *)&u;
-        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 4] = *(uint32_t *)&v;
+        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 3] = tesselator_float_to_bits(u);
+        g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 4] = tesselator_float_to_bits(v);
     }
 
     if(g_tesselator.has_color) {
@@ -140,9 +148,9 @@ void tesselator_vertex(double x, double y, double z) {
     float new_x = x + g_tesselator.x_offset;
     float new_y = y + g_tesselator.y_offset;
     float new_z = z + g_tesselator.z_offset;
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index] = *(uint32_t *)&new_x;
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 1] = *(uint32_t *)&new_y;
-    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 2] = *(uint32_t *)&new_z;
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index] = tesselator_float_to_bits(new_x);
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 1] = tesselator_float_to_bits(new_y);
+    g_tesselator.raw_buffer[g_tesselator.raw_buffer_index + 2] = tesselator_float_to_bits(new_z);
     g_tesselator.raw_buffer_index += 8;
     g_tesselator.vertex_count++;
 

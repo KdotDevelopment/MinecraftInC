@@ -22,5 +22,8 @@ typedef struct player_s {
 void player_create(entity_t *entity, struct world_s *world);
 void player_set_key(player_t *player, uint8_t key, uint8_t state);
 uint8_t player_can_harvest_block(entity_t *player, block_t *block);
+void player_read_nbt(entity_t *player, nbt_base_t *nbt);
+void player_write_nbt(entity_t *player, nbt_base_t *nbt);
 void player_render_crafting_screen(entity_t *player);
 void player_render_furnace_screen(entity_t *player, tile_entity_t *tile_entity);
+void player_render_chest_screen(entity_t *player, tile_entity_t *tile_entity);

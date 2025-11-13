@@ -25,6 +25,9 @@ renderer_screen_overlay_t renderer_screen_overlay_create(world_t *world) {
 }
 
 void renderer_screen_overlay_render(renderer_screen_overlay_t *renderer, float partial_tick) {
+    if(renderer->world == NULL || renderer->world->player == NULL) {
+        return;
+    }
     float d_equipped = renderer->equipped_progress_old + (renderer->equipped_progress - renderer->equipped_progress_old) * partial_tick;
     entity_t *player = renderer->world->player;
     glPushMatrix();
@@ -200,6 +203,9 @@ void renderer_screen_overlay_render(renderer_screen_overlay_t *renderer, float p
 }
 
 void renderer_screen_overlay_render_overlays(renderer_screen_overlay_t *renderer, float partial_tick) {
+    if(renderer->world == NULL || renderer->world->player == NULL) {
+        return;
+    }
     glDisable(GL_ALPHA_TEST);
     if(renderer->world->player->fire > 0) {
         glBindTexture(GL_TEXTURE_2D, textures_load(&renderer->world->minecraft->textures, "terrain.png"));
@@ -258,6 +264,9 @@ void renderer_screen_overlay_render_overlays(renderer_screen_overlay_t *renderer
 }
 
 void renderer_screen_overlay_update_item(renderer_screen_overlay_t *renderer) {
+    if(renderer->world == NULL || renderer->world->player == NULL) {
+        return;
+    }
     renderer->equipped_progress_old = renderer->equipped_progress;
     if(renderer->is_swinging) {
         renderer->swing_time++;

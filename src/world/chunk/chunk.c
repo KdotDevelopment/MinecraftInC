@@ -274,7 +274,6 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
     nbt_tag_compound_set_byte_array(nbt, "HeightMap", (uint8_t *)chunk->height_map, CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH);
     nbt_tag_compound_set_boolean(nbt, "TerrainPopulated", chunk->is_terrain_populated);
     chunk->has_entities = 0;
-    return;
 
     nbt_base_t entity_nbt_list = nbt_tag_list_create();
 
@@ -284,23 +283,36 @@ void chunk_write_nbt_data(chunk_t *chunk, nbt_base_t *nbt) {
         int size = array_list_length(chunk->entities[i]);
         for(int j = 0; j < size; j++) {
             entity_t *entity = *(entity_t **)array_list_get(chunk->entities[i], j);
-            // if(add entity id) (wrapper for entity_write_nbt but adds specific id name)
             entity_nbt = nbt_tag_compound_create();
-            nbt_tag_list_set_tag(&entity_nbt_list, &entity_nbt);
-            chunk->has_entities = 1;
+            if(entity_add_id(entity, &entity_nbt)) {
+                nbt_tag_list_set_tag(&entity_nbt_list, &entity_nbt);
+                chunk->has_entities = 1;
+            }
         }
     }
 
     nbt_tag_compound_set_tag(nbt, "Entities", &entity_nbt_list);
     nbt_base_t tile_entity_list = nbt_tag_list_create();
-    nbt_base_t tile_entity_nbt = { 0 };
+    tile_entity_list.array_list_type = NBT_TYPE_COMPOUND;
 
     for(int i = 0; i < array_list_length(chunk->tile_entity_map); i++) {
         entity_index_pair_t *map_pair = array_list_get(chunk->tile_entity_map, i);
+        if(map_pair == NULL || map_pair->tile_entity == NULL) {
+            continue;
+        }
+
         tile_entity_t *tile_entity = map_pair->tile_entity;
-        tile_entity_nbt = nbt_tag_compound_create();
-        tile_entity_write_nbt(tile_entity, &tile_entity_nbt);
-        nbt_tag_list_set_tag(&tile_entity_list, &tile_entity_nbt);
+        if(tile_entity->write_nbt == NULL) {
+            continue;
+        }
+
+        nbt_base_t tile_entity_tag = nbt_tag_compound_create();
+        tile_entity->write_nbt(tile_entity, &tile_entity_tag);
+        tile_entity_list.tag_array = array_list_push(tile_entity_list.tag_array, &tile_entity_tag);
+    }
+
+    if(array_list_length(tile_entity_list.tag_array) == 0) {
+        tile_entity_list.array_list_type = NBT_TYPE_END;
     }
 
     nbt_tag_compound_set_tag(nbt, "TileEntities", &tile_entity_list);
@@ -340,9 +352,10 @@ chunk_t chunk_read_nbt_data(world_t *world, nbt_base_t *nbt) {
         for(int i = 0; i < array_list_length(entity_list_nbt.tag_array); i++) {
             nbt_base_t *entity_nbt = nbt_tag_list_get_tag(&entity_list_nbt, i);
             entity_t *entity = malloc(sizeof(entity_t));
-            // *entity = entity->read_nbt(entity_nbt, world);
+            entity_create_from_nbt(entity, entity_nbt, world);
+            entity->world = world;
             chunk.has_entities = 1;
-            // chunk_add_entity(&chunk, entity);
+            chunk_add_entity(&chunk, entity);
         }
     }
 
@@ -352,6 +365,7 @@ chunk_t chunk_read_nbt_data(world_t *world, nbt_base_t *nbt) {
             nbt_base_t *tile_entity_nbt = nbt_tag_list_get_tag(&tile_entity_list_nbt, i);
             tile_entity_t *tile_entity = malloc(sizeof(tile_entity_t));
             *tile_entity = tile_entity_load(tile_entity_nbt);
+            tile_entity->world = world;
             int x_pos = tile_entity->x - (chunk.x_pos * CHUNK_SIZE_WIDTH);
             int y_pos = tile_entity->y;
             int z_pos = tile_entity->z - (chunk.z_pos * CHUNK_SIZE_WIDTH);
@@ -456,6 +470,7 @@ tile_entity_t *chunk_get_tile_entity(chunk_t *chunk, int x, int y, int z) {
 
 void chunk_set_tile_entity(chunk_t *chunk, int x, int y, int z, tile_entity_t *tile_entity) {
     chunk->is_modified = 1;
+    tile_entity->world = chunk->world;
     tile_entity->x = (chunk->x_pos * CHUNK_SIZE_WIDTH) + x;
     tile_entity->y = y;
     tile_entity->z = (chunk->z_pos * CHUNK_SIZE_WIDTH) + z;

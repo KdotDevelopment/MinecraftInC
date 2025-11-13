@@ -38,7 +38,6 @@ typedef struct mob_s {
     int health;
     int last_health;
     int invulnerable_time; // = 0;
-    int air_supply; // = 300;
     int hurt_time;
     int hurt_duration;
     float hurt_dir; // = 0.0F;
@@ -75,6 +74,8 @@ void mob_hurt(entity_t *entity, entity_t *entity_causer, int damage);
 void mob_knockback(mob_t *mob, mob_t *causer, int damage, float x_diff, float z_diff);
 void mob_die(struct mob_s *mob, mob_t *causer);
 void mob_cause_fall_damage(entity_t *entity, float distance);
+void mob_read_nbt(entity_t *entity, nbt_base_t *nbt);
+void mob_write_nbt(entity_t *entity, nbt_base_t *nbt);
 void mob_travel(mob_t *mob, float x, float z);
 void mob_heal(struct entity_s *entity, int amount);
 void mob_render_model(mob_t *mob, float time, float r, float bob, float y_rot, float x_rot, float scale);

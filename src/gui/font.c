@@ -64,7 +64,7 @@ font_t font_create(game_settings_t *settings, char *name, textures_t *textures) 
 
     for(int i = 0; i < 32; i++) {
         int brightness = (i & 8) << 3;
-        int red = (i & 1) & 191 + brightness;
+        int red = ((i & 1) & 191) + brightness;
         int green = ((i & 2) >> 1) * 191 + brightness;
         int blue = ((i & 4) >> 2) * 191 + brightness;
         uint8_t is_dark = i >= 16;
@@ -100,7 +100,7 @@ static void private_text_render(font_t *font, char *str, int x, int y, uint32_t 
         glColor4f(red, green, blue, 1.0);
         glPushMatrix();
         glTranslatef(x, y, 0.0);
-        for(int i = 0, w = 0; i < strlen(str); i++) {
+        for(int i = 0; i < strlen(str); i++) {
             if(str[i] == 38 && strlen(str) > i + 1) {
                 char *hex = string_create("0123456789abcdef");
                 int index = string_index_of(hex, str[i + 1]);

@@ -1,5 +1,20 @@
 #include <entity/entity.h>
 
+#include <entity/entity_arrow.h>
+#include <entity/entity_item.h>
+#include <entity/entity_painting.h>
+#include <entity/entity_primed_tnt.h>
+#include <entity/mob/mob.h>
+#include <entity/mob/mob_creeper.h>
+#include <entity/mob/mob_giant.h>
+#include <entity/mob/mob_pig.h>
+#include <entity/mob/mob_sheep.h>
+#include <entity/mob/mob_skeleton.h>
+#include <entity/mob/mob_spider.h>
+#include <entity/mob/mob_zombie.h>
+#include <nbt/nbt_tag_list.h>
+#include <nbt/nbt_tag_double.h>
+#include <nbt/nbt_tag_float.h>
 #include <particle/particle_bubble.h>
 #include <particle/particle_splash.h>
 #include <physics/AABB.h>
@@ -43,6 +58,7 @@ void entity_create(entity_t *entity, struct world_s *world) {
     entity->item = NULL;
     entity->fire_resistance = 1;
     entity->is_first_update = 1;
+    entity->air_supply = 300;
 
     entity->tick = entity_tick;
     entity->render = entity_render;
@@ -461,8 +477,139 @@ void entity_award_kill_score(entity_t *entity, entity_t *causer, int score) {
 void entity_player_touch(entity_t *entity, entity_t *player) {
 }
 
+char *entity_get_name(entity_t *entity) {
+    switch(entity->type) {
+        case ENTITY_ARROW: return "Arrow";
+        case ENTITY_ITEM: return "Item";
+        case ENTITY_PAINTING: return "Painting";
+        case ENTITY_MOB: return "Mob";
+        // monster
+        case ENTITY_MOB_CREEPER: return "Creeper";
+        case ENTITY_MOB_SKELETON: return "Skeleton";
+        case ENTITY_MOB_SPIDER: return "Spider";
+        case ENTITY_MOB_GIANT: return "Giant";
+        case ENTITY_MOB_ZOMBIE: return "Zombie";
+        case ENTITY_MOB_PIG: return "Pig";
+        case ENTITY_MOB_SHEEP: return "Sheep";
+        case ENTITY_PRIMED_TNT: return "PrimedTnt";
+        default: return NULL;
+    }
+}
+
+int entity_get_type(char *name) {
+    if(!name) return -1;
+    if(!strcmp(name, "Arrow")) return ENTITY_ARROW;
+    if(!strcmp(name, "Item")) return ENTITY_ITEM;
+    if(!strcmp(name, "Painting")) return ENTITY_PAINTING;
+    if(!strcmp(name, "Mob")) return ENTITY_MOB;
+    if(!strcmp(name, "Monster")) return ENTITY_MOB;
+    if(!strcmp(name, "Creeper")) return ENTITY_MOB_CREEPER;
+    if(!strcmp(name, "Skeleton")) return ENTITY_MOB_SKELETON;
+    if(!strcmp(name, "Spider")) return ENTITY_MOB_SPIDER;
+    if(!strcmp(name, "Giant")) return ENTITY_MOB_GIANT;
+    if(!strcmp(name, "Zombie")) return ENTITY_MOB_ZOMBIE;
+    if(!strcmp(name, "Pig")) return ENTITY_MOB_PIG;
+    if(!strcmp(name, "Sheep")) return ENTITY_MOB_SHEEP;
+    if(!strcmp(name, "PrimedTnt")) return ENTITY_PRIMED_TNT;
+    return -1;
+}
+
+void entity_get_constructor(entity_t *entity, world_t *world, uint8_t type) {
+    switch(type) {
+        case ENTITY_ARROW: entity_arrow_create(entity, world, NULL, 0, 0, 0, 0, 0, 0); break;
+        case ENTITY_ITEM: entity_item_create(entity, world, 0, 0, 0, item_stack_create(0, 0, 0)); break;
+        case ENTITY_PAINTING: entity_painting_create(entity, world, 0, 0, 0, 0); break;
+        case ENTITY_MOB: mob_create(entity, world); break;
+        // monster
+        case ENTITY_MOB_CREEPER: mob_creeper_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_SKELETON: mob_skeleton_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_SPIDER: mob_spider_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_GIANT: mob_giant_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_ZOMBIE: mob_zombie_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_PIG: mob_pig_create(entity, world, 0, 0, 0); break;
+        case ENTITY_MOB_SHEEP: mob_sheep_create(entity, world, 0, 0, 0); break;
+        case ENTITY_PRIMED_TNT: entity_primed_tnt_create(entity, world, 0, 0, 0); break;
+        default: break;
+    }
+}
+
+uint8_t entity_add_id(entity_t *entity, nbt_base_t *nbt) {
+    char *name = entity_get_name(entity);
+    if(!entity->is_dead && name != NULL) {
+        nbt_tag_compound_set_string(nbt, "id", name);
+        entity->write_nbt(entity, nbt);
+        return 1;
+    }
+    return 0;
+}
+
+void entity_create_from_nbt(entity_t *entity, nbt_base_t *nbt, world_t *world) {
+    char *name = nbt_tag_compound_get_string(nbt, "id");
+    int type = entity_get_type(name);
+    entity_get_constructor(entity, world, type);
+    if(entity) {
+        entity->read_nbt(entity, nbt);
+    }else {
+        printf("Skippiing Entity with id %s\n", name);
+    }
+}
+
 void entity_read_nbt(entity_t *entity, nbt_base_t *nbt) {
+    nbt_base_t pos_list = nbt_tag_compound_get_tag_list(nbt, "Pos");
+    nbt_base_t motion_list = nbt_tag_compound_get_tag_list(nbt, "Motion");
+    nbt_base_t rotation_list = nbt_tag_compound_get_tag_list(nbt, "Rotation");
+
+    entity->x = nbt_tag_list_get_tag(&pos_list, 0)->double_value;
+    entity->last_tick_x = entity->x;
+    entity->xo = entity->last_tick_x;
+    entity->y = nbt_tag_list_get_tag(&pos_list, 1)->double_value;
+    entity->last_tick_y = entity->y;
+    entity->yo = entity->last_tick_y;
+    entity->z = nbt_tag_list_get_tag(&pos_list, 2)->double_value;
+    entity->last_tick_z = entity->z;
+    entity->zo = entity->last_tick_z;
+
+    entity->xd = nbt_tag_list_get_tag(&motion_list, 0)->double_value;
+    entity->yd = nbt_tag_list_get_tag(&motion_list, 1)->double_value;
+    entity->zd = nbt_tag_list_get_tag(&motion_list, 2)->double_value;
+
+    entity->x_rot = nbt_tag_list_get_tag(&rotation_list, 0)->float_value;
+    entity->y_rot = nbt_tag_list_get_tag(&rotation_list, 1)->float_value;
+
+    entity->fall_distance = nbt_tag_compound_get_float(nbt, "FallDistance");
+    entity->fire = nbt_tag_compound_get_short(nbt, "Fire");
+    entity->air_supply = nbt_tag_compound_get_short(nbt, "Air");
+    entity_set_pos(entity, entity->x, entity->y, entity->z);
 }
 
 void entity_write_nbt(entity_t *entity, nbt_base_t *nbt) {
+    nbt_base_t pos_list = nbt_tag_list_create();
+    nbt_base_t motion_list = nbt_tag_list_create();
+    nbt_base_t rotation_list = nbt_tag_list_create();
+
+    nbt_base_t pos_x = nbt_tag_double_create(entity->x);
+    nbt_base_t pos_y = nbt_tag_double_create(entity->y);
+    nbt_base_t pos_z = nbt_tag_double_create(entity->z);
+    nbt_tag_list_set_tag(&pos_list, &pos_x);
+    nbt_tag_list_set_tag(&pos_list, &pos_y);
+    nbt_tag_list_set_tag(&pos_list, &pos_z);
+    nbt_tag_compound_set_tag(nbt, "Pos", &pos_list);
+
+    nbt_base_t motion_x = nbt_tag_double_create(entity->xd);
+    nbt_base_t motion_y = nbt_tag_double_create(entity->yd);
+    nbt_base_t motion_z = nbt_tag_double_create(entity->zd);
+    nbt_tag_list_set_tag(&motion_list, &motion_x);
+    nbt_tag_list_set_tag(&motion_list, &motion_y);
+    nbt_tag_list_set_tag(&motion_list, &motion_z);
+    nbt_tag_compound_set_tag(nbt, "Motion", &motion_list);
+
+    nbt_base_t rotation_x = nbt_tag_float_create(entity->x_rot);
+    nbt_base_t rotation_y = nbt_tag_float_create(entity->y_rot);
+    nbt_tag_list_set_tag(&rotation_list, &rotation_x);
+    nbt_tag_list_set_tag(&rotation_list, &rotation_y);
+    nbt_tag_compound_set_tag(nbt, "Rotation", &rotation_list);
+
+    nbt_tag_compound_set_float(nbt, "FallDistance", entity->fall_distance);
+    nbt_tag_compound_set_short(nbt, "Fire", entity->fire);
+    nbt_tag_compound_set_short(nbt, "Air", entity->air_supply);
 }

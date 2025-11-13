@@ -17,6 +17,7 @@ typedef struct tile_entity_s {
         // Chest
         struct {
             item_stack_t chest_contents[36];
+            inventory_t chest_inventory; // specifically to accomodate double chests
         };
         // Furnace
         struct {

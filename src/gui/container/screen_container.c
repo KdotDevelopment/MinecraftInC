@@ -214,7 +214,7 @@ void screen_container_on_mouse_clicked(screen_t *screen, int mx, int my, int but
             int height = (screen->height - screen->container_y) / 2;
 
             if(mx < width || my < height || mx >= width + screen->container_x || my >= height + screen->container_y) {
-                entity_t *player = &screen->minecraft->player;
+                //entity_t *player = &screen->minecraft->player;
                 if(button == SDL_BUTTON_LEFT) {
                     // TODO player drop item
                     screen->held_item = item_stack_create(0, 0, 0);

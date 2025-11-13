@@ -16,6 +16,10 @@ typedef struct inventory_s {
     struct screen_s *host_screen;
     struct tile_entity_s *host_tile_entity;
 
+    struct inventory_s *upper_chest;
+    struct inventory_s *lower_chest;
+    char name[28];
+
     char *(*get_name)();
     item_stack_t (*get_slot)(struct inventory_s *inventory, int slot);
     item_stack_t (*remove_item)(struct inventory_s *inventory, int slot, int amount);

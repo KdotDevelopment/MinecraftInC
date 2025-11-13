@@ -222,7 +222,7 @@ void nbt_tag_compound_write_contents(nbt_base_t *nbt, gzFile file) {
         nbt_write_named_tag(file, tag);
     }
     int8_t end_tag = 0;
-    gzwrite(file, &end_tag, sizeof(end_tag));
+    gz_write_byte(file, end_tag);
 }
 
 void nbt_tag_compound_free(nbt_base_t *base) {

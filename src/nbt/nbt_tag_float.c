@@ -20,5 +20,5 @@ void nbt_tag_float_read_contents(nbt_base_t *nbt, gzFile file) {
 }
 
 void nbt_tag_float_write_contents(nbt_base_t *nbt, gzFile file) {
-    gzwrite(file, &nbt->float_value, sizeof(nbt->float_value));
+    gz_write_float(file, nbt->float_value);
 }

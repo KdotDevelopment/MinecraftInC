@@ -45,12 +45,12 @@ void nbt_tag_list_write_contents(nbt_base_t *nbt, gzFile file) {
     if(array_list_length(nbt->tag_array) > 0) {
         nbt->array_list_type = ((nbt_base_t *)array_list_get(nbt->tag_array, 0))->type;
     }else {
-        nbt->array_list_type = NBT_TYPE_BYTE;
+        nbt->array_list_type = NBT_TYPE_END;
     }
 
-    gzwrite(file, &nbt->array_list_type, sizeof(nbt->array_list_type));
+    gz_write_byte(file, nbt->array_list_type);
     int length = array_list_length(nbt->tag_array);
-    gzwrite(file, &length, sizeof(int));
+    gz_write_int(file, length);
     for(int i = 0; i < length; i++) {
         nbt_base_t *tag = array_list_get(nbt->tag_array, i);
         tag->write_contents(tag, file);

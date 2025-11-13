@@ -33,14 +33,13 @@ nbt_base_t nbt_tag_byte_array_create_from(uint8_t *value, uint32_t length) {
 }
 
 void nbt_tag_byte_array_read_contents(nbt_base_t *nbt, gzFile file) {
-    int length = 0;
-    gzread(file, &length, sizeof(length));
+    int length = gz_read_int(file);
     nbt->byte_array = malloc(sizeof(uint8_t) * length);
     nbt->byte_array_length = length;
-    gzread(file, nbt->byte_array, sizeof(uint8_t) * nbt->byte_array_length);
+    gz_read_fully(file, nbt->byte_array, sizeof(uint8_t) * nbt->byte_array_length);
 }
 
 void nbt_tag_byte_array_write_contents(nbt_base_t *nbt, gzFile file) {
-    gzwrite(file, &nbt->byte_array_length, sizeof(nbt->byte_array_length));
-    gzwrite(file, nbt->byte_array, sizeof(uint8_t) * nbt->byte_array_length);
+    gz_write_int(file, nbt->byte_array_length);
+    if(nbt->byte_array_length > 0) gz_write_fully(file, nbt->byte_array, sizeof(uint8_t) * nbt->byte_array_length);
 }

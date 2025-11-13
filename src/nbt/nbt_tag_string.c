@@ -43,12 +43,12 @@ nbt_base_t nbt_tag_string_create_from(char *value) {
 void nbt_tag_string_read_contents(nbt_base_t *nbt, gzFile file) {
     int16_t length = gz_read_short(file);
     nbt->string_value = malloc(length + 1);
-    gzread(file, nbt->string_value, length);
+    gz_read_fully(file, nbt->string_value, length);
     nbt->string_value[length] = '\0';
 }
 
 void nbt_tag_string_write_contents(nbt_base_t *nbt, gzFile file) {
     int16_t length = strlen(nbt->string_value);
-    gzwrite(file, &length, sizeof(length));
-    gzwrite(file, nbt->string_value, length);
+    gz_write_short(file, length);
+    if(length > 0) gz_write_fully(file, nbt->string_value, length);
 }

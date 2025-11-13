@@ -20,5 +20,5 @@ void nbt_tag_long_read_contents(nbt_base_t *nbt, gzFile file) {
 }
 
 void nbt_tag_long_write_contents(nbt_base_t *nbt, gzFile file) {
-    gzwrite(file, &nbt->long_value, sizeof(nbt->long_value));
+    gz_write_long(file, nbt->long_value);
 }

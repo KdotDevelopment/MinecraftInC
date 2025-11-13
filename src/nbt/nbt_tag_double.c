@@ -20,5 +20,5 @@ void nbt_tag_double_read_contents(nbt_base_t *nbt, gzFile file) {
 }
 
 void nbt_tag_double_write_contents(nbt_base_t *nbt, gzFile file) {
-    gzwrite(file, &nbt->double_value, sizeof(nbt->double_value));
+    gz_write_double(file, nbt->double_value);
 }

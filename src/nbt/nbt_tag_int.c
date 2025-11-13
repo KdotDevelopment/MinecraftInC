@@ -20,5 +20,5 @@ void nbt_tag_int_read_contents(nbt_base_t *nbt, gzFile file) {
 }
 
 void nbt_tag_int_write_contents(nbt_base_t *nbt, gzFile file) {
-    gzwrite(file, &nbt->int_value, sizeof(nbt->int_value));
+    gz_write_int(file, nbt->int_value);
 }

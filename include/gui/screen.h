@@ -24,6 +24,7 @@ enum {
     SCREEN_TYPE_CONTAINER,
     SCREEN_TYPE_CONTROLS,
     SCREEN_TYPE_DEATH,
+    SCREEN_TYPE_DELETE_WORLD,
     SCREEN_TYPE_ERROR,
     SCREEN_TYPE_GENERATE_WORLD,
     SCREEN_TYPE_WORLD_NAME,
@@ -31,6 +32,7 @@ enum {
     SCREEN_TYPE_PAUSE,
     SCREEN_TYPE_SELECT_WORLD,
     SCREEN_TYPE_TITLE,
+    SCREEN_TYPE_YES_NO,
 };
 
 typedef struct screen_s {
@@ -68,6 +70,11 @@ typedef struct screen_s {
         };
         char *name; //world name screen, String
         char *names[5]; //load world screen, String
+        struct {
+            char message1[128];
+            char message2[128];
+            int world_id;
+        };
     };
 
     void (*render)(struct screen_s *screen, int x, int y, float partial_tick);

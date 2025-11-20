@@ -1035,7 +1035,7 @@ uint8_t world_is_solid(world_t *world, int x, int y, int z) {
 }
 
 uint8_t world_update_lighting(world_t *world) {
-    int iterations = 1000;
+    int iterations = 100000;
 
     while(array_list_length(world->lighting_update_list) > 0) {
         int length = array_list_length(world->lighting_update_list);

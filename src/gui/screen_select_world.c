@@ -1,5 +1,6 @@
 #include <gui/screen_select_world.h>
 
+#include <gui/screen_delete_world.h>
 #include <gui/screen_options.h>
 #include <gui/screen_generate_world.h>
 #include <minecraft.h>
@@ -44,6 +45,11 @@ void screen_select_world_on_button_clicked(screen_t *screen, button_t *button) {
     if(button->active == 0) return;
     if(button->id < 5) {
         screen_select_world_select(screen, button->id + 1);
+    }
+    if(button->id == 5) {
+        screen_t *delete_world = malloc(sizeof(screen_t));
+        *delete_world = screen_delete_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, delete_world);
     }
     if(button->id == 6) {
         minecraft_set_current_screen(screen->minecraft, (screen_t *)screen->parent);

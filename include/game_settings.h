@@ -16,6 +16,7 @@ typedef struct {
     uint8_t show_bobbing;
     uint8_t anaglyph;
     uint8_t limit_framerate;
+    int difficulty;
     struct minecraft_s *minecraft;
     int settings_count;
     uint8_t third_person;
@@ -38,3 +39,5 @@ void game_settings_toggle_setting(game_settings_t *settings, int setting);
 char *game_settings_get_binding(game_settings_t *settings, int binding);
 void game_settings_set_binding(game_settings_t *settings, int binding, int key);
 char *game_settings_get_setting(game_settings_t *settings, int setting);
+void game_settings_load(game_settings_t *settings);
+void game_settings_save(game_settings_t *settings);

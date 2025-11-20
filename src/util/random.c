@@ -29,7 +29,21 @@ uint64_t random_next_int(random_t *random) {
 }
 
 uint64_t random_next_int_range(random_t *random, uint64_t min, uint64_t max) {
-    return min + (random_next_int(random) % (max - min + 1));
+    int n = (int)(max - min + 1);
+    if(n <= 0) return min;
+    
+    if((n & -n) == n) {
+        int64_t val = (int64_t)random_next_bits(random, 31);
+        return min + (int)((n * val) >> 31);
+    }
+    
+    int bits, val;
+    do {
+        bits = random_next_bits(random, 31);
+        val = bits % n;
+    }while(bits - val + (n - 1) < 0);
+    
+    return min + val;
 }
 
 uint64_t random_int_range(uint64_t min, uint64_t max) {
@@ -67,5 +81,5 @@ int64_t random_next_long(random_t *random) {
 }
 
 void random_set_seed(random_t *random, long seed) {
-    random->seed = (seed ^ 0x5DEECE66DL) & ((1LL << 48) - 1);
+    random->seed = (seed ^ 0x5DEECE66DLL) & ((1LL << 48) - 1);
 }

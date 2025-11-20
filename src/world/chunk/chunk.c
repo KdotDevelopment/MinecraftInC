@@ -328,7 +328,7 @@ chunk_t chunk_read_nbt_data(world_t *world, nbt_base_t *nbt) {
     int8_t *data_array = nbt_tag_compound_get_byte_array(nbt, "Data", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
     int8_t *sky_light_array = nbt_tag_compound_get_byte_array(nbt, "SkyLight", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
     int8_t *block_light_array = nbt_tag_compound_get_byte_array(nbt, "BlockLight", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH / 2);
-    int8_t *height_map_array = nbt_tag_compound_get_byte_array(nbt, "HeightMap", CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT);
+    int8_t *height_map_array = nbt_tag_compound_get_byte_array(nbt, "HeightMap", CHUNK_SIZE_WIDTH * CHUNK_SIZE_WIDTH);
     chunk.data = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
     chunk.sky_light_map = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);
     chunk.block_light_map = nibble_array_create(CHUNK_SIZE_WIDTH * CHUNK_SIZE_HEIGHT * CHUNK_SIZE_WIDTH);

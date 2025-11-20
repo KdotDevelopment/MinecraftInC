@@ -97,9 +97,11 @@ void renderer_world_change_world(renderer_world_t *renderer, world_t *world) {
     renderer->minecraft->entity_manager.world = world;
     renderer->world = world;
     renderer->renderer_block = renderer_block_create(world);
+    
+    renderer_world_load_renderers(renderer);
+    
     if(world != NULL) {
         world_add_renderer(world, renderer);
-        renderer_world_load_renderers(renderer);
     }
 }
 
@@ -114,16 +116,33 @@ void renderer_world_load_renderers(renderer_world_t *renderer) {
     if(renderer->renderer_chunks != NULL) {
         for(int i = 0; i < renderer->renderer_chunk_count; i++) {
             renderer_chunk_t *renderer_chunk = (renderer_chunk_t *)renderer->renderer_chunks[i];
-            renderer_chunk_stop_rendering(renderer_chunk);
-            free(renderer_chunk);
+            if(renderer_chunk != NULL) {
+                renderer_chunk_stop_rendering(renderer_chunk);
+                free(renderer_chunk);
+            }
         }
+        free(renderer->renderer_chunks);
+        renderer->renderer_chunks = NULL;
     }
 
-    free(renderer->renderer_chunks);
-    free(renderer->renderer_chunks_sorted);
+    if(renderer->renderer_chunks_sorted != NULL) {
+        free(renderer->renderer_chunks_sorted);
+        renderer->renderer_chunks_sorted = NULL;
+    }
 
     if(old_render_list_base > 0 && old_render_list_capacity > 0) {
         glDeleteLists(old_render_list_base, old_render_list_capacity);
+    }
+    
+    if(renderer->world == NULL) {
+        renderer->renderer_chunk_count = 0;
+        renderer->x_chunks = 0;
+        renderer->y_chunks = 0;
+        renderer->z_chunks = 0;
+        if(renderer->renderer_chunks_to_update != NULL) {
+            renderer->renderer_chunks_to_update = array_list_clear(renderer->renderer_chunks_to_update);
+        }
+        return;
     }
 
     int distance = 5 << (3 - renderer->render_distance);

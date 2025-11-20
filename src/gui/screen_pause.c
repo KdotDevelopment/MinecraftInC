@@ -1,6 +1,6 @@
 #include <gui/screen_pause.h>
 #include <gui/screen_options.h>
-#include <gui/screen_generate_world.h>
+#include <gui/screen_select_world.h>
 #include <minecraft.h>
 
 screen_t screen_pause_create() {
@@ -38,12 +38,13 @@ void screen_pause_on_button_clicked(struct screen_s *proto_screen, button_t *but
         minecraft_set_current_screen(screen->minecraft, (screen_t *)options);
     }
     if(button->id == 1) {
-        //screen_t *generate_world = malloc(sizeof(screen_t));
-        //*generate_world = screen_generate_world_create(screen);
-        //minecraft_set_current_screen(screen->minecraft, (screen_t *)generate_world);
+        screen_t *select_world = malloc(sizeof(screen_t));
+        *select_world = screen_select_world_create(screen);
+        minecraft_set_current_screen(screen->minecraft, (screen_t *)select_world);
     }
     if(button->id == 2) {
-        // close world
+        minecraft_set_world(screen->minecraft, NULL, "");
+        minecraft_set_current_screen(screen->minecraft, NULL);
     }
     if(button->id == 3) {
         minecraft_grab_mouse(screen->minecraft);

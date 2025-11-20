@@ -63,6 +63,7 @@ typedef struct minecraft_s {
 } minecraft_t;
 
 void minecraft_start_world(minecraft_t *minecraft, char *world_name);
+void minecraft_set_world(minecraft_t *minecraft, world_t *world, char *progress_text);
 void minecraft_grab_mouse(minecraft_t *minecraft);
 void minecraft_set_current_screen(minecraft_t *minecraft, screen_t *screen);
 void minecraft_pause(minecraft_t *minecraft);

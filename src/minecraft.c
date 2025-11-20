@@ -215,7 +215,20 @@ void minecraft_prepare_world(minecraft_t *minecraft, char *progress_text) {
 void minecraft_set_world(minecraft_t *minecraft, world_t *world, char *progress_text) {
     if(minecraft->world != NULL) {
         world_save(minecraft->world, 1);
+        
+        if(minecraft->renderer_world.minecraft != NULL) {
+            renderer_world_change_world(&minecraft->renderer_world, NULL);
+        }
+        
+        if(minecraft->particles.textures != NULL) {
+            particles_destroy(&minecraft->particles);
+            minecraft->particles = (particles_t){ 0 };
+        }
+        
+        world_destroy(minecraft->world);
+        free(minecraft->world);
     }
+    
     minecraft->world = world;
     if(world != NULL) {
         minecraft->renderer.renderer_overlay.world = world;

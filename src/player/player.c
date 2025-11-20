@@ -73,10 +73,10 @@ void player_read_nbt(entity_t *player, nbt_base_t *nbt) {
         nbt_base_t *item_nbt = nbt_tag_list_get_tag(&inventory_nbt, i);
         int slot = nbt_tag_compound_get_byte(item_nbt, "Slot") & 255;
         if(slot >= 0 && slot < 36) {
-            inventory->inv[i] = item_stack_from_nbt(item_nbt);
+            inventory->inv[slot] = item_stack_from_nbt(item_nbt);
         }
         if(slot >= 100 && slot < 104) {
-            inventory->armor[i - 100] = item_stack_from_nbt(item_nbt);
+            inventory->armor[slot - 100] = item_stack_from_nbt(item_nbt);
         }
     }
 
@@ -90,6 +90,7 @@ void player_write_nbt(entity_t *player, nbt_base_t *nbt) {
     nbt_base_t inventory_nbt = nbt_tag_list_create();
 
     for(int i = 0; i < 36; i++) {
+        if(inventory->inv[i].item_id == 0) continue;
         nbt_base_t item_nbt = nbt_tag_compound_create();
         nbt_tag_compound_set_byte(&item_nbt, "Slot", i);
         item_stack_write_nbt(&inventory->inv[i], &item_nbt);
@@ -97,6 +98,7 @@ void player_write_nbt(entity_t *player, nbt_base_t *nbt) {
     }
 
     for(int i = 0; i < 4; i++) {
+        if(inventory->armor[i].item_id == 0) continue;
         nbt_base_t item_nbt = nbt_tag_compound_create();
         nbt_tag_compound_set_byte(&item_nbt, "Slot", i + 100);
         item_stack_write_nbt(&inventory->armor[i], &item_nbt);

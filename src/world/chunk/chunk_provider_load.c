@@ -245,13 +245,7 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
     if(!chunk_file) {
         return;
     }
-    //printf("Saving chunk: %s\n", chunk_file);
-    FILE *file = fopen(chunk_file, "wb");
-    if(!file) {
-        free(chunk_file);
-        return;
-    }
-
+    
 #ifdef _WIN32
     WIN32_FILE_ATTRIBUTE_DATA file_info;
     if(GetFileAttributesEx(chunk_file, GetFileExInfoStandard, &file_info)) {
@@ -266,12 +260,20 @@ void chunk_provider_load_save_chunk(chunk_provider_t *chunk_provider, chunk_t *c
         chunk_provider->world->size_on_disk -= sb.st_size;
     }
 #endif
+    
+    //printf("Saving chunk: %s\n", chunk_file);
+    FILE *file = fopen(chunk_file, "wb");
+    if(!file) {
+        free(chunk_file);
+        return;
+    }
 
     nbt_base_t nbt_base = nbt_tag_compound_create();
     nbt_base_t nbt = nbt_tag_compound_create();
     chunk_write_nbt_data(chunk, &nbt);
     nbt_tag_compound_set_tag(&nbt_base, "Level", &nbt);
     progress_bar_write(file, &nbt_base);
+    fclose(file);
     nbt_tag_compound_free(&nbt_base);
 
 #ifdef _WIN32

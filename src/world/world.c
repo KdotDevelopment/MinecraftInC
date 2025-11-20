@@ -220,7 +220,6 @@ void world_save(world_t *world, uint8_t check_entities) {
     nbt_tag_compound_set_int(&nbt, "SpawnY", world->spawn_y);
     nbt_tag_compound_set_int(&nbt, "SpawnZ", world->spawn_z);
     nbt_tag_compound_set_long(&nbt, "Time", world->world_time);
-    nbt_tag_compound_set_long(&nbt, "SizeOnDisk", world->size_on_disk);
     nbt_tag_compound_set_long(&nbt, "LastPlayed", time(NULL));
     if(world->player != NULL) {
         nbt_base_t player_nbt = nbt_tag_compound_create();
@@ -228,13 +227,16 @@ void world_save(world_t *world, uint8_t check_entities) {
         nbt_tag_compound_set_compound_tag(&nbt, "Player", &player_nbt);
     }
 
+    chunk_provider_load_save_chunks(&world->chunk_provider, check_entities);
+    
+    nbt_tag_compound_set_long(&nbt, "SizeOnDisk", world->size_on_disk);
+
     nbt_base_t base_nbt = nbt_tag_compound_create();
     nbt_tag_compound_set_tag(&base_nbt, "Data", &nbt);
 
     progress_bar_write(file, &base_nbt);
     fclose(file);
 
-    chunk_provider_load_save_chunks(&world->chunk_provider, check_entities);
     nbt_tag_compound_free(&base_nbt);
 }
 

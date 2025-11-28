@@ -219,11 +219,11 @@ sound_t *sounds_get_sound_source(sounds_t *sounds, uint8_t sound) {
             return &sounds->water;
 
         case SOUND_MOB_PIG:
-            return &sounds->pig[random_next_int_range(&sounds->random, 0, 2)];
+            return &sounds->pig[random_next_int_range(&sounds->random, 3)];
         case SOUND_MOB_PIG_DEATH:
             return &sounds->pig_death;
         case SOUND_MOB_SHEEP:
-            return &sounds->sheep[random_next_int_range(&sounds->random, 0, 2)];
+            return &sounds->sheep[random_next_int_range(&sounds->random, 3)];
 
         case SOUND_RANDOM_BOW:
             return &sounds->bow;
@@ -238,7 +238,7 @@ sound_t *sounds_get_sound_source(sounds_t *sounds, uint8_t sound) {
         case SOUND_RANDOM_FUSE:
             return &sounds->fuse;
         case SOUND_RANDOM_GLASS:
-            return &sounds->glass[random_next_int_range(&sounds->random, 0, 2)];
+            return &sounds->glass[random_next_int_range(&sounds->random, 3)];
         case SOUND_RANDOM_HURT:
             return &sounds->hurt;
         case SOUND_RANDOM_POP:
@@ -247,17 +247,17 @@ sound_t *sounds_get_sound_source(sounds_t *sounds, uint8_t sound) {
             return &sounds->splash;
 
         case SOUND_STEP_CLOTH:
-            return &sounds->wool[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->wool[random_next_int_range(&sounds->random, 4)];
         case SOUND_STEP_GRASS:
-            return &sounds->grass[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->grass[random_next_int_range(&sounds->random, 4)];
         case SOUND_STEP_GRAVEL:
-            return &sounds->gravel[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->gravel[random_next_int_range(&sounds->random, 4)];
         case SOUND_STEP_SAND:
-            return &sounds->sand[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->sand[random_next_int_range(&sounds->random, 4)];
         case SOUND_STEP_STONE:
-            return &sounds->stone[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->stone[random_next_int_range(&sounds->random, 4)];
         case SOUND_STEP_WOOD:
-            return &sounds->wood[random_next_int_range(&sounds->random, 0, 3)];
+            return &sounds->wood[random_next_int_range(&sounds->random, 4)];
     }
     return NULL;
 }

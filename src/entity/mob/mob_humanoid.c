@@ -15,8 +15,8 @@ void mob_humanoid_create(entity_t *entity, struct world_s *world, float x, float
     mob_t *mob = entity->mob;
     mob->entity->type = ENTITY_MOB_HUMANOID;
     mob->model_type = MODEL_HUMANOID;
-    mob->has_armor = random_next_uniform(&world->random) < 0.2;
-    mob->has_helmet = random_next_uniform(&world->random) < 0.2;
+    mob->has_armor = random_next_double(&world->random) < 0.2;
+    mob->has_helmet = random_next_double(&world->random) < 0.2;
 
     entity_set_pos(entity, x, y, z);
 

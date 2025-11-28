@@ -173,20 +173,20 @@ uint8_t private_liquid_air_check(world_t *world, int x, int y, int z) {
 
 void block_fluid_visual_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
     // This appears to have been intentionally disabled with the -1
-    if(random_next_int_range(random, 0, 127) == -1 && world_get_block_material(world, x, y + 1, z)->is_solid) {
+    if(random_next_int_range(random, 128) == -1 && world_get_block_material(world, x, y + 1, z)->is_solid) {
         if(block->material == &materials.lava) {
-            world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_LIQUID_LAVA, random_next_uniform(random) * 0.25 + 12.0 / 16.0, random_next_uniform(random) * 0.5 + 0.3);
+            world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_LIQUID_LAVA, random_next_double(random) * 0.25 + 12.0 / 16.0, random_next_double(random) * 0.5 + 0.3);
         }
 
         if(block->material == &materials.water) {
-            world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_LIQUID_WATER, random_next_uniform(random) * 0.25 + 12.0 / 16.0, random_next_uniform(random) + 0.5);
+            world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_LIQUID_WATER, random_next_double(random) * 0.25 + 12.0 / 16.0, random_next_double(random) + 0.5);
         }
     }
 
-    if(block->material == &materials.lava && world_get_block_material(world, x, y + 1, z) == &materials.air && !world_is_solid(world, x, y + 1, z) && random_next_int_range(random, 0, 99) == 0) {
-        float px = x + random_next_uniform(random);
+    if(block->material == &materials.lava && world_get_block_material(world, x, y + 1, z) == &materials.air && !world_is_solid(world, x, y + 1, z) && random_next_int_range(random, 100) == 0) {
+        float px = x + random_next_double(random);
         float py = y + block->y1;
-        float pz = z + random_next_uniform(random);
+        float pz = z + random_next_double(random);
         world_spawn_particle(world, PARTICLE_LAVA, px, py, pz, 0, 0, 0);
     }
 
@@ -195,7 +195,7 @@ void block_fluid_visual_update(block_t *block, world_t *world, int x, int y, int
             for(int i = 0; i < 4; i++) {
                 float px = x + 1 + (2.0 / 16.0);
                 float py = y + block->y1;
-                float pz = z + random_next_uniform(random);
+                float pz = z + random_next_double(random);
                 world_spawn_particle(world, PARTICLE_WATER_DROP, px, py, pz, 0, 0, 0);
             }
         }
@@ -204,14 +204,14 @@ void block_fluid_visual_update(block_t *block, world_t *world, int x, int y, int
             for(int i = 0; i < 4; i++) {
                 float px = x - (2.0 / 16.0);
                 float py = y + block->y1;
-                float pz = z + random_next_uniform(random);
+                float pz = z + random_next_double(random);
                 world_spawn_particle(world, PARTICLE_WATER_DROP, px, py, pz, 0, 0, 0);
             }
         }
 
         if(private_liquid_air_check(world, x, y, z + 1)) {
             for(int i = 0; i < 4; i++) {
-                float px = x + random_next_uniform(random);
+                float px = x + random_next_double(random);
                 float py = y + block->y1;
                 float pz = z + 1 + (2.0 / 16.0);
                 world_spawn_particle(world, PARTICLE_WATER_DROP, px, py, pz, 0, 0, 0);
@@ -220,7 +220,7 @@ void block_fluid_visual_update(block_t *block, world_t *world, int x, int y, int
 
         if(private_liquid_air_check(world, x, y, z - 1)) {
             for(int i = 0; i < 4; i++) {
-                float px = x + random_next_uniform(random);
+                float px = x + random_next_double(random);
                 float py = y + block->y1;
                 float pz = z - (2.0 / 16.0);
                 world_spawn_particle(world, PARTICLE_WATER_DROP, px, py, pz, 0, 0, 0);

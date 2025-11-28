@@ -29,9 +29,9 @@ void ai_creeper_before_removal(ai_t *ai) {
     world_explode(ai->mob->entity->world, ai->mob->entity, ai->mob->entity->x, ai->mob->entity->y, ai->mob->entity->z, radius);
     
     for(int i = 0; i < 500; i++) {
-        float x = random_next_uniform(ai->random) * radius / 4.0;
-        float y = random_next_uniform(ai->random) * radius / 4.0;
-        float z = random_next_uniform(ai->random) * radius / 4.0;
+        float x = random_next_double(ai->random) * radius / 4.0;
+        float y = random_next_double(ai->random) * radius / 4.0;
+        float z = random_next_double(ai->random) * radius / 4.0;
         float dist = sqrtf(x * x + y * y + z * z);
         float xd = x / dist / dist;
         float yd = y / dist / dist;

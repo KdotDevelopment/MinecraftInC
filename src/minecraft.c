@@ -598,12 +598,12 @@ void minecraft_tick(minecraft_t *minecraft, SDL_Event *events) {
         int vy = minecraft->player.mob.y;
         int vz = minecraft->player.mob.z;
         for(int i = 0; i < 50; i++) {
-            int rx = vx + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
-            int rz = vz + (int)random_next_int_range(&renderer->random, 0, 8) - 4;
+            int rx = vx + (int)random_next_int_range(&renderer->random, 8) - 4;
+            int rz = vz + (int)random_next_int_range(&renderer->random, 8) - 4;
             int ry = world_get_highest_block(world, rx, rz);
             if(ry <= vy + 4 && ry >= vy - 4) {
-                float xo = random_next_uniform(&renderer->random);
-                float zo = random_next_uniform(&renderer->random);
+                float xo = random_next_double(&renderer->random);
+                float zo = random_next_double(&renderer->random);
                 particle_t *particle = malloc(sizeof(particle_t));
                 *particle = particle_water_drop_create(world, rx + xo, ry + 0.1, rz + zo);
                 particles_spawn_particle(&minecraft->particles, particle);

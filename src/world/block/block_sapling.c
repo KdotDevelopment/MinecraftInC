@@ -18,7 +18,7 @@ block_t block_sapling_create() {
 
 void block_sapling_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
     block_flower_update(block, world, x, y, z, random);
-    if(world_get_block_light_value(world, x, y, z) >= 9 && random_next_int_range(random, 0, 4) == 0) {
+    if(world_get_block_light_value(world, x, y, z) >= 9 && random_next_int_range(random, 5) == 0) {
         uint8_t metadata = world_get_block_metadata(world, x, y, z);
         if(metadata < 15) {
             world_set_block_metadata(world, x, y, z, metadata + 1);

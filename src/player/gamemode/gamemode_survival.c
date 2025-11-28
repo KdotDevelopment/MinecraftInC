@@ -35,6 +35,9 @@ uint8_t gamemode_survival_destroy_block(struct gamemode_s *gamemode, int x, int 
     item_stack_t current_item = inventory_player_get_selected(&gamemode->minecraft->player.mob->player->inventory);
     if(current_item.item_id != 0) {
         item_list[current_item.item_id].on_block_destroy(&item_list[current_item.item_id], &current_item);
+        if(current_item.stack_size == 0) {
+            current_item = item_stack_create(0, 0, 0);
+        }
         inventory_player_set_slot(&gamemode->minecraft->player.mob->player->inventory, gamemode->minecraft->player.mob->player->inventory.selected, current_item);
     }
     if(broken && player_can_harvest_block(&gamemode->minecraft->player, &block_list[block_id])) {
@@ -121,7 +124,7 @@ uint8_t gamemode_survival_use_item(struct gamemode_s *gamemode, entity_t *player
 
 void gamemode_survival_tick(struct gamemode_s *gamemode) {
     /*int size = gamemode->mob_spawner.world->width * gamemode->mob_spawner.world->height * gamemode->mob_spawner.world->depth / 64 / 64 / 64;
-    if(random_next_int_range(&gamemode->minecraft->world.random, 0, 100) < size) { //and number of mobs < size * 20
+    if(random_next_int_range(&gamemode->minecraft->world.random, 100) < size) { //and number of mobs < size * 20
         mob_spawner_tick(&gamemode->mob_spawner, size, &gamemode->mob_spawner.world->player->entity, &gamemode->minecraft->progress_bar);
     }*/
 }

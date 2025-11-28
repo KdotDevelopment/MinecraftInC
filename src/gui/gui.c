@@ -24,6 +24,7 @@ void gui_fill(int x0, int y0, int x1, int y1, uint32_t color) {
     tesselator_end();
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void gui_fill_gradient(int x0, int y0, int x1, int y1, uint32_t color0, uint32_t color1) {
@@ -48,6 +49,7 @@ void gui_fill_gradient(int x0, int y0, int x1, int y1, uint32_t color0, uint32_t
     glEnd();
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void gui_draw_centered_string(font_t *font, char *string, int x, int y, uint32_t color) {

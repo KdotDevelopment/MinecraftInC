@@ -9,14 +9,14 @@ noise_t noise_perlin_create(random_t *random) {
 
     noise.noise_type = NOISE_PERLIN;
 
-    noise.x_coord = random_next_uniform(random) * 256.0;
-    noise.y_coord = random_next_uniform(random) * 256.0;
-    noise.z_coord = random_next_uniform(random) * 256.0;
+    noise.x_coord = random_next_double(random) * 256.0;
+    noise.y_coord = random_next_double(random) * 256.0;
+    noise.z_coord = random_next_double(random) * 256.0;
 
     for(int i = 0; i < 256; i++) noise.hash[i] = i;
 
     for(int i = 0; i < 256; i++) {
-        int r1 = random_next_int_range(random, 0, 256 - i - 1) + i;
+        int r1 = random_next_int_range(random, 256 - i) + i;
         int r2 = noise.hash[i];
         noise.hash[i] = noise.hash[r1];
         noise.hash[r1] = r2;

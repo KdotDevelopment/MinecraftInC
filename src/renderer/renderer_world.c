@@ -52,11 +52,11 @@ void renderer_world_create(renderer_world_t *renderer, struct minecraft_s *minec
     random_t random = random_create(10842);
 
     for(int i = 0; i < 500; i++) {
-        glRotatef(random_next_uniform(&random) * 360.0, 1.0, 0.0, 0.0);
-        glRotatef(random_next_uniform(&random) * 360.0, 0.0, 1.0, 0.0);
-        glRotatef(random_next_uniform(&random) * 360.0, 0.0, 0.0, 1.0);
+        glRotatef(random_next_double(&random) * 360.0, 1.0, 0.0, 0.0);
+        glRotatef(random_next_double(&random) * 360.0, 0.0, 1.0, 0.0);
+        glRotatef(random_next_double(&random) * 360.0, 0.0, 0.0, 1.0);
 
-        float star_size = 0.25 + random_next_uniform(&random) * 0.25;
+        float star_size = 0.25 + random_next_double(&random) * 0.25;
 
         tesselator_begin_quads();
         tesselator_vertex_uv(-star_size, -100.0, star_size, 1.0, 1.0);
@@ -623,7 +623,7 @@ void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *playe
 }
  
 
-void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, int unused, item_stack_t *item_stack, float partial_tick) {
+void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, int mode, item_stack_t *item_stack, float partial_tick) {
     glEnable(GL_BLEND);
     glEnable(GL_ALPHA_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);

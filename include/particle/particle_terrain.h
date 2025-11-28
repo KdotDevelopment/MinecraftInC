@@ -5,4 +5,4 @@
 
 particle_t particle_terrain_create(struct world_s *world, float x, float y, float z, float xd, float yd, float zd, block_t *block);
 int particle_terrain_get_texture(particle_t *particle);
-void particle_terrain_render(particle_t *particle, float delta, float x, float y, float z, float var6, float var7);
+void particle_terrain_render(particle_t *particle, float delta, float x, float y, float z, float x2, float z2);

@@ -26,7 +26,7 @@ void mob_pig_die(mob_t *mob, mob_t *causer) {
         mob->entity->award_kill_score(mob->entity, causer->entity, 10);
     }
 
-    int drop_count = random_next_uniform(&mob->entity->world->random) + random_next_uniform(&mob->entity->world->random) + 1;
+    int drop_count = random_next_double(&mob->entity->world->random) + random_next_double(&mob->entity->world->random) + 1;
     for(int i = 0; i < drop_count; i++) {
         //drop items brown mushroom
     }

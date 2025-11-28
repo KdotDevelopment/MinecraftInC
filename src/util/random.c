@@ -28,13 +28,18 @@ uint64_t random_next_int(random_t *random) {
     return random_next_bits(random, 32);
 }
 
-uint64_t random_next_int_range(random_t *random, uint64_t min, uint64_t max) {
-    int n = (int)(max - min + 1);
-    if(n <= 0) return min;
+uint64_t random_next_int_range(random_t *random, uint64_t max) {
+    if(max == 0) {
+        return 0;
+    }
+
+    uint64_t adjusted_max = max - 1;
+    int n = (int)(adjusted_max - 0 + 1);
+    if(n <= 0) return 0;
     
     if((n & -n) == n) {
         int64_t val = (int64_t)random_next_bits(random, 31);
-        return min + (int)((n * val) >> 31);
+        return 0 + (int)((n * val) >> 31);
     }
     
     int bits, val;
@@ -43,17 +48,21 @@ uint64_t random_next_int_range(random_t *random, uint64_t min, uint64_t max) {
         val = bits % n;
     }while(bits - val + (n - 1) < 0);
     
-    return min + val;
+    return 0 + val;
 }
 
 uint64_t random_int_range(uint64_t min, uint64_t max) {
     return rand() % (max + 1) - min;
 }
 
-double random_next_uniform(random_t *random) {
+double random_next_double(random_t *random) {
     int64_t a = random_next_bits(random, 26);
     int64_t b = random_next_bits(random, 27);
     return (((int64_t)a << 27) + b) / (double)(1ULL << 53);
+}
+
+float random_next_float(random_t *random) {
+    return random_next_bits(random, 24) / 16777216.0f;
 }
 
 double random_uniform() {
@@ -67,8 +76,8 @@ double random_next_normal(random_t *random, double stddev) {
         return r * stddev;
     }
 
-    double r = sqrt(-2.0 * log(1.0 - random_next_uniform(random)));
-    double phi = 2.0 * M_PI * (1.0 - random_next_uniform(random));
+    double r = sqrt(-2.0 * log(1.0 - random_next_double(random)));
+    double phi = 2.0 * M_PI * (1.0 - random_next_double(random));
 
     random->last_normal = r * tcos(phi);
     return r * tsin(phi) * stddev;

@@ -74,9 +74,9 @@ void block_furnace_visual_update(block_t *block, world_t *world, int x, int y, i
     if(!block->furnace_active) return;
     uint8_t metadata = world_get_block_metadata(world, x, y, z);
     float px = x + 0.5;
-    float py = y + random_next_uniform(random) * 6.0 / 16.0;
+    float py = y + random_next_double(random) * 6.0 / 16.0;
     float pz = z + 0.5;
-    float xz_offset = random_next_uniform(random) * 0.6 - 3.0;
+    float xz_offset = random_next_double(random) * 0.6 - 3.0;
     if(metadata == 4) {
         world_spawn_particle(world, PARTICLE_SMOKE, px - 0.52, py, pz + xz_offset, 0, 0, 0);
         world_spawn_particle(world, PARTICLE_FLAME, px - 0.52, py, pz + xz_offset, 0, 0, 0);

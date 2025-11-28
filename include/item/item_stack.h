@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 typedef struct item_stack_s {
-    uint8_t stack_size;
+    int16_t stack_size;
     int16_t animations_to_go;
     int16_t item_id;
     int16_t item_damage;

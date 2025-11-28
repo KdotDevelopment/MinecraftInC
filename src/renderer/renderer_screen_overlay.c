@@ -40,6 +40,8 @@ void renderer_screen_overlay_render(renderer_screen_overlay_t *renderer, float p
     if(renderer->item_stack.item_id != 0) {
         // render block in hand
         glPushMatrix();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         if(renderer->is_swinging) {
             float t = (renderer->swing_time + partial_tick) / 8.0;
             float st = tsin(t * M_PI);
@@ -162,6 +164,7 @@ void renderer_screen_overlay_render(renderer_screen_overlay_t *renderer, float p
             glDisable(GL_NORMALIZE);
         }
 
+        glDisable(GL_BLEND);
         glPopMatrix();
     }else {
         // render just the hand

@@ -144,9 +144,9 @@ chunk_t *chunk_provider_generate_provide_chunk(chunk_provider_t *chunk_provider,
         for(int z = 0; z < CHUNK_SIZE_WIDTH; z++) {
             double surface_x = (double)((chunk_x * CHUNK_SIZE_WIDTH) + x);
             double surface_z = (double)((chunk_z * CHUNK_SIZE_WIDTH) + z);
-            uint8_t sand = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_x * (1.0 / 32.0), surface_z * (1.0 / 32.0), 0) + random_next_uniform(&chunk_provider->random) * 0.2 > 0.0;
-            uint8_t gravel = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_z * (1.0 / 32.0), 109.0134, surface_x * (1.0 / 32.0)) + random_next_uniform(&chunk_provider->random) * 0.2 > 3.0;
-            int surface_depth = (int)(chunk_provider->noise_5.get(&chunk_provider->noise_5, surface_x * (1.0 / 32.0) * 2.0, surface_z * (1.0 / 32.0) * 2.0, 0) / 3.0 + 3.0 + random_next_uniform(&chunk_provider->random) * 0.25);
+            uint8_t sand = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_x * (1.0 / 32.0), surface_z * (1.0 / 32.0), 0) + random_next_double(&chunk_provider->random) * 0.2 > 0.0;
+            uint8_t gravel = chunk_provider->noise_4.get(&chunk_provider->noise_4, surface_z * (1.0 / 32.0), 109.0134, surface_x * (1.0 / 32.0)) + random_next_double(&chunk_provider->random) * 0.2 > 3.0;
+            int surface_depth = (int)(chunk_provider->noise_5.get(&chunk_provider->noise_5, surface_x * (1.0 / 32.0) * 2.0, surface_z * (1.0 / 32.0) * 2.0, 0) / 3.0 + 3.0 + random_next_double(&chunk_provider->random) * 0.25);
             uint64_t block_index = x << 11 | z << 7 | (CHUNK_SIZE_HEIGHT - 1);
             int depth_2 = -1;
             uint8_t top_block = blocks.grass.id;
@@ -209,47 +209,47 @@ void chunk_provider_generate_populate(chunk_provider_t *chunk_provider, chunk_pr
 
     // Coal Ore
     for(int i = 0; i < 20; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
-        int y = random_next_int_range(&chunk_provider->random, 0, 127);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 128);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.coal_ore.id);
     }
 
     // Iron Ore
     for(int i = 0; i < 10; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
-        int y = random_next_int_range(&chunk_provider->random, 0, 63);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 64);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.iron_ore.id);
     }
 
     // Gold Ore
-    if(random_next_int_range(&chunk_provider->random, 0, 1) == 0) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
-        int y = random_next_int_range(&chunk_provider->random, 0, 31);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+    if(random_next_int_range(&chunk_provider->random, 2) == 0) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 32);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.gold_ore.id);
     }
 
     // Diamond Ore
-    if(random_next_int_range(&chunk_provider->random, 0, 7) == 0) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1);
-        int y = random_next_int_range(&chunk_provider->random, 0, 15);
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH);
+    if(random_next_int_range(&chunk_provider->random, 8) == 0) {
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
+        int y = random_next_int_range(&chunk_provider->random, 16);
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH);
         generate_mineable_gen(chunk_provider->world, &chunk_provider->random, x, y, z, blocks.diamond_ore.id);
     }
 
     // Trees
-    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) - random_next_uniform(&chunk_provider->random));
+    int tree_count = (int)(chunk_provider->tree_noise.get(&chunk_provider->tree_noise, (double)chunk_start_x * 0.05, (double)chunk_start_z * 0.05, 0) - random_next_double(&chunk_provider->random));
     if(tree_count < 0) tree_count = 0;
 
-    if(random_next_int_range(&chunk_provider->random, 0, 99) == 0) {
+    if(random_next_int_range(&chunk_provider->random, 100) == 0) {
         tree_count++;
     }
 
     for(int i = 0; i < tree_count; i++) {
-        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
-        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, 0, CHUNK_SIZE_WIDTH - 1) + 8;
+        int x = chunk_start_x + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH) + 8;
+        int z = chunk_start_z + random_next_int_range(&chunk_provider->random, CHUNK_SIZE_WIDTH) + 8;
         int y = world_get_height_value(chunk_provider->world, x, z);
         generate_big_tree_gen(chunk_provider->world, &chunk_provider->random, x, y, z);
     }

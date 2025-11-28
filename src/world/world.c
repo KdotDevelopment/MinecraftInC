@@ -844,7 +844,7 @@ uint8_t world_is_material_in_box(world_t *world, AABB_t box, material_t *materia
 }
 
 void world_explode(world_t *world, entity_t *source_entity, double x, double y, double z, float radius) {
-    world_play_sound(world, x, y, z, SOUND_RANDOM_EXPLODE, 4.0, (1.0 + (random_next_uniform(&world->random) - random_next_uniform(&world->random)) * 0.2) * 0.7);
+    world_play_sound(world, x, y, z, SOUND_RANDOM_EXPLODE, 4.0, (1.0 + (random_next_float(&world->random) - random_next_float(&world->random)) * 0.2) * 0.7);
     vec3_t *affected_blocks = array_list_create(sizeof(vec3_t));
 
     for(int x_offset = 0; x_offset < CHUNK_SIZE_WIDTH; x_offset++) {
@@ -862,7 +862,7 @@ void world_explode(world_t *world, entity_t *source_entity, double x, double y, 
                     y_norm /= distance;
                     z_norm /= distance;
 
-                    float strength = radius * (0.7 + random_next_uniform(&world->random) * 0.6);
+                    float strength = radius * (0.7 + random_next_float(&world->random) * 0.6);
                     double x_ray = x;
                     double y_ray = y;
                     double z_ray = z;
@@ -934,9 +934,9 @@ void world_explode(world_t *world, entity_t *source_entity, double x, double y, 
 
         uint8_t block_id = world_get_block(world, block_x, block_y, block_z);
         for(int j = 0; j < 1; j++) {
-            double particle_x = block_x + random_next_uniform(&world->random);
-            double particle_y = block_y + random_next_uniform(&world->random);
-            double particle_z = block_z + random_next_uniform(&world->random);
+            double particle_x = block_x + random_next_float(&world->random);
+            double particle_y = block_y + random_next_float(&world->random);
+            double particle_z = block_z + random_next_float(&world->random);
             double vel_x = particle_x - x;
             double vel_y = particle_y - y;
             double vel_z = particle_z - z;
@@ -947,7 +947,7 @@ void world_explode(world_t *world, entity_t *source_entity, double x, double y, 
             vel_z /= magnitude;
 
             double particle_vel = 0.5 / (magnitude / radius + 0.1);
-            particle_vel *= (random_next_uniform(&world->random) * random_next_uniform(&world->random) + 0.3);
+            particle_vel *= (random_next_float(&world->random) * random_next_float(&world->random) + 0.3);
             vel_x *= particle_vel;
             vel_y *= particle_vel;
             vel_z *= particle_vel;
@@ -998,7 +998,7 @@ void world_extinguish_fire(world_t *world, int x, int y, int z, uint8_t side) {
     if(side == 5) x++;
 
     if(world_get_block(world, x, y, z) == BLOCK_FIRE) {
-        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_RANDOM_FIZZ, 0.5, 2.6 + (random_next_uniform(&world->random) - random_next_uniform(&world->random)) * 0.8);
+        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_RANDOM_FIZZ, 0.5, 2.6 + (random_next_double(&world->random) - random_next_double(&world->random)) * 0.8);
         world_set_block_with_update(world, x, y, z, blocks.air.id);
     }
 }
@@ -1234,9 +1234,9 @@ void world_visual_update(world_t *world, int x, int y, int z) {
     random_t random = random_create(time(NULL));
 
     for(int i = 0; i < 1000; i++) {
-        int xx = x + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
-        int yy = y + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
-        int zz = z + random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1) - random_next_int_range(&random, 0, CHUNK_SIZE_WIDTH - 1);
+        int xx = x + random_next_int_range(&random, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, CHUNK_SIZE_WIDTH);
+        int yy = y + random_next_int_range(&random, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, CHUNK_SIZE_WIDTH);
+        int zz = z + random_next_int_range(&random, CHUNK_SIZE_WIDTH) - random_next_int_range(&random, CHUNK_SIZE_WIDTH);
         uint8_t block_id = world_get_block(world, xx, yy, zz);
         if(block_id > 0) {
             block_list[block_id].visual_update(&block_list[block_id], world, xx, yy, zz, &random);

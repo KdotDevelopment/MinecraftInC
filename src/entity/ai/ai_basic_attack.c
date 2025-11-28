@@ -19,8 +19,8 @@ uint8_t ai_basic_attack_attack(struct ai_s *ai) {
         return 0;
     }
     ai->mob->attack_time = 5;
-    ai->attack_delay = random_next_int_range(ai->random, 0, 20) + 10;
-    int damage = (random_next_uniform(ai->random) * random_next_uniform(ai->random)) / 2.0 * ai->damage + 1;
+    ai->attack_delay = random_next_int_range(ai->random, 21) + 10;
+    int damage = (random_next_double(ai->random) * random_next_double(ai->random)) / 2.0 * ai->damage + 1;
     entity_hurt(ai->attack_target, (entity_t *)&ai->mob->entity, damage);
     ai->no_action_time = 0;
     return 1;
@@ -50,7 +50,7 @@ void ai_basic_attack_update(struct ai_s *ai) {
             float y_diff = ai->attack_target->y - ai->mob->entity->y;
             float z_diff = ai->attack_target->z - ai->mob->entity->z;
 
-            if(x_diff * x_diff + y_diff * y_diff + z_diff * z_diff > distance * distance * 4.0 && random_next_int_range(ai->random, 0, 100) == 0) {
+            if(x_diff * x_diff + y_diff * y_diff + z_diff * z_diff > distance * distance * 4.0 && random_next_int_range(ai->random, 100) == 0) {
                 ai->attack_target = NULL;
             }
 

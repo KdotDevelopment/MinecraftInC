@@ -34,7 +34,7 @@ int block_farmland_get_texture_side_metadata(block_t *block, uint8_t side, uint8
 }
 
 void block_farmland_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
-    if(random_next_int_range(random, 0, 4) == 0) {
+    if(random_next_int_range(random, 5) == 0) {
         uint8_t has_water = 0;
 
         for(int check_x = x - 4; check_x <= x + 4 && has_water == 0; check_x++) {
@@ -76,7 +76,7 @@ void block_farmland_update(block_t *block, world_t *world, int x, int y, int z, 
 }
 
 void block_farmland_on_walked_upon(block_t *block, world_t *world, int x, int y, int z) {
-    if(random_next_int_range(&world->random, 0, 3) == 0) {
+    if(random_next_int_range(&world->random, 4) == 0) {
         world_set_block_with_update(world, x, y, z, blocks.dirt.id);
     }
 }

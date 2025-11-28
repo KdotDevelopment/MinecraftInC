@@ -3,23 +3,23 @@
 #include <world/block/blocks.h>
 
 uint8_t generate_mineable_gen(world_t *world, random_t *random, int gen_x, int gen_y, int gen_z, uint8_t block_id) {
-    float angle = random_next_uniform(random) * M_PI;
+    float angle = random_next_float(random) * M_PI;
 
     double start_x = (float)(gen_x + 8) + tsin(angle) * 2.0;
     double end_x = (float)(gen_x + 8) - tsin(angle) * 2.0;
     double start_z = (float)(gen_z + 8) + tcos(angle) * 2.0;
     double end_z = (float)(gen_z + 8) - tcos(angle) * 2.0;
-    double start_y = gen_y + random_next_int_range(random, 2, 4);
-    double end_y = gen_y + random_next_int_range(random, 2, 4);
+    double start_y = gen_y + random_next_int_range(random, 3) + 2;
+    double end_y = gen_y + random_next_int_range(random, 3) + 2;
 
     for(int i = 0; i <= 16; i++) {
         double current_x = start_x + (end_x - start_x) * (double)i / 16.0;
         double current_y = start_y + (end_y - start_y) * (double)i / 16.0;
         double current_z = start_z + (end_z - start_z) * (double)i / 16.0;
 
-        double size = random_next_uniform(random);
+        double size = random_next_double(random);
         double radius_x = (tsin((float)i / 16.0 * M_PI) + 1.0) * size + 1.0;
-        double radius_y = (tcos((float)i / 16.0 * M_PI) + 1.0) * size + 1.0;
+        double radius_y = (tsin((float)i / 16.0 * M_PI) + 1.0) * size + 1.0;
 
         for(int x = (current_x - radius_x / 2.0); x <= (current_x + radius_x / 2.0); x++) {
             for(int y = (current_y - radius_y / 2.0); y <= (current_y + radius_y / 2.0); y++) {

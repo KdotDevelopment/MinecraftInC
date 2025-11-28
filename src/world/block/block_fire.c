@@ -70,9 +70,9 @@ uint8_t private_can_neighbor_catch_fire(world_t *world, int x, int y, int z) {
 
 void private_try_spread_fire(world_t *world, int x, int y, int z, int chance, random_t *random) {
     int block_chance = block_list[world_get_block(world, x, y, z)].fire_catch_chance;
-    if(random_next_int_range(random, 0, chance - 1) < block_chance) {
+    if(random_next_int_range(random, chance) < block_chance) {
         uint8_t is_tnt = world_get_block(world, x, y, z) == blocks.tnt.id;
-        if(random_next_int_range(random, 0, 1) == 0) {
+        if(random_next_int_range(random, 2) == 0) {
             world_set_block_with_update(world, x, y, z, blocks.fire.id);
         }else {
             world_set_block_with_update(world, x, y, z, blocks.air.id);
@@ -100,7 +100,7 @@ void block_fire_update(block_t *block, world_t *world, int x, int y, int z, rand
         if(!world_is_solid(world, x, y - 1, z) || metadata > 3) {
             world_set_block_with_update(world, x, y, z, blocks.air.id);
         }
-    }else if(!block_fire_can_catch_fire(world, x, y - 1, z) && metadata == 15 && random_next_int_range(random, 0, 3) == 0) {
+    }else if(!block_fire_can_catch_fire(world, x, y - 1, z) && metadata == 15 && random_next_int_range(random, 4) == 0) {
         world_set_block_with_update(world, x, y, z, blocks.air.id);
     }else {
         if(metadata % 5 == 0 && metadata > 5) {
@@ -132,7 +132,7 @@ void block_fire_update(block_t *block, world_t *world, int x, int y, int z, rand
                                 spread_chance = private_get_fire_spread_chance(world, rx, ry, rz + 1, spread_chance);
                             }
 
-                            if(spread_chance > 0 && random_next_int_range(random, 0, chance - 1) <= spread_chance) {
+                            if(spread_chance > 0 && random_next_int_range(random, chance) <= spread_chance) {
                                 world_set_block_with_update(world, rx, ry, rz, block->id);
                             }
                         }
@@ -187,8 +187,8 @@ void block_fire_spread(world_t *world, int x, int y, int z) {
 }
 
 void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int z, random_t *random) {
-    if(random_next_int_range(random, 0, 23) == 0) {
-        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_FIRE_FIRE, 1.0 + random_next_uniform(random), random_next_uniform(random) * 0.7 + 0.3);
+    if(random_next_int_range(random, 24) == 0) {
+        world_play_sound(world, x + 0.5, y + 0.5, z + 0.5, SOUND_FIRE_FIRE, 1.0 + random_next_double(random), random_next_double(random) * 0.7 + 0.3);
     }
 
     float particle_x = 0;
@@ -198,53 +198,53 @@ void block_fire_visual_update(block_t *block, world_t *world, int x, int y, int 
     if(!world_is_solid(world, x, y - 1, z) && !block_fire_can_catch_fire(world, x, y - 1, z)) {
         if(block_fire_can_catch_fire(world, x - 1, y, z)) {
             for(int i = 0; i < 2; i++) {
-                particle_x = x + random_next_uniform(random) * 0.1;
-                particle_y = y + random_next_uniform(random);
-                particle_z = z + random_next_uniform(random);
+                particle_x = x + random_next_double(random) * 0.1;
+                particle_y = y + random_next_double(random);
+                particle_z = z + random_next_double(random);
                 world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
             }
         }
 
         if(block_fire_can_catch_fire(world, x + 1, y, z)) {
             for(int i = 0; i < 2; i++) {
-                particle_x = (x + 1) + random_next_uniform(random) * 0.1;
-                particle_y = y + random_next_uniform(random);
-                particle_z = z + random_next_uniform(random);
+                particle_x = (x + 1) + random_next_double(random) * 0.1;
+                particle_y = y + random_next_double(random);
+                particle_z = z + random_next_double(random);
                 world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
             }
         }
 
         if(block_fire_can_catch_fire(world, x, y, z - 1)) {
             for(int i = 0; i < 2; i++) {
-                particle_x = x + random_next_uniform(random);
-                particle_y = y + random_next_uniform(random);
-                particle_z = z + random_next_uniform(random) * 0.1;
+                particle_x = x + random_next_double(random);
+                particle_y = y + random_next_double(random);
+                particle_z = z + random_next_double(random) * 0.1;
                 world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
             }
         }
 
         if(block_fire_can_catch_fire(world, x, y, z + 1)) {
             for(int i = 0; i < 2; i++) {
-                particle_x = x + random_next_uniform(random) * 0.1;
-                particle_y = y + random_next_uniform(random);
-                particle_z = (z + 1) + random_next_uniform(random) * 0.1;
+                particle_x = x + random_next_double(random) * 0.1;
+                particle_y = y + random_next_double(random);
+                particle_z = (z + 1) + random_next_double(random) * 0.1;
                 world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
             }
         }
 
         if(block_fire_can_catch_fire(world, x, y + 1, z)) {
             for(int i = 0; i < 2; i++) {
-                particle_x = x + random_next_uniform(random);
-                particle_y = (y + 1) + random_next_uniform(random) * 0.1;
-                particle_z = z + random_next_uniform(random);
+                particle_x = x + random_next_double(random);
+                particle_y = (y + 1) + random_next_double(random) * 0.1;
+                particle_z = z + random_next_double(random);
                 world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
             }
         }
     } else {
         for(int i = 0; i < 3; i++) {
-            particle_x = x + random_next_uniform(random);
-            particle_y = y + random_next_uniform(random) * 0.5 + 0.5;
-            particle_z = z + random_next_uniform(random);
+            particle_x = x + random_next_double(random);
+            particle_y = y + random_next_double(random) * 0.5 + 0.5;
+            particle_z = z + random_next_double(random);
             world_spawn_particle(world, PARTICLE_LARGE_SMOKE, particle_x, particle_y, particle_z, 0, 0, 0);
         }
     }

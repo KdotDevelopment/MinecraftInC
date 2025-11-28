@@ -79,7 +79,7 @@ void block_crops_update(block_t *block, world_t *world, int x, int y, int z, ran
                 growth_chance /= 2.0;
             }
 
-            if(random_next_int_range(random, 0, (100.0 / growth_chance) - 1) == 0) {
+            if(random_next_int_range(random, (100.0 / growth_chance)) == 0) {
                 growth_stage++;
                 world_set_block_metadata(world, x, y, z, growth_stage);
             }
@@ -96,10 +96,10 @@ void block_crops_on_destroyed(block_t *block, world_t *world, int x, int y, int 
     block_on_destroyed(block, world, x, y, z, metadata);
 
     for(int i = 0; i < 3; i++) {
-        if(random_next_int_range(&world->random, 0, 14) <= metadata) {
-            float offset_x = random_next_uniform(&world->random) * 0.7 + 0.15;
-            float offset_y = random_next_uniform(&world->random) * 0.7 + 0.15;
-            float offset_z = random_next_uniform(&world->random) * 0.7 + 0.15;
+        if(random_next_int_range(&world->random, 15) <= metadata) {
+            float offset_x = random_next_double(&world->random) * 0.7 + 0.15;
+            float offset_y = random_next_double(&world->random) * 0.7 + 0.15;
+            float offset_z = random_next_double(&world->random) * 0.7 + 0.15;
 
             entity_t *item = malloc(sizeof(entity_t));
             item_stack_t item_stack = item_stack_create(items.seeds.id, 1, 0);

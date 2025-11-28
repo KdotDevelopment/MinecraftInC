@@ -341,7 +341,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         renderer_camera_setup_fog(renderer);
         // render particles
 
-        if(!renderer->minecraft->hit_result.null /*&& entity_is_inside_block(player)*/) {
+        if(!renderer->minecraft->hit_result.null && entity_is_underwater(player)) {
             glDisable(GL_ALPHA_TEST);
             renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, player, &renderer->minecraft->hit_result, 0, NULL, delta);
             renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, player, &renderer->minecraft->hit_result, 0, delta);
@@ -374,7 +374,7 @@ void renderer_camera_update_camera(renderer_camera_t *renderer, float delta) {
         glEnable(GL_CULL_FACE);
         glDisable(GL_BLEND);
 
-        if(!renderer->minecraft->hit_result.null /*&& !entity_is_inside_block(player)*/) {
+        if(!renderer->minecraft->hit_result.null && !entity_is_underwater(player)) {
             glDisable(GL_ALPHA_TEST);
             renderer_world_draw_block_breaking(&renderer->minecraft->renderer_world, player, &renderer->minecraft->hit_result, 0, NULL, delta);
             renderer_world_draw_selection_box(&renderer->minecraft->renderer_world, player, &renderer->minecraft->hit_result, 0, delta);

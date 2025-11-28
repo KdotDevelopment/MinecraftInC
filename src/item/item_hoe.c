@@ -31,10 +31,10 @@ uint8_t item_hoe_on_use(item_t *item, item_stack_t *item_stack, world_t *world, 
     world_set_block_with_update(world, x, y, z, blocks.farmland.id);
     item_stack_damage(item_stack, 1);
     
-    if(random_next_int_range(&world->random, 0, 7) == 0 && block_id == BLOCK_GRASS) {
+    if(random_next_int_range(&world->random, 8) == 0 && block_id == BLOCK_GRASS) {
         // There was a for loop here (that iterates once) presumably to change the amount of seeds to drop... fun fact
-        float offset_x = random_next_uniform(&world->random) * 0.7 + 0.15;
-        float offset_z = random_next_uniform(&world->random) * 0.7 + 0.15;
+        float offset_x = random_next_double(&world->random) * 0.7 + 0.15;
+        float offset_z = random_next_double(&world->random) * 0.7 + 0.15;
         entity_t *item = malloc(sizeof(entity_t));
         item_stack_t item_stack = item_stack_create(items.seeds.id, 1, 0);
         entity_item_create(item, world, x + offset_x, y + 1.2, z + offset_z, item_stack);

@@ -139,6 +139,9 @@ void renderer_chunk_update(renderer_chunk_t *renderer) {
                     for(int x = x0; x < x1; x++) {
                         int local_x = x & (CHUNK_SIZE_WIDTH - 1);
                         uint8_t block_id = chunk_get_block_id(chunk, local_x, y, local_z);
+                        if(y <= 0) {
+                            block_id = world_get_block(renderer->world, x, y, z);
+                        }
                         if(block_id > 0) {
                             block_t *block = &block_list[block_id];
                             if(block->render_pass != i) {

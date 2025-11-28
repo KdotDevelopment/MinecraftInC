@@ -39,7 +39,6 @@ void entity_item_create(entity_t *entity, struct world_s *world, float x, float 
     entity->hover_start = random_uniform() *  M_PI * 2.0;
 
     entity->tick = entity_item_tick;
-    entity->render = entity_item_render;
     entity->player_touch = entity_item_player_touch;
 }
 
@@ -66,39 +65,6 @@ void entity_item_tick(struct entity_s *entity) {
     if(entity->age > 6000) {
         entity_remove(entity);
     }
-}
-
-void entity_item_render(struct entity_s *entity, textures_t *textures, float delta) {
-    glBindTexture(GL_TEXTURE_2D, textures_load(textures, "terrain.png"));
-    float brightness = world_get_brightness((world_t *)entity->world, entity->x, entity->y, entity->z);
-    float rot_delta = entity->y_rot + (entity->tick_count + delta) * 3.0;
-    glPushMatrix();
-    glColor4f(brightness, brightness, brightness, 1.0);
-    float rotation = tsin(rot_delta / 10.0);
-    float hover_height = rotation * 0.1 + 0.1;
-    glTranslatef(entity->last_tick_x + (entity->x - entity->last_tick_x) * delta,
-                 entity->last_tick_y + (entity->y - entity->last_tick_y) * delta + hover_height,
-                 entity->last_tick_z + (entity->z - entity->last_tick_z) * delta);
-    glRotatef(rot_delta, 0, 1, 0);
-    model_item_render(&item_models[entity->item_stack.item_id - 256]);
-
-    float a = rotation * 0.5 + 0.5;
-    float b = a * a;
-    float alpha = b * b;
-    //in the original source, this is set to (1.0, 1.0, 1.0, alpha * 0.4) however only changing alpha doesn't work in my case
-    glColor4f(alpha * 0.4, alpha * 0.4, alpha * 0.4, alpha * 0.4);
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glDisable(GL_ALPHA_TEST);
-
-    model_item_render(&item_models[entity->item_stack.item_id - 256]);
-    glEnable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(1, 1, 1, 1);
-    glPopMatrix();
-    glEnable(GL_TEXTURE_2D);
 }
 
 void entity_item_player_touch(entity_t *entity, entity_t *player) {

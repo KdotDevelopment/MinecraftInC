@@ -42,6 +42,8 @@ void renderer_entity_item_render_gui(minecraft_t *minecraft, item_stack_t *item,
         }else {
             if(item_list[item->item_id].texture_id >= 0) {
                 glDisable(GL_LIGHTING);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 if(item->item_id < 256) {
                     glBindTexture(GL_TEXTURE_2D, textures_load(&minecraft->textures, "terrain.png"));
                 }else {
@@ -59,6 +61,7 @@ void renderer_entity_item_render_gui(minecraft_t *minecraft, item_stack_t *item,
                 tesselator_vertex_uv(x, y, 0, tex_x / 256.0, tex_y / 256.0);
                 tesselator_end();
 
+                glDisable(GL_BLEND);
                 glEnable(GL_LIGHTING);
             }
         }
@@ -132,9 +135,9 @@ void renderer_entity_item_render(renderer_entity_t *renderer, entity_t *entity, 
         for(int i = 0; i < stacking; i++) {
             glPushMatrix();
             if(i > 0) {
-                float xx = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.2 / scale;
-                float yy = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.2 / scale;
-                float zz = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.2 / scale;
+                float xx = (random_next_double(&rand) * 2.0 - 1.0) * 0.2 / scale;
+                float yy = (random_next_double(&rand) * 2.0 - 1.0) * 0.2 / scale;
+                float zz = (random_next_double(&rand) * 2.0 - 1.0) * 0.2 / scale;
                 glTranslatef(xx, yy, zz);
             }
 
@@ -143,6 +146,8 @@ void renderer_entity_item_render(renderer_entity_t *renderer, entity_t *entity, 
             glPopMatrix();
         }
     }else {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glScalef(0.5, 0.5, 0.5);
         int texture = item_list[item_stack.item_id].texture_id;
         if(item_stack.item_id < 256) {
@@ -157,9 +162,9 @@ void renderer_entity_item_render(renderer_entity_t *renderer, entity_t *entity, 
         float v1 = ((texture / 16 << 4) + 16) / 256.0;
 
         for(int i = 0; i < stacking; i++) {
-            float xx = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.3;
-            float yy = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.3;
-            float zz = (random_next_uniform(&rand) * 2.0 - 1.0) * 0.3;
+            float xx = (random_next_double(&rand) * 2.0 - 1.0) * 0.3;
+            float yy = (random_next_double(&rand) * 2.0 - 1.0) * 0.3;
+            float zz = (random_next_double(&rand) * 2.0 - 1.0) * 0.3;
             glTranslatef(xx, yy, zz);
         }
 
@@ -171,6 +176,7 @@ void renderer_entity_item_render(renderer_entity_t *renderer, entity_t *entity, 
         tesselator_vertex_uv(0.5, 0.75, 0, u1, v0);
         tesselator_vertex_uv(-0.5, 0.75, 0, u0, v0);
         tesselator_end();
+        glDisable(GL_BLEND);
         glPopMatrix();
     }
 

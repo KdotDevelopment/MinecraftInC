@@ -25,7 +25,7 @@ void ai_basic_tick(struct ai_s *ai) {
     mob_t *mob = (mob_t *)ai->mob;
     ai->no_action_time++;
     entity_t *entity;
-    if(ai->no_action_time > 600 && random_next_int_range(ai->random, 0, 800) == 0 && (entity = world->player) != NULL) {
+    if(ai->no_action_time > 600 && random_next_int_range(ai->random, 800) == 0 && (entity = world->player) != NULL) {
         float x_diff = entity->x - mob->entity->x;
         float y_diff = entity->y - mob->entity->y;
         float z_diff = entity->z - mob->entity->z;
@@ -77,27 +77,27 @@ void ai_basic_jump(ai_t *ai) {
 
 void ai_basic_update(struct ai_s *ai) {
     mob_t *mob = (mob_t *)ai->mob;
-    if(random_next_uniform(ai->random) < 0.07) {
-        ai->xa = (random_next_uniform(ai->random) - 0.5) * ai->run_speed;
-        ai->za = random_next_uniform(ai->random) * ai->run_speed;
+    if(random_next_double(ai->random) < 0.07) {
+        ai->xa = (random_next_double(ai->random) - 0.5) * ai->run_speed;
+        ai->za = random_next_double(ai->random) * ai->run_speed;
     }
 
-    ai->jumping = random_next_uniform(ai->random) < 0.01;
-    if(random_next_uniform(ai->random) < 0.04) {
-        ai->y_rota = (random_next_uniform(ai->random) - 0.5) * 60.0;
+    ai->jumping = random_next_double(ai->random) < 0.01;
+    if(random_next_double(ai->random) < 0.04) {
+        ai->y_rota = (random_next_double(ai->random) - 0.5) * 60.0;
     }
 
     ai->mob->entity->y_rot += ai->y_rota;
     ai->mob->entity->x_rot = ai->default_look_angle;
     if(ai->attack_target != NULL) {
         ai->za = ai->run_speed;
-        ai->jumping = random_next_uniform(ai->random) < 0.04;
+        ai->jumping = random_next_double(ai->random) < 0.04;
     }
 
     uint8_t water = entity_is_in_water(mob->entity);
     uint8_t lava = entity_is_in_lava(mob->entity);
     if(water || lava) {
-        ai->jumping = random_next_uniform(ai->random) < 0.8;
+        ai->jumping = random_next_double(ai->random) < 0.8;
     }
 }
 

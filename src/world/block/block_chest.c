@@ -161,12 +161,12 @@ void block_chest_on_removed(block_t *block, world_t *world, int x, int y, int z)
     for(int i = 0; i < tile_entity->inventory_size; i++) {
         item_stack_t item_stack = tile_entity_chest_get_item(&tile_entity->inventory, i);
         if(item_stack.item_id != 0) {
-            float rand_x = random_next_uniform(&world->random) * 0.8 + 0.1;
-            float rand_y = random_next_uniform(&world->random) * 0.8 + 0.1;
-            float rand_z = random_next_uniform(&world->random) * 0.8 + 0.1;
+            float rand_x = random_next_double(&world->random) * 0.8 + 0.1;
+            float rand_y = random_next_double(&world->random) * 0.8 + 0.1;
+            float rand_z = random_next_double(&world->random) * 0.8 + 0.1;
 
             while(item_stack.stack_size > 0) {
-                int item_count = random_next_int_range(&world->random, 0, 20) + 10;
+                int item_count = random_next_int_range(&world->random, 21) + 10;
                 if(item_count > item_stack.stack_size) {
                     item_count = item_stack.stack_size;
                 }

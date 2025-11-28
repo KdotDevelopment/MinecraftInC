@@ -63,7 +63,7 @@ void renderer_world_render_all_lists(renderer_world_t *renderer, int render_pass
 void renderer_world_update_clouds(renderer_world_t *renderer);
 void renderer_world_draw_sky(renderer_world_t *renderer, float partial_tick);
 void renderer_world_update_renderers(renderer_world_t *renderer, entity_t *player);
-void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, int unused, item_stack_t *item_stack, float partial_tick);
+void renderer_world_draw_block_breaking(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, int mode, item_stack_t *item_stack, float partial_tick);
 void renderer_world_draw_selection_box(renderer_world_t *renderer, entity_t *player, hit_result_t *hit_result, uint8_t block_id, float partial_tick);
 void renderer_world_queue_chunks(renderer_world_t *renderer, int x0, int y0, int z0, int x1, int y1, int z1);
 void renderer_world_update_block(renderer_world_t *renderer, int x, int y, int z);

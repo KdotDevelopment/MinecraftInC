@@ -31,7 +31,7 @@ void entity_painting_create(entity_t *entity, world_t *world, int x, int y, int 
     }
 
     if(array_list_length(possible_paintings) > 0) {
-        int index = random_next_int_range(&world->random, 0, array_list_length(possible_paintings) - 1);
+        int index = random_next_int_range(&world->random, array_list_length(possible_paintings));
         painting_t *selected_painting = *(painting_t **)array_list_get(possible_paintings, index);
         entity->painting = selected_painting;
     }

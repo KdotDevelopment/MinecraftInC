@@ -24,7 +24,7 @@ void ai_sheep_update(ai_t *ai) {
         }else {
             if(++ai->mob->grazing_time == 60) {
                 world_set_block_with_update(ai->world, x, y, z, blocks.dirt.id);
-                if(random_next_int_range(&ai->world->random, 0, 5) == 0) {
+                if(random_next_int_range(&ai->world->random, 6) == 0) {
                     ai->mob->has_fur = 1;
                 }
             }

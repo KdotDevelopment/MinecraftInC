@@ -28,10 +28,10 @@ void mob_spawner_tick(mob_spawner_t *spawner, int world_size, entity_t *entity, 
             progress_bar_set_progress(progress_bar, i * 100 / (world_size - 1));
         }
 
-        int rnd = random_next_int_range(&spawner->world->random, 0, 5);
-        int rndx = random_next_int_range(&spawner->world->random, 0, spawner->world->width);
-        int rndy = fmin(random_next_uniform(&spawner->world->random), random_next_uniform(&spawner->world->random)) * spawner->world->depth;
-        int rndz = random_next_int_range(&spawner->world->random, 0, spawner->world->height);
+        int rnd = random_next_int_range(&spawner->world->random, 6);
+        int rndx = random_next_int_range(&spawner->world->random, spawner->world->width);
+        int rndy = fmin(random_next_double(&spawner->world->random), random_next_double(&spawner->world->random)) * spawner->world->depth;
+        int rndz = random_next_int_range(&spawner->world->random, spawner->world->height);
 
         if(!world_is_solid_block(spawner->world, rndx, rndy, rndz) 
           && world_get_block(spawner->world, rndx, rndy, rndz) == blocks.air.id 
@@ -42,9 +42,9 @@ void mob_spawner_tick(mob_spawner_t *spawner, int world_size, entity_t *entity, 
 
             for(int j = 0; j < 3; j++) {
                 for(int k = 0; k < 3; k++) {
-                    rndx1 += random_next_int_range(&spawner->world->random, 0, 6) - random_next_int_range(&spawner->world->random, 0, 6);
-                    rndy1 += random_next_int_range(&spawner->world->random, 0, 1) - random_next_int_range(&spawner->world->random, 0, 1);
-                    rndz1 += random_next_int_range(&spawner->world->random, 0, 6) - random_next_int_range(&spawner->world->random, 0, 6);
+                    rndx1 += random_next_int_range(&spawner->world->random, 7) - random_next_int_range(&spawner->world->random, 7);
+                    rndy1 += random_next_int_range(&spawner->world->random, 2) - random_next_int_range(&spawner->world->random, 2);
+                    rndz1 += random_next_int_range(&spawner->world->random, 7) - random_next_int_range(&spawner->world->random, 7);
 
                     if(rndx1 >= 0 && rndz1 >= 1 && rndy1 >= 0 && rndy1 < spawner->world->depth - 2 && rndx1 < spawner->world->width && rndz1 < spawner->world->height
                       && world_is_solid_block(spawner->world, rndx1, rndy1 - 1, rndz1) && !world_is_solid_block(spawner->world, rndx1, rndy1, rndz1) 

@@ -134,8 +134,8 @@ void prepare(generate_big_tree_t *this) {
         }
 
         for(int n = 0; n < clusters_per_y; n++) {
-            double radius = this->width_scale * shapefac * (random_next_uniform(this->rand) + 0.328);
-            double angle = random_next_uniform(this->rand) * 2.0 * M_PI;
+            double radius = this->width_scale * shapefac * (random_next_float(this->rand) + 0.328);
+            double angle = random_next_float(this->rand) * 2.0 * M_PI;
 
             int x = (int)(radius * tsin(angle) + this->origin.x + 0.5);
             int z = (int)(radius * tcos(angle) + this->origin.z + 0.5);
@@ -312,7 +312,7 @@ uint8_t generate_big_tree_gen(world_t *world, random_t *random, int x, int y, in
     this.foliage_height = LEAF_DISTANCE_LIMIT;
 
     int height_limit = 0;
-    height_limit = 5 + random_next_int_range(&rand, 0, this.height_variance);
+    height_limit = 5 + random_next_int_range(&rand, this.height_variance);
     this.height_limit = height_limit;
 
     this.height = (int)((double)height_limit * this.trunk_height_scale);

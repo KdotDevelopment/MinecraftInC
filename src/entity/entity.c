@@ -151,17 +151,17 @@ void entity_tick(entity_t *entity) {
                 velocity = 1.0;
             }
 
-            world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_SPLASH, velocity, 1.0 + (random_next_uniform(&entity->world->random) - random_next_uniform(&entity->world->random)) * 0.4);
+            world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_SPLASH, velocity, 1.0 + (random_next_double(&entity->world->random) - random_next_double(&entity->world->random)) * 0.4);
             
             for(int i = 0; i < 1.0 + entity->bb_width * 20.0; i++) {
-                float particle_x = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
-                float particle_z = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
-                world_spawn_particle(entity->world, PARTICLE_BUBBLE, entity->x + particle_x, floor_double(entity->bb.y0) + 1.0, entity->z + particle_z, entity->xd, entity->yd - random_next_uniform(&entity->world->random) * 0.2, entity->zd);
+                float particle_x = (random_next_double(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                float particle_z = (random_next_double(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                world_spawn_particle(entity->world, PARTICLE_BUBBLE, entity->x + particle_x, floor_double(entity->bb.y0) + 1.0, entity->z + particle_z, entity->xd, entity->yd - random_next_double(&entity->world->random) * 0.2, entity->zd);
             }
 
             for(int i = 0; i < 1.0 + entity->bb_width * 20.0; i++) {
-                float particle_x = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
-                float particle_z = (random_next_uniform(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                float particle_x = (random_next_double(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
+                float particle_z = (random_next_double(&entity->world->random) * 2.0 - 1.0) * entity->bb_width;
                 world_spawn_particle(entity->world, PARTICLE_SPLASH, entity->x + particle_x, floor_double(entity->bb.y0) + 1.0, entity->z + particle_z, entity->xd, entity->yd, entity->zd);
             }
         }
@@ -344,7 +344,7 @@ void entity_move(entity_t *entity, float x, float y, float z) {
     }
 
     if(is_in_water && entity->fire > 0) {
-        world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_FIZZ, 0.7, 1.6 + (random_next_uniform(&entity->world->random) - random_next_uniform(&entity->world->random)) * 0.4);
+        world_play_sound_at_entity(entity->world, entity, SOUND_RANDOM_FIZZ, 0.7, 1.6 + (random_next_double(&entity->world->random) - random_next_double(&entity->world->random)) * 0.4);
         entity->fire = -entity->fire_resistance;
     }
 }
@@ -550,7 +550,7 @@ void entity_create_from_nbt(entity_t *entity, nbt_base_t *nbt, world_t *world) {
     if(entity) {
         entity->read_nbt(entity, nbt);
     }else {
-        printf("Skippiing Entity with id %s\n", name);
+        printf("Skipping Entity with id %s\n", name);
     }
 }
 

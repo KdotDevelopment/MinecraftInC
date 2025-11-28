@@ -26,7 +26,7 @@ uint8_t block_leaves_can_render_side(block_t *block, struct world_s *world, int 
 }
 
 uint8_t block_leaves_get_drop_count(block_t *block, random_t *random) {
-    return random_next_int_range(random, 0, 9) == 0 ? 1 : 0;
+    return random_next_int_range(random, 10) == 0 ? 1 : 0;
 }
 
 int16_t block_leaves_get_item_dropped(block_t *block, uint8_t metadata, random_t *random) {

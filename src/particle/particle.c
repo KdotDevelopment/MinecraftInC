@@ -56,7 +56,7 @@ void particle_tick(struct particle_s *particle) {
     }
 }
 
-void particle_render(struct particle_s *particle, float delta, float x, float y, float z, float var6, float var7) {
+void particle_render(struct particle_s *particle, float delta, float x, float y, float z, float x2, float z2) {
     float u0 = ((particle->texture % 16) + particle->u / 4.0) / 16.0;
     float v0 = ((particle->texture / 16) + particle->v / 4.0) / 16.0;
     float u1 = u0 + 0.0624375;
@@ -67,10 +67,10 @@ void particle_render(struct particle_s *particle, float delta, float x, float y,
     float vz = particle->entity.last_tick_z + (particle->entity.z - particle->entity.last_tick_z) * delta;
     float brightness = entity_get_brightness(&particle->entity, delta);
     tesselator_color_opaque(brightness * particle->r, brightness * particle->g, brightness * particle->b);
-    tesselator_vertex_uv(vx - x * s - var6 * s, vy - y * s, vz - z * s - var7 * s, u0, v1);
-    tesselator_vertex_uv(vx - x * s + var6 * s, vy + y * s, vz - z * s + var7 * s, u0, v0);
-    tesselator_vertex_uv(vx + x * s + var6 * s, vy + y * s, vz + z * s + var7 * s, u1, v0);
-    tesselator_vertex_uv(vx + x * s - var6 * s, vy - y * s, vz + z * s - var7 * s, u1, v1);
+    tesselator_vertex_uv(vx - x * s - x2 * s, vy - y * s, vz - z * s - z2 * s, u0, v1);
+    tesselator_vertex_uv(vx - x * s + x2 * s, vy + y * s, vz - z * s + z2 * s, u0, v0);
+    tesselator_vertex_uv(vx + x * s + x2 * s, vy + y * s, vz + z * s + z2 * s, u1, v0);
+    tesselator_vertex_uv(vx + x * s - x2 * s, vy - y * s, vz + z * s - z2 * s, u1, v1);
 }
 
 int particle_get_texture(struct particle_s *particle) {

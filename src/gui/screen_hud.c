@@ -75,7 +75,7 @@ void screen_hud_render(screen_hud_t *hud, float mx, float my, float partial_tick
 
             int w = hud->width / 2 - 91 + i * 8;
             if(health <= 4) {
-                h += random_next_int_range(&hud->random, 0, 2);
+                h += random_next_int_range(&hud->random, 3);
             }
 
             gui_blit(w, h, 16 + a * 9, 0, 9, 9, -90.0);

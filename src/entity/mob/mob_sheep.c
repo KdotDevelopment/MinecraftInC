@@ -42,7 +42,7 @@ void mob_sheep_die(mob_t *mob, mob_t *causer) {
         mob->entity->award_kill_score(mob->entity, causer->entity, 10);
     }
 
-    int drop_count = random_next_uniform(&mob->entity->world->random) + random_next_uniform(&mob->entity->world->random) + 1;
+    int drop_count = random_next_double(&mob->entity->world->random) + random_next_double(&mob->entity->world->random) + 1;
 
     for(int i = 0; i < drop_count; i++) {
         //drop items brown mushroom
@@ -72,7 +72,7 @@ void mob_sheep_hurt(struct entity_s *mob, struct entity_s *causer, int damage) {
     mob_t *real_mob = (mob_t *)mob;
     if(causer != NULL && causer->type == ENTITY_MOB_PLAYER && real_mob->has_fur) {
         real_mob->has_fur = 0;
-        int drop_count = random_next_uniform(&mob->world->random) * 3.0 + 1.0;
+        int drop_count = random_next_double(&mob->world->random) * 3.0 + 1.0;
 
         for(int i = 0; i < drop_count; i++) {
             //drop items white wool

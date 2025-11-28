@@ -332,12 +332,12 @@ void block_spawn_items_chance(block_t *block, world_t *world, int x, int y, int 
     uint8_t count = block->get_drop_count(block, &world->random);
 
     for(int i = 0; i < count; i++) {
-        if(random_next_uniform(&world->random) <= chance) {
+        if(random_next_double(&world->random) <= chance) {
             int16_t item_id = block->get_item_dropped(block, metadata, &world->random);
             if(item_id < 0) continue;
-            float x_diff = random_next_uniform(&world->random) * 0.7 + 0.15;
-            float y_diff = random_next_uniform(&world->random) * 0.7 + 0.15;
-            float z_diff = random_next_uniform(&world->random) * 0.7 + 0.15;
+            float x_diff = random_next_double(&world->random) * 0.7 + 0.15;
+            float y_diff = random_next_double(&world->random) * 0.7 + 0.15;
+            float z_diff = random_next_double(&world->random) * 0.7 + 0.15;
             entity_t *item = malloc(sizeof(entity_t));
             item_stack_t item_stack = item_stack_create(item_id, 1, 0);
             entity_item_create(item, world, x + x_diff, y + y_diff, z + z_diff, item_stack);
